@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -9,14 +10,31 @@
 <body>
 <div class="deck" id="deck">
 <section class="slide active center" data-notes="Open with the tension, not the project inventory. The question frames the whole talk: configurable at language-construction time, but not necessarily dynamic at execution time.">
-<div><div class="eyebrow">LangDev · UniversalToolchain</div><h1>Build the Language,<br/><span class="accent">Then Make the Abstractions Disappear</span></h1><p class="bigq">Can we let users assemble a language without carrying all of that configurability into every execution?</p></div>
+<div>
+<div class="eyebrow">LangDev · UniversalToolchain</div>
+<h1>Build the Language,<br/><span class="accent">Then Make the Abstractions Disappear</span></h1>
+<p class="bigq">Can we let users assemble a language without carrying all of that configurability into every execution?</p>
+</div>
 </section>
 <section class="slide two" data-notes="Make the problem concrete: extensibility gives us more features, syntax choices, policies and backends. But if every execution keeps asking what language it is running, we failed to stage the variability.">
-<div><div class="eyebrow">The problem</div><h2>Where Should <span class="accent">Variability</span> End?</h2><p style="margin-top:1.3rem">Extensibility is useful while constructing a language. It should not necessarily remain dynamic forever.</p></div>
-<div class="panel"><div class="flow"><span class="node">Features</span><span class="node">Syntax</span><span class="node">Optimizers</span><span class="node">Backends</span><span class="node">Policies</span><span class="arrow">→</span><span class="node accent">Configurable language</span><span class="arrow">→</span><span class="node warn">? execution cost</span></div></div>
+<div>
+<div class="eyebrow">The problem</div>
+<h2>Where Should <span class="accent">Variability</span> End?</h2>
+<p style="margin-top:1.3rem">Extensibility is useful while constructing a language. It should not necessarily remain dynamic forever.</p>
+</div>
+<div class="panel">
+<div class="flow">
+<span class="node">Features</span><span class="node">Syntax</span><span class="node">Optimizers</span><span class="node">Backends</span><span class="node">Policies</span>
+<span class="arrow">→</span><span class="node accent">Configurable language</span><span class="arrow">→</span><span class="node warn">? execution cost</span>
+</div>
+</div>
 </section>
 <section class="slide two" data-notes="A dialect is not only a list of things included. It also defines what is intentionally absent. That negative surface is important because it gives the compiler permission to reject, simplify and specialize.">
-<div><div class="eyebrow">Dialect as contract</div><h2>A Dialect Defines <span class="ok">Presence</span> — and <span class="bad">Absence</span></h2><p style="margin-top:1.3rem">The language surface becomes explicit before any user program is executed.</p></div>
+<div>
+<div class="eyebrow">Dialect as contract</div>
+<h2>A Dialect Defines <span class="ok">Presence</span> — and <span class="bad">Absence</span></h2>
+<p style="margin-top:1.3rem">The language surface becomes explicit before any user program is executed.</p>
+</div>
 <div class="panel code">language "Pricing"
 use arithmetic
 use external-bindings
@@ -27,77 +45,193 @@ policy shadowing = lexical</div>
 </section>
 <section class="slide stack slide-4" data-notes="This is the first key stage boundary. Variability is compiled into a plan. The plan is immutable and explicit; later stages consume it rather than discovering language configuration again.">
 <div><div class="eyebrow">Configuration compilation</div><h2>Resolve Language Variability <span class="accent">Once</span></h2></div>
-<div class="panel compact-visual"><div class="process5">
-<div class="pnode"><strong>.wistdialect</strong><span>declares features, exclusions, backend and policy choices</span></div>
-<div class="pnode"><strong>LanguageDefinition</strong><span>collects contributions and validates the surface</span></div>
-<div class="pnode"><strong>LanguageCompiler</strong><span>resolves composition and checks semantic consistency</span></div>
-<div class="pnode accent-node"><strong>Immutable LanguagePlan</strong><span>materialized semantic result and reproducible identity</span></div>
-<div class="pnode"><strong>LanguageRuntime</strong><span>executes later stages without rediscovering language variability</span></div>
-</div><p class="caption" style="text-align:center;margin-top:1rem">Language-level variability ends at the <span class="accent">plan boundary</span>.</p></div>
+<div class="panel phase-panel">
+<div class="phase-flow">
+<div class="phase-card"><strong>.wistdialect</strong><span>features, exclusions, backend and policies</span></div>
+<div class="phase-arrow">→</div>
+<div class="phase-card"><strong>LanguageDefinition</strong><span>contributions and surface validation</span></div>
+<div class="phase-arrow">→</div>
+<div class="phase-card"><strong>LanguageCompiler</strong><span>composition and consistency checks</span></div>
+<div class="phase-arrow">→</div>
+<div class="phase-card plan"><strong>Immutable LanguagePlan</strong><span>semantic result and reproducible identity</span></div>
+</div>
+<div class="phase-boundary"><span class="boundary-chip">language variability ends here</span></div>
+<div class="after-plan">
+<div class="after-card"><h3>LanguageRuntime</h3><p>Consumes fixed capabilities instead of rediscovering which language was assembled.</p></div>
+<div class="after-card"><h3>Program compilation</h3><p>Parser, AST, AIR and backends are parameterized by the resolved plan.</p></div>
+<div class="after-card hot"><h3>Prepared execution</h3><p>The hot path sees stable semantics, not an open configuration problem.</p></div>
+</div>
+</div>
 </section>
 <section class="slide two" data-notes="Avoid describing LanguagePlan as a dependency injection container. It owns semantic decisions: what features exist, how contributions are composed, which providers and routes are available, and the plan identity used for reproducibility.">
-<div><div class="eyebrow">Materialized semantics</div><h2>What Does <span class="accent">LanguagePlan</span> Actually Own?</h2><p style="margin-top:1.3rem">A plan is a checked semantic result, not a runtime bag of services.</p></div>
-<div class="plan-stack"><div class="plan-head"><div class="label">LanguagePlan</div><div class="plan-meta"><span class="chip">immutable</span><span class="chip">checked</span><span class="chip">reproducible</span></div></div>
+<div>
+<div class="eyebrow">Materialized semantics</div>
+<h2>What Does <span class="accent">LanguagePlan</span> Actually Own?</h2>
+<p style="margin-top:1.3rem">A plan is a checked semantic result, not a runtime bag of services.</p>
+</div>
+<div class="plan-stack">
+<div class="plan-head">
+<div class="label">LanguagePlan</div>
+<div class="plan-meta"><span class="chip">immutable</span><span class="chip">checked</span><span class="chip">reproducible</span></div>
+</div>
 <div class="icon-grid">
 <div class="icon-card"><div class="icon">✓</div><div><h3>Resolved features</h3><p>What exists, what is forbidden, and which negative surface becomes legal to reject or simplify.</p></div></div>
 <div class="icon-card"><div class="icon">⊕</div><div><h3>Contributions</h3><p>Syntax, lowering, optimizers and runtime contracts are composed into one semantic package.</p></div></div>
 <div class="icon-card"><div class="icon">⚙</div><div><h3>Runtime provider</h3><p>Capabilities available to execution are explicit instead of being re-discovered dynamically.</p></div></div>
 <div class="icon-card"><div class="icon">⇄</div><div><h3>Backend routes</h3><p>Interpreter, CIL and other prepared routes are approved consumers of the same semantic plan.</p></div></div>
-</div><div class="mini-claim"><p class="small"><span class="accent">Important:</span> the plan owns semantic decisions and identity (<span class="chip">PlanHash / Summary</span>), not just service wiring.</p></div></div>
+</div>
+<div class="mini-claim"><p class="small"><span class="accent">Important:</span> the plan owns semantic decisions and identity (<span class="chip">PlanHash / Summary</span>), not just service wiring.</p></div>
+</div>
 </section>
 <section class="slide stack slide-6" data-notes="Keep this slide short. It exists only to place the later AIR transformation in the compiler pipeline. Do not tour the whole project here.">
 <div><div class="eyebrow">Program compilation</div><h2>After Planning, Compile the <span class="accent">Program</span></h2></div>
-<div class="panel compact-visual"><div class="pipeline-grid">
+<div class="panel pipeline-panel">
+<div class="pipeline-grid">
 <div class="pipe"><div class="idx">01</div><h3>Source</h3><p>User program enters the chosen language surface.</p></div>
 <div class="pipe"><div class="idx">02</div><h3>Parser</h3><p>Syntax becomes a structured representation.</p></div>
 <div class="pipe"><div class="idx">03</div><h3>AST</h3><p>Language structure is explicit and checkable.</p></div>
 <div class="pipe"><div class="idx">04</div><h3>Bytecode</h3><p>Lowering begins to normalize execution structure.</p></div>
-<div class="pipe accent-pipe"><div class="idx">05</div><h3>AIR</h3><p>The abstraction layer where later specialization becomes visible.</p></div>
-<div class="pipe"><div class="idx">06</div><h3>Optimizers / SSA</h3><p>Reason over program structure and static facts.</p></div>
-<div class="pipe"><div class="idx">07</div><h3>Backend</h3><p>Choose an execution route without re-deciding semantics.</p></div>
+<div class="pipe accent-pipe"><div class="idx">05</div><h3>AIR</h3><p>The point where specialization becomes visible.</p></div>
+<div class="pipe"><div class="idx">06</div><h3>Optimizers / SSA</h3><p>Reason over structure and static facts.</p></div>
+<div class="pipe"><div class="idx">07</div><h3>Backend</h3><p>Generate an execution route.</p></div>
 <div class="pipe"><div class="idx">08</div><h3>Prepared execution</h3><p>Interpreter or compiled delegate consumes the result.</p></div>
-</div><div class="pipeline-foot"><p><span class="accent">LanguagePlan</span> fixes language semantics.</p><p><span class="accent">AIR + optimization</span> specialize this particular program.</p></div></div>
+</div>
+<div class="pipeline-foot">
+<div class="foot-card"><h3>Fixed by LanguagePlan</h3><p>Feature presence, absence, policies and backend eligibility.</p></div>
+<div class="foot-card"><h3>Changed by program facts</h3><p>AIR-level specialization can remove concrete representation machinery.</p></div>
+</div>
+</div>
 </section>
 <section class="slide two" data-notes="This slide prevents a vague zero-cost-abstraction story. There are two meanings: first, staging configuration into a plan; second, specializing IR when facts are static.">
-<div><div class="eyebrow">Two disappearances</div><h2>Two Different Meanings of <span class="accent">“Disappearing”</span></h2></div>
-<div class="disappear-grid"><div class="dis-card"><div class="head"><span class="chip">Configuration staging</span><span class="badge">1</span></div><h3>features → LanguagePlan</h3><div class="mini-flow"><div class="tiny"><span>language choices</span><span class="line"></span></div><div class="tiny"><span>resolved once</span><span class="line"></span></div><div class="tiny"><span>execution stops re-asking “what language is this?”</span></div></div></div>
-<div class="dis-card"><div class="head"><span class="chip">IR specialization</span><span class="badge">2</span></div><h3>generic ops + static facts → specialized AIR</h3><div class="mini-flow"><div class="tiny"><span>representation machinery present</span><span class="line"></span></div><div class="tiny"><span>compiler learns enough</span><span class="line"></span></div><div class="tiny"><span>extra machinery can disappear from the hot path</span></div></div></div></div>
+<div>
+<div class="eyebrow">Two disappearances</div>
+<h2>Two Different Meanings of <span class="accent">“Disappearing”</span></h2>
+</div>
+<div class="disappear-grid">
+<div class="dis-card">
+<div class="head"><span class="chip">Configuration staging</span><span class="badge">1</span></div>
+<h3>features → LanguagePlan</h3>
+<div class="mini-flow">
+<div class="tiny"><span>language choices</span><span class="line"></span></div>
+<div class="tiny"><span>resolved once</span><span class="line"></span></div>
+<div class="tiny"><span>execution stops re-asking “what language is this?”</span></div>
+</div>
+</div>
+<div class="dis-card">
+<div class="head"><span class="chip">IR specialization</span><span class="badge">2</span></div>
+<h3>generic ops + static facts → specialized AIR</h3>
+<div class="mini-flow">
+<div class="tiny"><span>representation machinery present</span><span class="line"></span></div>
+<div class="tiny"><span>compiler learns enough</span><span class="line"></span></div>
+<div class="tiny"><span>extra machinery can disappear from the hot path</span></div>
+</div>
+</div>
+</div>
 </section>
 <section class="slide stack" data-notes="Central technical slide. Be precise: known slot, known double, known runtime capability. The transformation removes a concrete environment/push representation sequence and replaces it with a direct specialized operation.">
-<div><div class="eyebrow">Central example</div><h2>Now We Know Enough to <span class="accent">Remove Something</span></h2></div>
-<div class="compare"><div class="panel"><div class="label">Before</div><div class="code">LoadEnvironment()
+<div>
+<div class="eyebrow">Central example</div>
+<h2>Now We Know Enough to <span class="accent">Remove Something</span></h2>
+</div>
+<div class="compare">
+<div class="panel">
+<div class="label">Before</div>
+<div class="code">LoadEnvironment()
 Push(slot)
-LoadExternal&lt;double&gt;()</div></div><div class="xarrow">→</div><div class="panel"><div class="label">After specialization</div><div class="code">LoadExternal&lt;double&gt;(<span class="hi">slot</span>)</div></div></div>
-<div class="flow" style="margin-top:1rem; justify-content:center"><span class="chip">slot is known</span><span class="chip">T = double</span><span class="chip">runtime capability is known</span></div>
+LoadExternal&lt;double&gt;()</div>
+</div>
+<div class="xarrow">→</div>
+<div class="panel">
+<div class="label">After specialization</div>
+<div class="code">LoadExternal&lt;double&gt;(<span class="hi">slot</span>)</div>
+</div>
+</div>
+<div class="flow" style="margin-top:1rem; justify-content:center">
+<span class="chip">slot is known</span><span class="chip">T = double</span><span class="chip">runtime capability is known</span>
+</div>
 </section>
-<section class="slide two" data-notes="Set the claim boundary. This avoids sounding like a universal zero-cost abstraction claim. The claim is local and compiler-specific: when facts become static, particular representation machinery can disappear.">
-<div><div class="eyebrow">Claim boundary</div><h2>Local Specialization,<br/>Not Universal <span class="warn">Zero-Cost</span></h2></div>
-<div class="panel"><p><span class="ok">Claim:</span> specific abstraction and representation machinery can be removed once enough facts become static.</p><p style="margin-top:1.2rem"><span class="bad">Not claim:</span> all extensibility is universally free in every backend and every program.</p></div>
+<section class="slide two slide-9" data-notes="Set the claim boundary. This avoids sounding like a universal zero-cost abstraction claim. The claim is local and compiler-specific: when facts become static, particular representation machinery can disappear.">
+<div><div class="eyebrow">Claim boundary</div><h2>Local Specialization,<br/>Not Universal <span class="warn">Zero-Cost</span></h2><p style="margin-top:1.3rem">The claim is intentionally narrow: remove concrete machinery when enough facts are static.</p></div>
+<div class="claim-grid">
+<div class="claim-card ok-card"><h3><span class="ok">Claim</span></h3><p>Specific abstraction and representation machinery can disappear after planning and specialization expose stable facts.</p></div>
+<div class="claim-card bad-card"><h3><span class="bad">Not claim</span></h3><p>All extensibility is not automatically free in every backend, every program, or every measurement boundary.</p></div>
+</div>
 </section>
 <section class="slide stack slide-10" data-notes="Backends are allowed to differ in representation, but not in language semantics. Use shadowing: external price and local price. Binding semantics were resolved before the backend route.">
 <div><div class="eyebrow">Backend contract</div><h2>Backend Diversity Is Allowed. <span class="accent">Semantic Diversity Is Not.</span></h2></div>
-<div class="semantic-wide"><div class="panel code">external price = 10
+<div class="semantic-wide">
+<div class="panel code semantic-code">external price = 10
 
 let price = 7
-price + 1</div><div class="sem-core"><div class="sem-bubble">Resolved semantics</div><p class="caption">lexical local <span class="accent">shadows</span> external</p><div class="scope-tags"><span class="chip">external price = 10</span><span class="chip">local price = 7</span><span class="chip">observable result = 8</span></div></div><div class="routes2"><div class="route-card"><h3>Interpreter</h3><p class="small">Chooses an execution representation.</p><div class="big">8</div><p class="caption">same language meaning</p></div><div class="route-card"><h3>CIL</h3><p class="small">Chooses a code-generation strategy.</p><div class="big">8</div><p class="caption">same language meaning</p></div></div></div>
+price + 1</div>
+<div class="sem-core">
+<div class="sem-bubble">Resolved semantics</div>
+<p class="caption">lexical local <span class="accent">shadows</span> external</p>
+<div class="scope-tags"><span class="chip">external = 10</span><span class="chip">local = 7</span><span class="chip">result = 8</span></div>
+</div>
+<div class="routes2">
+<div class="route-card"><h3>Interpreter</h3><p>Chooses an execution representation.</p><div class="big">8</div><p class="caption">same language meaning</p></div>
+<div class="route-card"><h3>CIL</h3><p>Chooses a code-generation strategy.</p><div class="big">8</div><p class="caption">same language meaning</p></div>
+</div>
+</div>
 </section>
 <section class="slide stack slide-11" data-notes="Relational tests protect the ownership boundary. They do not prove full equivalence, but they catch when one backend accidentally re-decides semantics or handles bindings differently.">
 <div><div class="eyebrow">Verification style</div><h2>Relational Tests Protect the <span class="accent">Ownership Boundary</span></h2><p style="margin-top:1rem">Same program, same bindings, different routes — compare observable result or failure.</p></div>
-<div class="relational-wide"><div class="relational-input"><div><span class="chip">one semantic input</span><h3 style="margin-top:.8rem">program + bindings</h3><p class="small" style="margin-top:.55rem">The test fixes the language-level meaning once.</p></div></div><div class="relational-arrow">→</div><div class="relational-routes"><div class="relational-route"><h3>Interpreter</h3><p class="small" style="margin-top:.45rem">route A</p></div><div class="relational-route"><h3>CIL</h3><p class="small" style="margin-top:.45rem">route B</p></div></div><div class="relational-arrow">→</div><div class="relational-compare"><div><div class="result-pill">same observable semantics?</div><p class="small" style="margin-top:.65rem">Compare result or failure — not internal representation.</p><div class="relational-regressions"><span class="chip">reordered bindings</span><span class="chip">nested scope</span><span class="chip">local / external overlap</span></div></div></div></div>
+<div class="relational-wide">
+<div class="relational-input"><div><span class="chip">one semantic input</span><h3 style="margin-top:.8rem">program + bindings</h3><p class="small" style="margin-top:.55rem">The test fixes language-level meaning once.</p></div></div>
+<div class="relational-arrow">→</div>
+<div class="relational-routes"><div class="relational-route"><h3>Interpreter</h3><p class="small" style="margin-top:.45rem">route A</p></div><div class="relational-route"><h3>CIL</h3><p class="small" style="margin-top:.45rem">route B</p></div></div>
+<div class="relational-arrow">→</div>
+<div class="relational-compare"><div><div class="result-pill">same observable semantics?</div><p class="small" style="margin-top:.65rem">Compare result or failure — not internal representation.</p><div class="relational-regressions"><span class="chip">reordered bindings</span><span class="chip">nested scope</span><span class="chip">local / external overlap</span></div></div></div>
+</div>
 </section>
 <section class="slide stack slide-12" data-notes="Separate setup and compilation from the hot path. The measured scope must be prepared execution, not Evaluate(source), if the claim is about repeated execution.">
 <div><div class="eyebrow">Benchmark boundary</div><h2>Where Does <span class="accent">Prepared Execution</span> Start?</h2></div>
-<div class="bench-horizontal"><div class="bench-zone"><h3>Setup / compilation <span class="muted">— outside the measured hot path</span></h3><div class="bench-seq"><div class="bench-step">01 · Create engine</div><div class="bench-step">02 · LanguagePlan</div><div class="bench-step">03 · parse / lower / optimize</div><div class="bench-step">04 · Compile&lt;TDelegate&gt;()</div></div><p class="caption">These costs matter, but they answer a different performance question.</p></div><div class="bench-boundary"><span>prepared execution starts here</span></div><div class="bench-zone bench-hot"><span class="chip">measured repeatedly</span><div class="delegate">delegate()</div><span class="repeat-pill">repeat N times</span><p class="caption">For repeated execution claims, benchmark this scope — not <span class="code small">Evaluate(source)</span>.</p></div></div>
+<div class="bench-horizontal">
+<div class="bench-zone"><h3>Setup / compilation <span class="muted">— outside the hot path</span></h3><div class="bench-seq"><div class="bench-step">01 · Create engine</div><div class="bench-step">02 · LanguagePlan</div><div class="bench-step">03 · parse / lower / optimize</div><div class="bench-step">04 · Compile&lt;TDelegate&gt;()</div></div><p class="caption">These costs matter, but they answer a different performance question.</p></div>
+<div class="bench-boundary"><span>prepared execution starts here</span></div>
+<div class="bench-zone bench-hot"><span class="chip">measured repeatedly</span><div class="delegate">delegate()</div><span class="repeat-pill">repeat N times</span><p class="caption">For repeated execution claims, benchmark this scope — not <span class="code small">Evaluate(source)</span>.</p></div>
+</div>
 </section>
 <section class="slide two" data-notes="Evidence of generality, not a second case study. Mention a different language using the same planning/runtime model: own syntax, own artifacts, interpreter and compiled backend routes.">
-<div><div class="eyebrow">General model</div><h2>Same Planning Model,<br/>Different <span class="accent">Language</span></h2><p style="margin-top:1.3rem">The planning/runtime boundary is not hardcoded around Wist.</p></div>
-<div class="generality"><div class="glang"><h3>Acme.PricingLanguage</h3><p class="caption" style="margin-top:.45rem">A different surface language can reuse the same planning/runtime idea without becoming “Wist with a new file extension”.</p></div><div class="ggrid"><div class="gcard"><h4>syntax</h4><p>Own surface focused on pricing rules and business formulas.</p></div><div class="gcard"><h4>artifacts</h4><p>Own AST and AIR, specialized around domain operations.</p></div><div class="gcard"><h4>routes</h4><p>Interpreter and compiled backend remain interchangeable consumers.</p></div></div><div class="summary-strip"><span class="chip">same LanguageDefinition / LanguagePlan / Runtime boundary</span><span class="chip">different language identity</span></div></div>
+<div>
+<div class="eyebrow">General model</div>
+<h2>Same Planning Model,<br/>Different <span class="accent">Language</span></h2>
+<p style="margin-top:1.3rem">The planning/runtime boundary is not hardcoded around Wist.</p>
+</div>
+<div class="generality">
+<div class="glang"><h3>Acme.PricingLanguage</h3><p class="caption" style="margin-top:.45rem">A different surface language can reuse the same planning/runtime idea without becoming “Wist with a new file extension”.</p></div>
+<div class="ggrid">
+<div class="gcard"><h4>syntax</h4><p>Own surface focused on pricing rules and business formulas.</p></div>
+<div class="gcard"><h4>artifacts</h4><p>Own AST and AIR, specialized around domain operations.</p></div>
+<div class="gcard"><h4>routes</h4><p>Interpreter and compiled backend remain interchangeable consumers.</p></div>
+</div>
+<div class="summary-strip"><span class="chip">same LanguageDefinition / LanguagePlan / Runtime boundary</span><span class="chip">different language identity</span></div>
+</div>
 </section>
 <section class="slide center" data-notes="Return to the opening question. Close with the one-sentence thesis. Do not add new material on the final slide.">
-<div style="max-width:1100px"><div class="eyebrow">Conclusion</div><h2>Build the Language <span class="accent">First</span></h2><div class="timeline" style="margin-top:2.5rem;text-align:left"><div class="step"><div class="num">1</div><p>Expose variability.</p></div><div class="step"><div class="num">2</div><p>Resolve it once.</p></div><div class="step"><div class="num">3</div><p>Materialize the resolution.</p></div><div class="step"><div class="num">4</div><p>Specialize when static facts appear.</p></div><div class="step"><div class="num">5</div><p>Keep backend semantics aligned and test routes relationally.</p></div></div><p class="bigq">Then execution no longer needs to know how configurable the language used to be.</p></div>
+<div style="max-width:1100px">
+<div class="eyebrow">Conclusion</div>
+<h2>Build the Language <span class="accent">First</span></h2>
+<div class="timeline" style="margin-top:2.5rem;text-align:left">
+<div class="step"><div class="num">1</div><p>Expose variability.</p></div>
+<div class="step"><div class="num">2</div><p>Resolve it once.</p></div>
+<div class="step"><div class="num">3</div><p>Materialize the resolution.</p></div>
+<div class="step"><div class="num">4</div><p>Specialize when static facts appear.</p></div>
+<div class="step"><div class="num">5</div><p>Keep backend semantics aligned and test routes relationally.</p></div>
+</div>
+<p class="bigq">Then execution no longer needs to know how configurable the language used to be.</p>
+</div>
 </section>
 </div>
-<nav><button class="navbtn" id="prev">←</button><div class="progress"><span id="prog"></span></div><div class="counter" id="count">1 / 14</div><button class="navbtn" id="next">→</button><button class="navbtn" id="tocBtn">TOC</button><button class="navbtn" id="notesBtn">Notes</button></nav>
+<nav>
+<button class="navbtn" id="prev">←</button>
+<div class="progress"><span id="prog"></span></div>
+<div class="counter" id="count">1 / 14</div>
+<button class="navbtn" id="next">→</button>
+<button class="navbtn" id="tocBtn">TOC</button>
+<button class="navbtn" id="notesBtn">Notes</button>
+</nav>
 <aside class="notes" id="notes"><h4>Speaker notes</h4><p></p></aside>
 <aside class="toc" id="toc"><h3 style="margin-bottom:1rem">Slides</h3><div class="toc-grid" id="tocGrid"></div><p class="caption">Keys: <span class="kbd">←</span>/<span class="kbd">→</span> navigate, <span class="kbd">N</span> notes, <span class="kbd">T</span> table of contents, <span class="kbd">P</span> print.</p></aside>
 <script src="deck.js"></script>
