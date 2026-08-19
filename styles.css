@@ -33,6 +33,7 @@ h1,h2,h3,h4,p{margin:0}h1{font-size:clamp(44px,7vw,106px);line-height:.94;letter
 
 /* Layout refinement: prefer centered compact compositions over stretched fillers */
 .phase-panel{grid-template-rows:auto auto auto;align-content:center;justify-items:center;max-width:1260px;margin:0 auto;padding:1.15rem 1.25rem 1.2rem}
+.slide-4 .phase-panel,.slide-6 .pipeline-panel{align-self:center;width:100%;min-height:0}
 .phase-flow{width:100%}
 .phase-boundary{width:100%;max-width:980px;margin:0 auto}
 .after-plan{grid-template-columns:repeat(2,minmax(0,1fr));max-width:980px;width:100%;margin:0 auto;justify-items:stretch;align-items:start}
