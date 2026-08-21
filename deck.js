@@ -8,6 +8,43 @@
   const notesPanel = document.getElementById('notesPanel');
   const notesText = document.getElementById('notesText');
 
+  // Keep the slide source faithful to the shipped example while allowing visual line breaks at commas.
+  const dialectCode = document.querySelector('.dialect-layout .code-block code');
+  if (dialectCode) {
+    dialectCode.innerHTML = `dialect CompositionRestricted
+use Arithmetic,<wbr>BooleanConditions,<wbr>Comments,<wbr>ComparisonConditions,<wbr>Conditions,<wbr>Equality,<wbr>Numbers,<wbr>Scopes,<wbr>Whitespaces
+exclude CSharpInterop,<wbr>Identifier,<wbr>InternalPreprocessorLexemes,<wbr>Labels,<wbr>Loops,<wbr>NativeTypes,<wbr>ParametersSetter,<wbr>SemicolonAsNewLine,<wbr>Variables
+backend interpreter
+security restricted
+capability composition-restricted`;
+  }
+
+  const previousTransitions = [
+    '',
+    'From previous: the opening question asks for composability without carrying dynamic machinery into every execution; now establish the tool spectrum developers already have. ',
+    'From previous: after showing the two extremes, zoom into the engineering work that remains between them. ',
+    'From previous: having named the engineering gap, acknowledge prior art before proposing our design point. ',
+    'From previous: after separating our .NET design point from Racket and language workbenches, state the objective precisely. ',
+    'From previous: the first design question from the goal slide is what the generic framework itself must know. ',
+    'From previous: once the core surface is small, show how independent stages can connect without shared compiler internals. ',
+    'From previous: typed routes are abstract until we show how a real Wist language requests one composition. ',
+    'From previous: after showing the dialect declaration, answer what each concrete kind of extension maps to. ',
+    'From previous: after demonstrating the open extension choices, ask where those choices become closed. ',
+    'From previous: after the generic planner freezes a route, instantiate the idea with Wist\'s concrete compilation path. ',
+    'From previous: once the route is concrete, separate planning-time staging from program-level IR specialization. ',
+    'From previous: now substantiate the IR-specialization half with one rewrite that exists in the current code. ',
+    'From previous: after one successful specialization, define exactly what that example proves and where performance is measured. ',
+    'From previous: specialization is useful only if different execution strategies still preserve one language meaning. ',
+    'From previous: an ownership rule needs executable checks, so show parity testing and the current maturity boundary. ',
+    'From previous: after verification and the alpha boundary, compress the whole architecture into the final formula. '
+  ];
+  slides.forEach((slide, i) => {
+    const prefix = previousTransitions[i];
+    if (prefix && slide.dataset.notes && !slide.dataset.notes.startsWith('From previous:')) {
+      slide.dataset.notes = prefix + slide.dataset.notes;
+    }
+  });
+
   const clamp = n => Math.max(0, Math.min(slides.length - 1, n));
   const fromHash = () => {
     const raw = location.hash.replace(/^#(?:slide-?)?/, '');
