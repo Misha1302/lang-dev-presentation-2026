@@ -55,7 +55,7 @@ policy shadowing = lexical</div>
 <div class="phase-arrow">→</div>
 <div class="phase-card plan"><strong>Immutable LanguagePlan</strong><span>semantic result and reproducible identity</span></div>
 </div>
-<div class="phase-boundary"><span class="boundary-chip">language variability ends here</span></div>
+<div class="phase-boundary"><span class="boundary-chip">semantic language choices are fixed here</span></div>
 <div class="after-plan">
 <div class="after-card"><h3>LanguageRuntime</h3><p>Consumes fixed capabilities instead of rediscovering which language was assembled.</p></div>
 <div class="after-card"><h3>Program compilation</h3><p>Parser, AST, AIR and backends are parameterized by the resolved plan.</p></div>
@@ -83,13 +83,13 @@ policy shadowing = lexical</div>
 <div class="mini-claim"><p class="small"><span class="accent">Important:</span> the plan owns semantic decisions and identity (<span class="chip">PlanHash / Summary</span>), not just service wiring.</p></div>
 </div>
 </section>
-<section class="slide stack slide-6" data-notes="Keep this slide short. It exists only to place the later AIR transformation in the compiler pipeline. Do not tour the whole project here.">
+<section class="slide stack slide-6" data-notes="Keep this slide short. It exists only to place the later AIR transformation in the compiler pipeline. Show the real phase boundaries: frontend/syntax, semantic binding, Bytecode, AIR and backend. Do not tour the whole project here.">
 <div><div class="eyebrow">Program compilation</div><h2>After Planning, Compile the <span class="accent">Program</span></h2></div>
 <div class="panel pipeline-panel">
 <div class="pipeline-grid">
 <div class="pipe"><div class="idx">01</div><h3>Source</h3><p>User program enters the chosen language surface.</p></div>
-<div class="pipe"><div class="idx">02</div><h3>Parser</h3><p>Syntax becomes a structured representation.</p></div>
-<div class="pipe"><div class="idx">03</div><h3>AST</h3><p>Language structure is explicit and checkable.</p></div>
+<div class="pipe"><div class="idx">02</div><h3>Frontend / Syntax</h3><p>Lexing, parsing and syntax processing produce the syntax artifact.</p></div>
+<div class="pipe"><div class="idx">03</div><h3>Semantic binding</h3><p>Binding resolves language-level meaning into the semantic program.</p></div>
 <div class="pipe"><div class="idx">04</div><h3>Bytecode</h3><p>Lowering begins to normalize execution structure.</p></div>
 <div class="pipe accent-pipe"><div class="idx">05</div><h3>AIR</h3><p>The point where specialization becomes visible.</p></div>
 <div class="pipe"><div class="idx">06</div><h3>Optimizers / SSA</h3><p>Reason over structure and static facts.</p></div>
