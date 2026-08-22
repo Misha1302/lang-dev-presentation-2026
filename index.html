@@ -19,7 +19,7 @@
   <div class="speaker-id"><strong>Mikhail Razakov</strong><span>UniversalToolchain · github.com/Misha1302/UniversalToolchain</span></div>
 </section>
 
-<section class="slide proof-slide" data-kind="main" data-notes="ЗАЧЕМ: дать proof-of-life в первые минуты.&#10;&#10;СКАЗАТЬ:&#10;• Это shipped composition-restricted dialect.&#10;• Разрешённая программа выполняется и возвращает true.&#10;• Программа с переменными отвергается, потому что Variables исключены из выбранного языка.&#10;• Один toolchain, но реально разная language surface.&#10;&#10;ДЕМО: 20–30 секунд — inspect + allowed + rejected, если терминал уже открыт.&#10;&#10;ПЕРЕХОД: теперь вопрос — какая архитектура позволяет делать это не монолитным набором if-ов?">
+<section class="slide proof-slide" data-kind="main" data-notes="ЗАЧЕМ: дать proof-of-life в первые минуты.&#10;&#10;СКАЗАТЬ:&#10;• Это shipped composition-restricted dialect.&#10;• Показываем код, а не имена файлов: 1 + 2 * 3 &gt; 4 реально возвращает true.&#10;• let x = 1 отвергается, потому что Variables исключены.&#10;• NumbersModule.Core.RealNumberImpl.Add(2, 5) отвергается, потому что CSharpInterop исключён.&#10;• Один toolchain, но реально разная language surface.&#10;&#10;ДЕМО: 20–30 секунд — inspect + allowed + rejected, если терминал уже открыт.&#10;&#10;ПЕРЕХОД: теперь вопрос — какая архитектура позволяет делать это не монолитным набором if-ов?">
   <header><div class="kicker">Proof of life · 30 seconds</div><h2>A feature can <span>actually disappear</span> from the language.</h2></header>
   <div class="proof-layout">
     <pre class="code-block proof-code"><code>dialect CompositionRestricted
@@ -28,8 +28,9 @@ exclude Variables, CSharpInterop, …
 backend interpreter
 security restricted</code></pre>
     <div class="proof-results">
-      <div class="result-ok"><small>allowed program</small><b>program.wist</b><strong>→ true</strong></div>
-      <div class="result-no"><small>excluded surface</small><b>forbidden-program.wist</b><strong>→ rejected</strong></div>
+      <div class="result-ok"><small>allowed expression</small><code>1 + 2 * 3 &gt; 4</code><strong>→ true</strong></div>
+      <div class="result-no"><small>Variables excluded</small><code>let x = 1</code><strong>→ rejected</strong></div>
+      <div class="result-no"><small>CSharpInterop excluded</small><code>NumbersModule.Core.RealNumberImpl.Add(2, 5)</code><strong>→ rejected</strong></div>
     </div>
   </div>
   <p class="center-claim">Same toolchain. <strong>Different resolved language surface.</strong></p>
