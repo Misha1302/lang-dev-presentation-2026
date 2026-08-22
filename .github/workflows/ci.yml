@@ -20,3 +20,12 @@ jobs:
         run: python3 scripts/check_deck.py
       - name: Check JavaScript syntax
         run: node --check deck.js
+      - name: Render-check all slides at conference viewports
+        run: python3 scripts/check_render.py
+      - name: Upload representative render screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: presentation-render-screenshots
+          path: render-artifacts/*.png
+          if-no-files-found: ignore

@@ -51,7 +51,7 @@ class DeckParser(HTMLParser):
 parser = DeckParser()
 parser.feed(HTML)
 
-require(parser.main == 17, f"expected 17 main slides, found {parser.main}")
+require(parser.main == 15, f"expected 15 main slides, found {parser.main}")
 require(parser.appendix == 4, f"expected 4 appendix slides, found {parser.appendix}")
 require(parser.slides_without_notes == 0, f"{parser.slides_without_notes} slides are missing speaker notes")
 require(parser.imgs_without_alt == 0, f"{parser.imgs_without_alt} images are missing alt text")
@@ -61,8 +61,8 @@ for required_id in {"deck", "prev", "next", "counter", "appendixToggle", "fullsc
 
 for token in [
     "Mikhail Razakov",
-    "InternalPreprocessorLexemes",
-    "SemicolonAsNewLine",
+    "Variables",
+    "CSharpInterop",
     "MPS",
     "MontiCore",
     "LIVE DEMO",

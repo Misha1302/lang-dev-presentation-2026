@@ -19,18 +19,25 @@
   <div class="speaker-id"><strong>Mikhail Razakov</strong><span>UniversalToolchain · github.com/Misha1302/UniversalToolchain</span></div>
 </section>
 
-<section class="slide" data-kind="main" data-notes="СВЯЗЬ: мы хотим composability без постоянной runtime-динамики. Теперь покажем существующие крайние варианты.&#10;&#10;СКАЗАТЬ:&#10;• NCalc / Dynamic Expresso: маленький порог входа, но большую часть language + execution model мы наследуем.&#10;• ANTLR / Sprache / Parlot: много контроля над parsing; Parlot даже позволяет динамически строить grammar.&#10;• Но architecture после parsing — semantics, IR, passes, backends, runtime, conflicts — всё ещё остаётся нашей задачей.&#10;&#10;ПЕРЕХОД: разложим этот engineering gap по слоям.&#10;&#10;НЕ ПЕРЕОБЕЩАТЬ: parser-level extensibility — настоящая extensibility, просто на другой границе.">
-  <header><div class="kicker">Act I · Why is this hard?</div><h2>Two useful extremes.<br><span>One engineering gap.</span></h2></header>
-  <div class="extremes-band">
-    <div class="extreme-side low"><div class="tag">Ready-made evaluator</div><h3>Low entry cost</h3><p>NCalc · Dynamic Expresso</p><div class="boundary-list"><b>Typical extension surface</b><span>parameters · functions · identifiers · host types</span></div></div>
-    <div class="spectrum"><span>less architecture to own</span><i>↔</i><span>more architecture to own</span></div>
-    <div class="extreme-side high"><div class="tag">Parser / frontend toolkit</div><h3>High syntax control</h3><p>ANTLR · Sprache · Parlot</p><div class="boundary-list"><b>You still design</b><span>binding · semantics · IR · passes · backends · runtime · composition</span></div></div>
+<section class="slide proof-slide" data-kind="main" data-notes="ЗАЧЕМ: дать proof-of-life в первые минуты.&#10;&#10;СКАЗАТЬ:&#10;• Это shipped composition-restricted dialect.&#10;• Разрешённая программа выполняется и возвращает true.&#10;• Программа с переменными отвергается, потому что Variables исключены из выбранного языка.&#10;• Один toolchain, но реально разная language surface.&#10;&#10;ДЕМО: 20–30 секунд — inspect + allowed + rejected, если терминал уже открыт.&#10;&#10;ПЕРЕХОД: теперь вопрос — какая архитектура позволяет делать это не монолитным набором if-ов?">
+  <header><div class="kicker">Proof of life · 30 seconds</div><h2>A feature can <span>actually disappear</span> from the language.</h2></header>
+  <div class="proof-layout">
+    <pre class="code-block proof-code"><code>dialect CompositionRestricted
+use Arithmetic, Conditions, …
+exclude Variables, CSharpInterop, …
+backend interpreter
+security restricted</code></pre>
+    <div class="proof-results">
+      <div class="result-ok"><small>allowed program</small><b>program.wist</b><strong>→ true</strong></div>
+      <div class="result-no"><small>excluded surface</small><b>forbidden-program.wist</b><strong>→ rejected</strong></div>
+    </div>
   </div>
-  <footer class="sources">Sources: ncalc.github.io · github.com/dynamicexpresso/DynamicExpresso · antlr.org · github.com/sprache/Sprache · github.com/sebastienros/parlot</footer>
+  <p class="center-claim">Same toolchain. <strong>Different resolved language surface.</strong></p>
+  <footer class="sources">Evidence: shipped composition-restricted example · DEMO.md</footer>
 </section>
 
-<section class="slide" data-kind="main" data-notes="СВЯЗЬ: после спектра инструментов показываем, какая работа остаётся между ними.&#10;&#10;СКАЗАТЬ:&#10;• DSL — это не только grammar.&#10;• Нужно определить ownership для syntax, binding, IR contracts, transforms, backend contracts и runtime policy.&#10;• Если все extensions лезут в один shared mutable compiler object, расширять систему сначала легко, но независимо развивать компоненты тяжело.&#10;&#10;ПЕРЕХОД: прежде чем показывать наш ответ, честно признаем сильный prior art.">
-  <header><div class="kicker">The actual gap</div><h2>A DSL is not just <span>a grammar.</span></h2></header>
+<section class="slide" data-kind="main" data-notes="СВЯЗЬ: после proof-of-life раскладываем, какая engineering work стоит за наблюдаемой composition.&#10;&#10;СКАЗАТЬ:&#10;• DSL — это не только grammar.&#10;• Нужно определить ownership для syntax, binding, IR contracts, transforms, backend contracts и runtime policy.&#10;• Если все extensions лезут в один shared mutable compiler object, расширять систему сначала легко, но независимо развивать компоненты тяжело.&#10;&#10;ПЕРЕХОД: прежде чем показывать наш ответ, честно признаем сильный prior art.">
+  <header><div class="kicker">Act I · Why is this hard?</div><h2>A DSL is not just <span>a grammar.</span></h2></header>
   <div class="gap-track">
     <div><small>syntax</small><b>tokens / parser</b></div><i>→</i><div><small>meaning</small><b>binding / semantics</b></div><i>→</i><div><small>representation</small><b>IR boundaries</b></div><i>→</i><div><small>evolution</small><b>passes / optimizers</b></div><i>→</i><div><small>execution</small><b>backend / runtime</b></div>
   </div>
@@ -49,48 +56,35 @@
   <footer class="sources">Sources: docs.racket-lang.org/guide/languages.html · jetbrains.com/help/mps/mps-faq.html · monticore.github.io/monticore · langdevcon.org</footer>
 </section>
 
-<section class="slide" data-kind="main" data-notes="СВЯЗЬ: после prior art фиксируем contribution до деталей реализации.&#10;&#10;СКАЗАТЬ:&#10;• Нужна архитектура extensible DSLs на .NET.&#10;• Features, compiler stages, optimizations и backends должны компоноваться независимо.&#10;• Выбранная composition должна разрешаться до execution.&#10;• После этого static facts можно использовать для specialization.&#10;• Первые четыре вопроса — про extensibility; пятый — второй акт доклада.&#10;&#10;ПЕРЕХОД: начнём с минимального core.&#10;&#10;НЕ ПЕРЕОБЕЩАТЬ: near-zero hot-path overhead — вторичная, workload-specific цель.">
-  <header><div class="kicker">Goal</div><h2>Make language construction <span>extensible.</span><br>Make execution <span>specific.</span></h2></header>
-  <div class="five">
-    <div><b>01</b><span>What must the core know?</span></div>
-    <div><b>02</b><span>How do stages compose?</span></div>
-    <div><b>03</b><span>How is a language selected?</span></div>
-    <div><b>04</b><span>How do IR boundaries stay replaceable?</span></div>
-    <div><b>05</b><span>What can specialize after choices close?</span></div>
+<section class="slide" data-kind="main" data-notes="СВЯЗЬ: после prior art фиксируем contribution одним причинным маршрутом.&#10;&#10;СКАЗАТЬ:&#10;• Сначала компоненты должны развиваться независимо.&#10;• Потом открытые choices должны закрыться до исполнения.&#10;• Только после этого static facts можно использовать для specialization.&#10;• Так вторая половина title становится понятна заранее, а не только в конце.&#10;&#10;ПЕРЕХОД: начнём с первого шага — как соединять packages без shared internals.&#10;&#10;НЕ ПЕРЕОБЕЩАТЬ: specialization — отдельный, локальный mechanism, а не universal zero-cost claim.">
+  <header><div class="kicker">The whole talk in one route</div><h2>Three moves. <span>One boundary.</span></h2></header>
+  <div class="three">
+    <div><b>01</b><h3>Compose independently</h3><span>Packages own syntax, semantics, IR, passes and backends.</span></div>
+    <div class="boundary-card"><b>02</b><h3>Resolve before execution</h3><span>One planner closes features, providers and artifact routes.</span></div>
+    <div><b>03</b><h3>Specialize after choices close</h3><span>Stable facts can remove specific machinery from the hot path.</span></div>
   </div>
 </section>
 
-<section class="slide" data-kind="main" data-notes="СВЯЗЬ: первый вопрос — что вообще должен знать generic framework.&#10;&#10;СКАЗАТЬ:&#10;• Framework не знает Wist grammar и не знает деталей CIL lowering.&#10;• LanguageDefinition описывает запрос: features, entry artifact, backends, provider, policy.&#10;• LanguageCompiler — единственный planner.&#10;• LanguagePlan фиксирует resolved features, contributions, provider и routes.&#10;• LanguageRuntime проверяет именно этот plan и исполняет его.&#10;• Syntax/parser/semantic model/IR/passes/backends принадлежат packages.&#10;&#10;ПЕРЕХОД: как эти packages соединяются без shared internals? Через typed artifact routing.&#10;&#10;НЕ ПЕРЕОБЕЩАТЬ: LanguagePlan — не DI container и не полная semantics программы.">
-  <header><div class="kicker">Minimal core</div><h2>What must the framework <span>know?</span></h2></header>
+<section class="slide" data-kind="main" data-notes="СВЯЗЬ: первый вопрос — что вообще должен знать generic framework.&#10;&#10;СКАЗАТЬ:&#10;• Framework не знает Wist grammar и не знает деталей CIL lowering.&#10;• LanguageDefinition описывает запрос: features, entry artifact, backends, provider, policy.&#10;• LanguageCompiler — единственный planner.&#10;• LanguagePlan фиксирует resolved features, contributions, provider и routes.&#10;• LanguageRuntime проверяет именно этот plan и исполняет его.&#10;• Syntax/parser/semantic model/IR/passes/backends принадлежат packages.&#10;&#10;ПЕРЕХОД: packages соединяются через typed artifact contracts; дальше посмотрим на конкретную declaration.&#10;&#10;НЕ ПЕРЕОБЕЩАТЬ: LanguagePlan — не DI container и не полная semantics программы.">
+  <header><div class="kicker">Act II · Compose, then resolve</div><h2>What must the framework <span>know?</span></h2></header>
   <div class="core-diagram">
     <div class="orbit left"><span>syntax</span><span>parser</span><span>binding</span><span>semantic model</span></div>
     <div class="core-stack"><div>LanguageDefinition</div><i>↓</i><div>LanguageCompiler</div><i>↓</i><div class="hot">LanguagePlan</div><i>↓</i><div>LanguageRuntime</div></div>
     <div class="orbit right"><span>IRs</span><span>passes</span><span>backends</span><span>runtime components</span></div>
   </div>
+  <div class="mini-artifact-route"><span>source.text&lt;T&gt;</span><i>→</i><span>syntax&lt;T&gt;</span><i>→</i><span>ir.air&lt;T&gt;</span><i>→</i><span>backend input</span></div>
   <p class="center-claim">The core owns <strong>contracts + composition rules</strong>. Packages own language-specific behavior.</p>
   <footer class="sources">Current code: UniversalToolchain.LanguageSdk/LanguageCompiler.cs · LanguagePlan.cs · docs/language-authoring/</footer>
 </section>
 
-<section class="slide" data-kind="main" data-notes="СВЯЗЬ: core маленький; теперь показываем механизм композиции stages.&#10;&#10;СКАЗАТЬ:&#10;• Plan стартует с typed entry artifact.&#10;• Transformer меняет один artifact contract на другой.&#10;• Pass сохраняет contract и дополняет stage.&#10;• Backend объявляет точный input contract.&#10;• Planner ищет minimum-cost conversion route и вставляет допустимые passes с ordering constraints.&#10;&#10;ПЕРЕХОД: абстракция станет понятнее на реальном Wist dialect.&#10;&#10;НЕ ПЕРЕОБЕЩАТЬ: external languages не обязаны использовать Wist Bytecode или AIR.">
-  <header><div class="kicker">Composable compiler pipeline</div><h2>Route <span>typed artifacts</span>, not compiler internals.</h2></header>
-  <div class="route-line">
-    <div class="artifact diamond"><small>artifact</small><b>source.text&lt;string&gt;</b></div><i>→</i>
-    <div class="step-box"><small>transformer</small><b>frontend</b></div><i>→</i>
-    <div class="artifact diamond"><small>artifact</small><b>syntax&lt;T&gt;</b></div><i>→</i>
-    <div class="step-box pass"><small>pass / transform</small><b>lower + optimize</b></div><i>→</i>
-    <div class="artifact diamond"><small>artifact</small><b>ir.air&lt;T&gt;</b></div><i>→</i>
-    <div class="step-box backend"><small>exact consumer</small><b>backend</b></div>
-  </div>
-  <div class="contract-contrast"><div class="badbox"><b>shared mutable compiler internals</b><span>easy access → tight coupling</span></div><div class="goodbox"><b>typed artifact contracts</b><span>explicit boundary → independent evolution</span></div></div>
-  <footer class="sources">Current SDK: docs/language-authoring/artifact-routing.md</footer>
-</section>
 
-<section class="slide" data-kind="main" data-notes="СВЯЗЬ: typed routes пока абстрактны — теперь показываем реальную composition.&#10;&#10;СКАЗАТЬ:&#10;• На экране настоящий shipped .wistdialect.&#10;• DialectDslCompiler превращает его в typed LanguageDefinition.&#10;• LanguageCompiler закрывает dependencies, применяет exclusions, выбирает contributions/providers и строит routes.&#10;• Если согласованный graph построить нельзя, получаем diagnostic, а не частично работающий runtime.&#10;&#10;ПЕРЕХОД: что всё это значит для разработчика, который хочет изменить язык?&#10;&#10;НЕ ПЕРЕОБЕЩАТЬ: restricted composition — не process isolation; .wistdialect не является universal grammar generator.">
+
+<section class="slide" data-kind="main" data-notes="СВЯЗЬ: typed routes пока абстрактны — теперь показываем реальную composition.&#10;&#10;СКАЗАТЬ:&#10;• На экране сокращённый для проектора, но faithful fragment shipped .wistdialect; полный файл остаётся в source link.&#10;• DialectDslCompiler превращает его в typed LanguageDefinition.&#10;• LanguageCompiler закрывает dependencies, применяет exclusions, выбирает contributions/providers и строит routes.&#10;• Если согласованный graph построить нельзя, получаем diagnostic, а не частично работающий runtime.&#10;&#10;ПЕРЕХОД: что всё это значит для разработчика, который хочет изменить язык?&#10;&#10;НЕ ПЕРЕОБЕЩАТЬ: restricted composition — не process isolation; .wistdialect не является universal grammar generator.">
   <header><div class="kicker">A language as composition</div><h2>The selected language becomes <span>a resolved composition.</span></h2></header>
   <div class="dialect-layout">
     <pre class="code-block dialect-code"><code>dialect CompositionRestricted
-use Arithmetic,<wbr>BooleanConditions,<wbr>Comments,<wbr>ComparisonConditions,<wbr>Conditions,<wbr>Equality,<wbr>Numbers,<wbr>Scopes,<wbr>Whitespaces
-exclude CSharpInterop,<wbr>Identifier,<wbr>InternalPreprocessorLexemes,<wbr>Labels,<wbr>Loops,<wbr>NativeTypes,<wbr>ParametersSetter,<wbr>SemicolonAsNewLine,<wbr>Variables
+use Arithmetic, Conditions, …
+exclude Variables, CSharpInterop, …
 backend interpreter
 security restricted
 capability composition-restricted</code></pre>
@@ -164,26 +158,19 @@ LoadExternal&lt;double&gt;()</code></pre></div>
   <footer class="sources">Current performance boundary: docs/reference/performance-model.md — no universal performance claim for external languages.</footer>
 </section>
 
-<section class="slide" data-kind="main" data-notes="СВЯЗЬ: specialization не должна разъезжать semantics между backends.&#10;&#10;СКАЗАТЬ:&#10;• Backend выбирается в plan, но не должен решать, какие language features существуют.&#10;• Binding/scope rules тоже не принадлежат backend.&#10;• Program-specific binding происходит до backend execution.&#10;• Interpreter — semantic reference path проекта; CIL — compiled performance path.&#10;• Backend-specific intrinsics допускаются через capabilities.&#10;&#10;ПЕРЕХОД: это ownership rule нужно проверять исполняемыми тестами.&#10;&#10;НЕ ПЕРЕОБЕЩАТЬ: interpreter-as-reference — правило проекта, не formal semantics.">
+<section class="slide" data-kind="main" data-notes="СВЯЗЬ: specialization не должна разъезжать semantics между backends.&#10;&#10;СКАЗАТЬ:&#10;• Backend выбирается в plan, но не должен решать, какие language features существуют.&#10;• Binding/scope rules тоже не принадлежат backend.&#10;• Program-specific binding происходит до backend execution.&#10;• Interpreter — semantic reference path проекта; CIL — compiled performance path.&#10;• Backend-specific intrinsics допускаются через capabilities.&#10;• Current alpha boundary остаётся честной: framework компонует и валидирует, а semantics реализации остаются package-owned.&#10;&#10;ПЕРЕХОД: именно это проверяет LanguageContractSuite — один source через два backend routes, затем сравнение observable result.&#10;&#10;НЕ ПЕРЕОБЕЩАТЬ: interpreter-as-reference — правило проекта, не formal semantics.">
   <header><div class="kicker">Preserve meaning</div><h2>Backend diversity is allowed.<br><span>Semantic diversity is not.</span></h2></header>
   <div class="semantic-flow">
     <div class="semantic-input"><small>owned before backend</small><b>feature availability · binding · scope · policy</b></div>
     <div class="fork-lines"><i>↙</i><span>same language-level meaning</span><i>↘</i></div>
     <div class="backend-pair"><div><b>Interpreter</b><span>reference execution path</span></div><div><b>CIL</b><span>compiled execution strategy</span></div></div>
+    <div class="parity-chip">LanguageContractSuite → same observable result?</div>
   </div>
-  <footer class="sources">Architecture rule: docs/architecture/backends-and-parity.md</footer>
+  <div class="alpha-line"><b>Current alpha boundary</b><span>SDK composes and validates; parser · binding · semantic model · transformations · backend logic remain package-owned.</span></div>
+  <footer class="sources">Architecture + conformance: docs/architecture/backends-and-parity.md · UniversalToolchain.Testing/LanguageContractSuite.cs</footer>
 </section>
 
-<section class="slide" data-kind="main" data-notes="СВЯЗЬ: ownership rule без проверок — только документация.&#10;&#10;СКАЗАТЬ:&#10;• LanguageContractSuite запускает один source + arguments через два backend routes и сравнивает observable values.&#10;• Это ловит backend drift, но не является formal proof.&#10;• Current alpha boundary: SDK композит и валидирует components; parser/binding/semantic model/transforms/backend logic остаются package-owned.&#10;• Третий production-scale backend — будущий pressure test.&#10;&#10;ПЕРЕХОД: теперь можно сжать весь доклад в одну формулу.&#10;&#10;НЕ ПЕРЕОБЕЩАТЬ: parity helper — не полноценный semantic conformance framework.">
-  <header><div class="kicker">Verification + current boundary</div><h2>Extensibility needs a <span>conformance story.</span></h2></header>
-  <div class="verify-flow">
-    <div class="verify-input">program + bindings</div>
-    <div class="verify-branch"><span>Interpreter</span><span>CIL</span></div>
-    <div class="verify-join">same observable result?</div>
-    <div class="alpha-line"><b>Current alpha boundary</b><span>SDK composes and validates; parser · binding · semantic model · transformations · backend logic remain package-owned.</span></div>
-  </div>
-  <footer class="sources">UniversalToolchain.Testing/LanguageContractSuite.cs · docs/language-authoring/index.md · docs/architecture/backends-and-parity.md</footer>
-</section>
+
 
 <section class="slide finale" data-kind="main" data-notes="СВЯЗЬ: после verification и maturity boundary — финальная формула.&#10;&#10;СКАЗАТЬ:&#10;• Собираем язык из typed, package-owned pieces.&#10;• Dependencies/conflicts/routes разрешаем в immutable plan.&#10;• Программу ведём по exact planned route.&#10;• Specialization применяем только там, где есть stable facts.&#10;• Execution видит уже конкретный результат выбора.&#10;&#10;ФИНАЛЬНАЯ ФРАЗА:&#10;Make language construction extensible. Make execution specific.&#10;&#10;ЕСЛИ СПРОСЯТ:&#10;• novelty → appendix A1.&#10;• maturity → low-level alpha boundary.">
   <div class="final-main">
@@ -227,7 +214,7 @@ LoadExternal&lt;double&gt;()</code></pre></div>
 
 <div class="chrome" aria-label="presentation controls">
   <button id="prev" aria-label="Previous slide">←</button>
-  <span id="counter">1 / 17</span>
+  <span id="counter">1 / 15</span>
   <button id="next" aria-label="Next slide">→</button>
   <button id="appendixToggle" aria-label="Toggle appendix">A</button>
   <button id="fullscreen" aria-label="Toggle fullscreen">⛶</button>

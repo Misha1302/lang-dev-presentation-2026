@@ -43,6 +43,41 @@
     if (location.hash !== desired) history.replaceState(null, '', desired);
   }
 
+  function intersects(a, b) {
+    return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+  }
+
+  function runLayoutDiagnostics() {
+    if (new URLSearchParams(location.search).get('visual-check') !== '1') return;
+    const current = activeSlide();
+    const errors = [];
+    if (!current) errors.push('no-active-slide');
+
+    if (current) {
+      const viewportWidth = document.documentElement.clientWidth;
+      const viewportHeight = document.documentElement.clientHeight;
+      const elements = [current, ...current.querySelectorAll('*')];
+      for (const element of elements) {
+        const style = getComputedStyle(element);
+        if (style.display === 'none' || style.visibility === 'hidden') continue;
+        const rect = element.getBoundingClientRect();
+        if (rect.width < 1 || rect.height < 1) continue;
+        if (rect.left < -1 || rect.top < -1 || rect.right > viewportWidth + 1 || rect.bottom > viewportHeight + 1) {
+          errors.push(`overflow:${element.tagName.toLowerCase()}.${element.className || '-'}`);
+          break;
+        }
+      }
+      const source = current.querySelector('.sources');
+      const chrome = document.querySelector('.chrome');
+      if (source && chrome && intersects(source.getBoundingClientRect(), chrome.getBoundingClientRect())) {
+        errors.push('sources-overlap-controls');
+      }
+    }
+
+    document.documentElement.dataset.visualCheck = errors.length ? 'fail' : 'ok';
+    document.documentElement.dataset.visualErrors = errors.join('|');
+  }
+
   function render({syncLocation = true} = {}) {
     const current = activeSlide();
     allSlides.forEach(slide => {
@@ -62,6 +97,7 @@
       ? `Appendix A${index + 1}/${appendixSlides.length} — LangDev 2026`
       : `Slide ${index + 1}/${mainSlides.length} — Build the Language, Then Make the Abstractions Disappear`;
     if (syncLocation) syncHash();
+    runLayoutDiagnostics();
   }
 
   function go(delta) {
