@@ -4,59 +4,63 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark" />
+  <meta name="description" content="LangDev 2026 talk: Build the Language, Then Make the Abstractions Disappear" />
   <title>Build the Language, Then Make the Abstractions Disappear — LangDev 2026</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 <main class="deck" id="deck" aria-live="polite">
 
-<section class="slide active hero" data-notes="Why this slide exists: frame the whole talk as a language-engineering problem, not as a LanguagePlan feature tour. Say: writing a DSL on .NET is possible; the harder question is how to keep syntax, semantics, IR, optimizers and backends independently replaceable without carrying an open configuration problem into execution. Transition: first look at the choices .NET developers usually face. Caveat: do not claim that .NET lacks DSL tooling or extensible languages in general.">
+<section class="slide active hero" data-kind="main" data-notes="Why: frame the talk as a language-engineering problem, not a LanguagePlan feature tour. Say: writing a DSL on .NET is possible; the harder question is how to keep syntax, semantics, IR, optimizers and backends independently replaceable without carrying an open configuration problem into execution. Transition: start from the tool spectrum .NET developers already have. Caveat: do not claim .NET lacks DSL tooling or that UniversalToolchain invented extensible languages.">
   <div class="kicker">LangDev 2026 · UniversalToolchain</div>
   <h1>Build the Language,<br><span>Then Make the Abstractions Disappear</span></h1>
-  <p class="hero-question">How do we make a .NET DSL composable from independent parts — and still let execution see a specific, resolved language?</p>
-  <div class="hero-line"><span>extensible construction</span><i>→</i><span>resolved semantics</span><i>→</i><span>specific execution</span></div>
+  <p class="hero-question">How do we make a .NET DSL composable from independent parts — and still let execution see one specific, resolved language?</p>
+  <div class="hero-line"><span>extensible construction</span><i>→</i><span>resolved composition</span><i>→</i><span>specific execution</span></div>
+  <div class="speaker-id"><strong>Mikhail Razakov</strong><span>UniversalToolchain · github.com/Misha1302/UniversalToolchain</span></div>
 </section>
 
-<section class="slide" data-notes="Why: establish a fair landscape instead of attacking existing tools. Say: at one end, evaluators such as NCalc and Dynamic Expresso are excellent when the desired language is close to their supported expression model; they expose useful extension points such as parameters, functions and identifiers. At the other end, parser construction tools such as Sprache and ANTLR help build syntax, but a compiler architecture beyond parsing is largely the author's responsibility. Transition: the interesting space is between these poles. Caveat: these tools solve different problems; do not imply they are deficient because they do not own an entire compiler stack.">
+<section class="slide" data-kind="main" data-notes="From previous: the opening question asks for composability without permanent runtime dynamism; now establish the spectrum of tools developers already have. Why: make a fair landscape, not a straw man. Say: evaluators such as NCalc and Dynamic Expresso are excellent when the desired language is close to their expression model. Parser tools such as ANTLR, Sprache and Parlot give much more control over syntax; Parlot can even build grammars dynamically. The remaining engineering gap is the architecture beyond parsing. Transition: enumerate that missing work. Caveat: these tools solve different problems; parser-level extensibility is real extensibility, just at a different boundary.">
   <header><div class="kicker">Act I · Why is this hard?</div><h2>Two useful extremes.<br><span>One engineering gap.</span></h2></header>
-  <div class="split extremes">
-    <article class="surface low"><div class="tag">Ready-made evaluator</div><h3>Low entry cost</h3><p>NCalc · Dynamic Expresso</p><div class="bar"><b>usually extend</b><span>variables · functions · identifiers · host types</span></div><div class="boundary">You inherit most of the language and execution model.</div></article>
-    <div class="versus">↔</div>
-    <article class="surface high"><div class="tag">Parser / compiler toolkit</div><h3>High control</h3><p>Sprache · ANTLR · Irony</p><div class="bar"><b>you can own</b><span>grammar · parse tree · frontend mechanics</span></div><div class="boundary">Then you still design semantics, IR, passes, backends, runtime and composition rules.</div></article>
+  <div class="extremes-band">
+    <div class="extreme-side low"><div class="tag">Ready-made evaluator</div><h3>Low entry cost</h3><p>NCalc · Dynamic Expresso</p><div class="boundary-list"><b>Typical extension surface</b><span>parameters · functions · identifiers · host types</span></div></div>
+    <div class="spectrum"><span>less architecture to own</span><i>↔</i><span>more architecture to own</span></div>
+    <div class="extreme-side high"><div class="tag">Parser / frontend toolkit</div><h3>High syntax control</h3><p>ANTLR · Sprache · Parlot</p><div class="boundary-list"><b>You still design</b><span>binding · semantics · IR · passes · backends · runtime · composition</span></div></div>
   </div>
-  <footer class="sources">Sources: ncalc.github.io / dynamicexpresso.github.io / github.com/sprache/Sprache / antlr.org / github.com/IronyProject/Irony</footer>
+  <footer class="sources">Sources: ncalc.github.io · github.com/dynamicexpresso/DynamicExpresso · antlr.org · github.com/sprache/Sprache · github.com/sebastienros/parlot</footer>
 </section>
 
-<section class="slide" data-notes="Why: make the missing work concrete. Say: the problem is not 'can I parse a language?' It is ownership across the whole lifecycle: who owns syntax, binding, intermediate representations, transformations, backend contracts, runtime policy and conflicts between independently developed pieces? If these become one shared mutable compiler object, adding features is easy initially but independent evolution becomes hard. Transition: before proposing our answer, acknowledge prior art that goes much further on extensible languages.">
+<section class="slide" data-kind="main" data-notes="From previous: after the tool spectrum, zoom into the work that remains. Why: make the gap concrete. Say: the difficult part is not merely parsing text; it is ownership across the lifecycle. Who owns syntax, binding, IR contracts, transformations, backend contracts, runtime policy and conflicts between independently developed pieces? If every plugin can reach one shared mutable compiler object, extension is initially easy but independent evolution becomes expensive. Transition: acknowledge prior art that already explores extensible languages and language composition.">
   <header><div class="kicker">The actual gap</div><h2>A DSL is not just <span>a grammar.</span></h2></header>
-  <div class="gap-line">
+  <div class="gap-track">
     <div><small>syntax</small><b>tokens / parser</b></div><i>→</i><div><small>meaning</small><b>binding / semantics</b></div><i>→</i><div><small>representation</small><b>IR boundaries</b></div><i>→</i><div><small>evolution</small><b>passes / optimizers</b></div><i>→</i><div><small>execution</small><b>backend / runtime</b></div>
   </div>
-  <div class="statement">The engineering problem is <strong>composition across these boundaries</strong> — without making every extension depend on the compiler's private internals.</div>
+  <div class="statement">The engineering problem is <strong>composition across these boundaries</strong> — without making every extension depend on private compiler internals.</div>
 </section>
 
-<section class="slide" data-notes="Why: avoid novelty inflation and position the work. Say: extensible languages are established prior art. Racket makes language creation a first-class idea through macros, #lang, reader and expander layers; language workbenches explore other forms of modular language engineering. LangDev itself explicitly solicits meta-languages for construction/composition and holistic approaches across syntax, semantics and transformations. Our question is narrower: what does a composable compiler/runtime architecture look like in the .NET ecosystem when stages and artifact contracts are explicit? Transition: state the goal precisely. Caveat: UniversalToolchain is not 'a new Racket' and does not attempt to reproduce Racket's macro/expansion model.">
-  <header><div class="kicker">Prior art, not a straw man</div><h2>Extensible languages <span>already exist.</span></h2></header>
-  <div class="prior-grid">
-    <article class="prior racket"><div class="mono bigmark">#lang</div><h3>Racket</h3><p>Macros + reader/expander layers can define new language surfaces and meanings.</p></article>
-    <article class="prior"><div class="bigmark">LW</div><h3>Language workbenches</h3><p>LangDev 2024 included textX, graphical DSL workbenches, compositional modeling languages and interpreter integration.</p></article>
-    <article class="prior ours"><div class="bigmark">.NET</div><h3>Our design point</h3><p>Explicit stages, typed artifacts, package composition, selectable backends — then stage configuration before execution.</p></article>
+<section class="slide prior-slide" data-kind="main" data-notes="From previous: having named the engineering gap, acknowledge the strongest alternatives before presenting ours. Why: avoid novelty inflation. Say: Racket demonstrates language-oriented programming through #lang, readers, expanders and macros. MPS is a projectional language workbench with arbitrary language extensions, constraints/type systems and generators. MontiCore composes grammar-based language components through inheritance, extension, embedding and aggregation and generates substantial infrastructure. UniversalToolchain is intentionally not a replacement for those systems. Our narrower design point is a low-level .NET composition/runtime substrate: independently owned components connect through typed artifact contracts; one planner resolves routes/providers before execution; the framework does not generate the author's parser or semantics. Transition: state the goal. Caveat: 'different design point' is the claim — not 'better' and not 'first'.">
+  <header><div class="kicker">Prior art · strongest alternatives</div><h2>Extensible languages already exist.<br><span>Our design point is narrower.</span></h2></header>
+  <div class="prior-map">
+    <div class="prior-axis"><span>language-oriented semantics</span><span>language workbench / generation</span><span>.NET composition + runtime substrate</span></div>
+    <div class="prior-node racket"><strong>#lang</strong><h3>Racket</h3><p>Reader + expander + macros can define new language surfaces and meanings.</p></div>
+    <div class="prior-node mps"><strong>MPS</strong><h3>Language workbench</h3><p>Projectional editing, language extensions, type systems, constraints and generators.</p></div>
+    <div class="prior-node monticore"><strong>MC</strong><h3>MontiCore</h3><p>Composable grammar-based language components plus generated infrastructure.</p></div>
+    <div class="prior-node ut"><strong>.NET</strong><h3>UniversalToolchain</h3><p>Typed artifact routes + package-owned components + pre-execution planning. It composes; it does not generate your language semantics.</p></div>
   </div>
-  <footer class="sources">Sources: docs.racket-lang.org/guide/languages.html · langdevcon.org/2024/program · LangDev 2026 CFP</footer>
+  <footer class="sources">Sources: docs.racket-lang.org/guide/languages.html · jetbrains.com/help/mps/mps-faq.html · monticore.github.io/monticore · langdevcon.org</footer>
 </section>
 
-<section class="slide" data-notes="Why: lock the objective before architecture details. Say the goal almost verbatim: develop an architecture for extensible DSLs on .NET where features, compiler stages, optimizations and backends can be composed independently, while the chosen language configuration is resolved before execution and can enable specialization. Then walk through the five engineering questions, not as marketing claims but as design obligations. Transition: start with the smallest core that must be trusted. Caveat: near-zero additional overhead is a second-order goal and workload-specific, not the primary definition of success.">
+<section class="slide" data-kind="main" data-notes="From previous: after separating the design point from Racket and language workbenches, state the objective precisely. Why: lock the contribution before architecture details. Say: develop an architecture for extensible DSLs on .NET where language features, compiler stages, optimizations and backends can be composed independently; resolve the selected language configuration before execution; then exploit stable facts for specialization where possible. The first four obligations are about extensibility; the fifth is the second act. Transition: start with the minimal core. Caveat: near-zero additional hot-path overhead is secondary and workload-specific.">
   <header><div class="kicker">Goal</div><h2>Make language construction <span>extensible.</span><br>Make execution <span>specific.</span></h2></header>
   <div class="five">
     <div><b>01</b><span>What must the core know?</span></div>
     <div><b>02</b><span>How do stages compose?</span></div>
     <div><b>03</b><span>How is a language selected?</span></div>
     <div><b>04</b><span>How do IR boundaries stay replaceable?</span></div>
-    <div><b>05</b><span>What can be specialized after choices close?</span></div>
+    <div><b>05</b><span>What can specialize after choices close?</span></div>
   </div>
 </section>
 
-<section class="slide" data-notes="Why: show the trusted/core surface. Say: the generic framework does not need to know Wist grammar or CIL lowering details. LanguageDefinition expresses requested features, entry artifact, backends, provider and policy. LanguageCompiler is the single planner. LanguagePlan records the resolved features, contributions, runtime provider and typed artifact routes. LanguageRuntime verifies that exact plan and executes its route. Packages own language-specific behavior around this core. Transition: the key mechanism that lets packages evolve independently is typed artifact routing. Caveat: LanguagePlan is not a DI container; runtime component factories materialize implementations selected by the plan.">
+<section class="slide" data-kind="main" data-notes="From previous: the first design question is what the generic framework itself must know. Why: show the trusted/core surface. Say: the generic framework does not know Wist grammar or CIL lowering details. LanguageDefinition expresses the requested features, entry artifact, backends, provider and policy. LanguageCompiler is the single planner. LanguagePlan records the resolved features, contributions, runtime provider and typed backend routes. LanguageRuntime verifies that exact plan and executes it. Packages own syntax, parser, semantic model, IRs, passes and backends. Transition: the mechanism that keeps those packages decoupled is typed artifact routing. Caveat: LanguagePlan is not a DI container and is not the full semantics of a program.">
   <header><div class="kicker">Minimal core</div><h2>What must the framework <span>know?</span></h2></header>
   <div class="core-diagram">
     <div class="orbit left"><span>syntax</span><span>parser</span><span>binding</span><span>semantic model</span></div>
@@ -67,79 +71,77 @@
   <footer class="sources">Current code: UniversalToolchain.LanguageSdk/LanguageCompiler.cs · LanguagePlan.cs · docs/language-authoring/</footer>
 </section>
 
-<section class="slide" data-notes="Why: replace the misleading permanently-hardcoded Lexer→Parser→AST→... picture with the generic model. Say: an executable plan starts at a typed entry artifact. A transformer converts one artifact contract to another. A pass preserves a contract and decorates that route stage. A backend declares the exact input contract it consumes. The planner finds a conversion route and inserts applicable passes under ordering constraints. This is what allows a different language to have a different route without rewriting the core. Transition: show how a concrete Wist dialect requests one such composition. Caveat: the route is planned, not dynamically rediscovered per execution.">
+<section class="slide" data-kind="main" data-notes="From previous: once the core is small, show how independent stages connect without shared compiler internals. Why: replace a permanently hardcoded Lexer→Parser→AST→... architecture with a generic route model. Say: an executable plan starts from a typed entry artifact. A transformer changes one artifact contract into another. A pass preserves a contract and decorates a route stage. A backend declares the exact input artifact contract it consumes. The planner finds a minimum-cost conversion route and inserts applicable passes under ordering constraints. Transition: make it tangible with a real Wist dialect. Caveat: external languages do not have to use Wist Bytecode or AIR.">
   <header><div class="kicker">Composable compiler pipeline</div><h2>Route <span>typed artifacts</span>, not compiler internals.</h2></header>
-  <div class="route">
-    <div class="artifact"><small>artifact</small><b>source.text&lt;string&gt;</b></div><i>→</i>
-    <div class="contribution"><small>transformer</small><b>frontend</b></div><i>→</i>
-    <div class="artifact"><small>artifact</small><b>syntax&lt;T&gt;</b></div><i>→</i>
-    <div class="contribution pass"><small>pass / transform</small><b>lower + optimize</b></div><i>→</i>
-    <div class="artifact"><small>artifact</small><b>ir.air&lt;T&gt;</b></div><i>→</i>
-    <div class="contribution backend"><small>exact consumer</small><b>backend</b></div>
+  <div class="route-line">
+    <div class="artifact diamond"><small>artifact</small><b>source.text&lt;string&gt;</b></div><i>→</i>
+    <div class="step-box"><small>transformer</small><b>frontend</b></div><i>→</i>
+    <div class="artifact diamond"><small>artifact</small><b>syntax&lt;T&gt;</b></div><i>→</i>
+    <div class="step-box pass"><small>pass / transform</small><b>lower + optimize</b></div><i>→</i>
+    <div class="artifact diamond"><small>artifact</small><b>ir.air&lt;T&gt;</b></div><i>→</i>
+    <div class="step-box backend"><small>exact consumer</small><b>backend</b></div>
   </div>
   <div class="contract-contrast"><div class="badbox"><b>shared mutable compiler internals</b><span>easy access → tight coupling</span></div><div class="goodbox"><b>typed artifact contracts</b><span>explicit boundary → independent evolution</span></div></div>
   <footer class="sources">Current SDK: docs/language-authoring/artifact-routing.md</footer>
 </section>
 
-<section class="slide" data-notes="Why: make composition tangible with a real shipped .wistdialect. Say: this is not merely a config file full of runtime flags. The Wist DialectDslCompiler translates it into a typed LanguageDefinition; LanguageCompiler closes dependencies, enforces exclusions, resolves contributions/providers and builds backend routes. If an excluded contribution is required or a provider is ambiguous, planning fails. Transition: now answer the practical question every audience member has — what does extensible mean in concrete changes? Caveat: restricted composition is not process isolation.">
-  <header><div class="kicker">A language as composition</div><h2>The language itself becomes <span>the result of planning.</span></h2></header>
+<section class="slide" data-kind="main" data-notes="From previous: typed routes are abstract until a real language selects a composition. Why: show the actual shipped .wistdialect, not a fictional configuration. Say: this source is translated by DialectDslCompiler into a typed LanguageDefinition. LanguageCompiler then closes feature dependencies, enforces exclusions, resolves contributions/providers and builds backend routes. If planning cannot produce a consistent graph, it returns diagnostics instead of a half-working runtime. Transition: answer practical extension questions. Caveat: restricted composition is not process isolation; and this file selects a Wist configuration, not a universal grammar generator.">
+  <header><div class="kicker">A language as composition</div><h2>The selected language becomes <span>a resolved composition.</span></h2></header>
   <div class="dialect-layout">
-    <pre class="code-block"><code>dialect CompositionRestricted
-use Arithmetic,BooleanConditions,Comments,
-    ComparisonConditions,Conditions,Equality,
-    Numbers,Scopes,Whitespaces
-exclude CSharpInterop,Identifier,Labels,Loops,
-    NativeTypes,ParametersSetter,Variables
+    <pre class="code-block dialect-code"><code>dialect CompositionRestricted
+use Arithmetic,<wbr>BooleanConditions,<wbr>Comments,<wbr>ComparisonConditions,<wbr>Conditions,<wbr>Equality,<wbr>Numbers,<wbr>Scopes,<wbr>Whitespaces
+exclude CSharpInterop,<wbr>Identifier,<wbr>InternalPreprocessorLexemes,<wbr>Labels,<wbr>Loops,<wbr>NativeTypes,<wbr>ParametersSetter,<wbr>SemicolonAsNewLine,<wbr>Variables
 backend interpreter
 security restricted
 capability composition-restricted</code></pre>
-    <div class="dialect-flow"><div><b>DialectDslCompiler</b><span>Wist-facing syntax</span></div><i>↓</i><div><b>LanguageDefinition</b><span>typed request</span></div><i>↓</i><div><b>LanguageCompiler</b><span>dependencies · conflicts · routes</span></div><i>↓</i><div class="hot"><b>LanguagePlan</b><span>or a planning diagnostic</span></div></div>
+    <div class="dialect-flow"><div><b>DialectDslCompiler</b><span>Wist-facing syntax</span></div><i>↓</i><div><b>LanguageDefinition</b><span>typed request</span></div><i>↓</i><div><b>LanguageCompiler</b><span>dependencies · conflicts · routes</span></div><i>↓</i><div class="hot"><b>LanguagePlan</b><span>or planning diagnostics</span></div></div>
   </div>
   <footer class="sources">Exact shipped example: Dialects/examples/wist/composition-restricted/dialect.wistdialect · docs/build-dsls/dialect-files.md</footer>
 </section>
 
-<section class="slide" data-notes="Why: translate architecture into developer actions. Say: adding local Wist syntax belongs to frontend/parser contributions and module hooks. Replacing syntax wholesale is an independent non-Wist language package: the current SDK sample demonstrates a standalone parser plus interpreter and compiled backend. Another IR is a new typed artifact kind plus transformer route. An optimizer is a same-contract pass or compatible transformation. A backend declares an exact terminal artifact contract and executor. Dependencies/conflicts/capability providers are resolved by the planner and fail closed when ambiguous. Transition: all of these choices are open during language construction — so where do they close? Caveat: the SDK composes these components; it does not generate parser/binder/semantics for the author.">
+<section class="slide" data-kind="main" data-notes="From previous: after showing the dialect declaration, translate architecture into developer actions. Why: make 'extensible' operational. Say: adding Wist syntax belongs to the Wist frontend/parser contribution surface. Replacing syntax wholesale uses an independent non-Wist language package with its own parser. Another IR is a new typed artifact contract plus a transformer route. Optimizers are same-contract passes or compatible transforms. Backends declare exact terminal contracts and executors. Dependencies, exclusions, single-owner slots and capability providers are resolved fail-closed by planning. Transition: ask where the open choices close. Caveat: the SDK composes these components; it does not generate parser/binder/semantics for the author.">
   <header><div class="kicker">What does “extensible” mean?</div><h2>What if I want to…?</h2></header>
   <div class="want-grid">
     <div><b>add syntax?</b><span>Wist frontend / parser contribution</span><em>implemented</em></div>
     <div><b>replace syntax entirely?</b><span>independent language package + own parser</span><em>implemented SDK path</em></div>
     <div><b>add another IR?</b><span>typed artifact kind + transformer route</span><em>implemented</em></div>
     <div><b>add an optimizer?</b><span>same-contract pass / compatible transform</span><em>implemented</em></div>
-    <div><b>add LLVM / WASM?</b><span>backend consuming an exact artifact contract</span><em>architecture supports; backend not shipped</em></div>
+    <div><b>add LLVM / WASM?</b><span>backend consuming an exact artifact contract</span><em>architecture supports; not shipped</em></div>
     <div><b>handle conflicts?</b><span>dependencies · exclusions · slots · provider resolution</span><em>fail closed in planning</em></div>
   </div>
   <footer class="sources">Current boundary: External Language Authoring SDK is low-level alpha; authors still own parser, binding, semantics and backend logic.</footer>
 </section>
 
-<section class="slide" data-notes="Why: introduce LanguagePlan only after the audience understands what was variable. Say: an open set of choices enters LanguageCompiler. It resolves selected features, eligible contributions, runtime provider and one typed artifact route per enabled backend. The resulting immutable LanguagePlan carries PlanHash and Summary and is verified before runtime materialization. The runtime consumes the exact route; it must not re-plan. Transition: once planning has closed the language configuration, look at one concrete Wist program route. Caveat: 'fixed' means the semantic choices for this plan are fixed, not that every program-level value is known.">
+<section class="slide" data-kind="main" data-notes="From previous: after demonstrating the open extension choices, ask where those choices become closed. Why: introduce LanguagePlan only now. Say: LanguageCompiler resolves selected features, eligible contributions, the runtime provider and one artifact route for each enabled backend. LanguagePlan records that resolved composition, exact package identities, routes, PlanHash and Summary. LanguageRuntime verifies and consumes that plan; it must not discover a different language later. Transition: instantiate this generic mechanism with Wist. Caveat: 'closed' means the language configuration and ownership choices are fixed for this plan; program-level bindings and values are not magically known yet.">
   <header><div class="kicker">Close the configuration</div><h2>Extensibility lives at <span>language-construction time.</span></h2></header>
   <div class="resolve">
     <div class="cloud"><span>features</span><span>packages</span><span>policies</span><span>passes</span><span>backends</span></div>
     <i>→</i><div class="compiler-box"><small>single planner</small><b>LanguageCompiler</b></div><i>→</i>
-    <div class="plan-box"><small>immutable semantic result</small><b>LanguagePlan</b><span>features · contributions · provider · routes · PlanHash</span></div>
+    <div class="plan-box"><small>resolved language composition</small><b>LanguagePlan</b><span>features · contributions · provider · routes · PlanHash</span></div>
   </div>
   <div class="boundary-band"><b>OPEN choices</b><span>planning boundary</span><b>CLOSED execution configuration</b></div>
   <footer class="sources">Current code: LanguageCompiler.Compile → LanguageBuildResult.Success(new LanguagePlan(...))</footer>
 </section>
 
-<section class="slide" data-notes="Why: connect the generic route model to the actual Wist implementation. Say: for Wist source, the current canonical route is Source/Text → frontend transformer, where modules process text, lexer, parser, AST hooks and Binder run → bytecode transformer → AIR transformer → selected optimizer/optional SSA route → selected backend transformer/executor. There is deliberately no framework-level BasicCore god coordinator anymore. Transition: now that both language configuration and program representation have explicit stages, we can separate two very different kinds of disappearing abstractions. Caveat: do not imply every external language must use Bytecode or AIR; this is the Wist route.">
-  <header><div class="kicker">Concrete Wist route</div><h2>One language package chooses <span>one concrete path.</span></h2></header>
-  <div class="wist-pipe">
-    <div><small>01</small><b>Source / Text</b></div><i>→</i><div><small>02</small><b>Wist frontend</b><span>lexer · parser · Binder</span></div><i>→</i><div><small>03</small><b>Bytecode</b></div><i>→</i><div class="hot"><small>04</small><b>AIR</b></div><i>→</i><div><small>05</small><b>Optimizers / SSA</b></div><i>→</i><div><small>06</small><b>Backend</b></div>
+<section class="slide" data-kind="main" data-notes="From previous: after the generic planner freezes a composition, instantiate it with Wist's concrete route. Why: show that Wist is one route through the generic machinery, not the framework definition. Say: current Wist source flows through the frontend transformer, lexer/parser/AST hooks and Binder; then Bytecode; then AIR; selected optimizers/optional SSA; then the selected backend. LanguageCompiler chooses the planned route — a package does not. Demo cue: switch to the verified commands in DEMO.md. First inspect/run composition-restricted: its shipped program returns true, while forbidden-program and forbidden-interop are expected to fail because Variables and CSharpInterop are excluded. Then run the shipped full-default program through interpreter and CIL; both are documented to return 15. If the demo environment is unavailable, narrate the three-step strip on screen. Transition: after the demo, separate configuration staging from IR specialization. Caveat: do not promise a planning-conflict demo unless the harness explicitly constructs one.">
+  <header><div class="kicker">Concrete Wist route</div><h2>Wist follows <span>one planned artifact route.</span></h2></header>
+  <div class="pipeline-trace">
+    <div class="trace-node source"><small>01</small><b>Source / Text</b></div><i>→</i><div class="trace-node"><small>02</small><b>Wist frontend</b><span>lexer · parser · Binder</span></div><i>→</i><div class="trace-node"><small>03</small><b>Bytecode</b></div><i>→</i><div class="trace-node hot"><small>04</small><b>AIR</b></div><i>→</i><div class="trace-node"><small>05</small><b>Optimizers / SSA</b></div><i>→</i><div class="trace-node backend"><small>06</small><b>Backend</b></div>
   </div>
-  <p class="center-claim">The generic SDK plans <strong>artifact routes</strong>. Wist happens to own this route.</p>
-  <footer class="sources">Current canonical pipeline: docs/internals/pipeline.md</footer>
+  <div class="demo-cue"><strong>LIVE DEMO</strong><span>compose a profile</span><i>→</i><span>run / reject</span><i>→</i><span>compare interpreter ↔ CIL</span></div>
+  <p class="center-claim">The generic SDK plans <strong>artifact routes</strong>. Wist is one concrete language package using them.</p>
+  <footer class="sources">Current canonical pipeline: docs/internals/pipeline.md · demo should use prepared, verified repo code — not improvised CLI syntax.</footer>
 </section>
 
-<section class="slide" data-notes="Why: prevent the phrase 'make abstractions disappear' from collapsing two separate ideas. First, configuration staging: dialect/package/backend choices are resolved into LanguagePlan and are not rediscovered during each formula execution. Second, representation specialization: later AIR passes can rewrite generic instruction sequences when stable facts and backend capabilities are known. These are distinct mechanisms with distinct evidence. Transition: show one transformation from the real optimizer. Caveat: planning itself still has a cost, and Evaluate(source) still includes formula processing.">
+<section class="slide" data-kind="main" data-notes="From previous: once the route is concrete and the demo has shown real behavior, separate two mechanisms that the title deliberately combines. Why: prevent a vague zero-cost story. First, configuration staging: dialect/package/backend choices become a plan and are not rediscovered for each execution. Second, representation specialization: later AIR passes can rewrite generic instructions when static facts and backend capabilities are known. Transition: show one real optimizer rewrite. Caveat: planning and formula compilation still have costs.">
   <header><div class="kicker">Act III · After extensibility</div><h2>Two different <span>disappearances.</span></h2></header>
   <div class="two-disappear">
-    <article><div class="num">1</div><h3>Configuration staging</h3><div class="mini-route"><span>features + policy + backends</span><i>→</i><b>LanguagePlan</b></div><p>Execution stops re-asking which language was assembled.</p></article>
+    <article><div class="num">1</div><h3>Configuration staging</h3><div class="mini-route"><span>features + policy + backends</span><i>→</i><b>LanguagePlan</b></div><p>Execution stops re-asking which language composition was selected.</p></article>
     <article><div class="num">2</div><h3>IR specialization</h3><div class="mini-route"><span>generic AIR + static facts</span><i>→</i><b>specialized AIR</b></div><p>Concrete representation machinery can leave the hot path.</p></article>
   </div>
 </section>
 
-<section class="slide" data-notes="Why: provide the concrete technical evidence for specialization. Say: NativeCilOptimizerModule scans AIR. When it sees a call that loads the execution-scoped environment, then Push(slot), then a generic ExternalRuntimeCalls.LoadExternal<T>, and the selected backend capability context supports that typed LoadExternal intrinsic, it emits one typed LoadExternal<T>(slot) intrinsic and consumes the three instructions. The known slot, T and backend capability are the static facts. Transition: use this to define the claim boundary. Caveat: this is a specific CIL-oriented optimizer, not a theorem that all abstraction overhead disappears.">
+<section class="slide" data-kind="main" data-notes="From previous: now substantiate the IR-specialization half with a rewrite that exists in current code. Why: give concrete evidence. Say: NativeCilOptimizerModule scans AIR. If it sees an execution-scoped environment load, Push(slot), then generic ExternalRuntimeCalls.LoadExternal<T>, and the selected backend capability context supports typed LoadExternal, it emits one typed LoadExternal<T>(slot) intrinsic and consumes the three instructions. Static facts are slot, T and backend capability. Transition: define what this proves and what it does not. Caveat: this is one CIL-oriented optimization, not a theorem about all abstractions.">
   <header><div class="kicker">Concrete specialization</div><h2>Now we know enough to <span>remove something.</span></h2></header>
   <div class="before-after">
     <div><div class="label">generic AIR</div><pre class="code-block"><code>LoadEnvironment()
@@ -152,7 +154,7 @@ LoadExternal&lt;double&gt;()</code></pre></div>
   <footer class="sources">Verified in current code: NativeMathModule/NativeCILOptimizerModule.cs · TryOptimizeExternalLoad</footer>
 </section>
 
-<section class="slide" data-notes="Why: bound the zero-cost story and measurement boundary on one slide. Say: the claim is only that particular configuration or representation machinery can disappear when enough facts become static. Not every abstraction is free, and the generic external-language runtime explicitly has no universal performance profile. For repeated compiled Wist programs, setup/planning and formula compilation are cold boundaries; the prepared delegate invocation is the hot boundary. Transition: optimization is useful only if backends still implement the same language meaning. Caveat: do not show percentages until there is a reproducible current benchmark with parity precheck.">
+<section class="slide" data-kind="main" data-notes="From previous: after one successful specialization, define the claim boundary and measurement boundary. Why: make the performance story defensible. Say: the claim is only that specific configuration or representation machinery can disappear when enough facts become static. The generic external-language runtime explicitly has no universal performance profile. For repeated compiled Wist programs, engine setup/planning and formula compilation are cold boundaries; prepared delegate invocation is the hot boundary. Transition: optimization matters only if backend diversity preserves language meaning. Caveat: do not show percentages without a current reproducible benchmark and parity precheck.">
   <header><div class="kicker">Claim boundary</div><h2>Specialization, not <span>magic zero-cost.</span></h2></header>
   <div class="claim-layout">
     <div class="claim yes"><small>CLAIM</small><p>When enough facts become static, <strong>specific</strong> configuration or representation machinery can be removed from the hot path.</p></div>
@@ -162,31 +164,63 @@ LoadExternal&lt;double&gt;()</code></pre></div>
   <footer class="sources">Current performance boundary: docs/reference/performance-model.md — no universal performance claim for external languages.</footer>
 </section>
 
-<section class="slide" data-notes="Why: protect semantic ownership while allowing backend diversity. Say: backend selection is part of LanguagePlan, but a backend must not decide which features exist or redefine binding/scope rules. In the current architecture the interpreter is the semantic reference path and CIL is the performance-oriented compiled path. Optimizers may emit backend-specific intrinsics only when capabilities say they are supported. Transition: this ownership rule needs executable verification, not just documentation. Caveat: interpreter-as-oracle is a project architecture rule, not formal semantics.">
+<section class="slide" data-kind="main" data-notes="From previous: specialization is useful only if different execution strategies still implement one language meaning. Why: protect semantic ownership. Say: backend selection is part of the plan, but a backend must not decide which language features exist or redefine binding/scope rules. Program-specific binding happens before backend execution. In current project architecture, the interpreter is the semantic reference path and CIL is the performance-oriented compiled path. Backend-specific intrinsics are capability-gated. Transition: this ownership rule needs executable verification. Caveat: interpreter-as-reference is a project architecture rule, not formal semantics.">
   <header><div class="kicker">Preserve meaning</div><h2>Backend diversity is allowed.<br><span>Semantic diversity is not.</span></h2></header>
-  <div class="semantic">
-    <div class="meaning"><small>resolved before backend</small><b>binding · scope · feature availability · policy</b></div>
-    <div class="fork">↙ <span>same semantic program</span> ↘</div>
-    <div class="backend-pair"><div><b>Interpreter</b><span>reference execution representation</span></div><div><b>CIL</b><span>compiled execution strategy</span></div></div>
+  <div class="semantic-flow">
+    <div class="semantic-input"><small>owned before backend</small><b>feature availability · binding · scope · policy</b></div>
+    <div class="fork-lines"><i>↙</i><span>same language-level meaning</span><i>↘</i></div>
+    <div class="backend-pair"><div><b>Interpreter</b><span>reference execution path</span></div><div><b>CIL</b><span>compiled execution strategy</span></div></div>
   </div>
   <footer class="sources">Architecture rule: docs/architecture/backends-and-parity.md</footer>
 </section>
 
-<section class="slide" data-notes="Why: show how the ownership boundary is defended in practice and make the current implementation boundary explicit. Say: parity tests run the same program and bindings through multiple backend routes and compare observable result or failure. LanguageContractSuite provides a helper for external language packages. This is not a formal proof, but it catches backend drift. Then state the current alpha boundary: the SDK composes and validates components; language authors still own parser, binding, semantic model, transformations and backend execution logic. Transition: finish with the architectural formula. Caveat: a third production-scale backend is still future pressure-testing, so avoid claiming universal backend generality.">
+<section class="slide" data-kind="main" data-notes="From previous: an ownership rule needs executable checks. Why: show practical verification and current maturity. Say: LanguageContractSuite can run the same source and arguments through two backend routes and compare observable values. This is not a formal proof of equivalence, but it catches backend drift. Then state the alpha boundary: the SDK composes and validates components; language authors still own parser, binding, semantic model, transformations and backend logic. A third production-scale backend remains a future pressure test. Transition: finish by compressing the architecture into one formula. Caveat: parity helper currently compares values by a configurable comparer; do not oversell it as a complete semantic conformance framework.">
   <header><div class="kicker">Verification + current boundary</div><h2>Extensibility needs a <span>conformance story.</span></h2></header>
-  <div class="verify-layout">
-    <div class="parity"><div class="input">program + bindings</div><div class="branches"><span>Interpreter</span><span>CIL</span></div><div class="question">same observable semantics?</div></div>
-    <div class="alpha"><div class="tag">current alpha boundary</div><h3>The SDK composes; it does not author the language for you.</h3><p>Parser · binding · semantic model · transformations · backend execution remain package-owned.</p><div class="future">Future pressure test: a third production-scale backend.</div></div>
+  <div class="verify-flow">
+    <div class="verify-input">program + bindings</div>
+    <div class="verify-branch"><span>Interpreter</span><span>CIL</span></div>
+    <div class="verify-join">same observable result?</div>
+    <div class="alpha-line"><b>Current alpha boundary</b><span>SDK composes and validates; parser · binding · semantic model · transformations · backend logic remain package-owned.</span></div>
   </div>
-  <footer class="sources">LanguageContractSuite · docs/language-authoring/index.md · docs/architecture/backends-and-parity.md</footer>
+  <footer class="sources">UniversalToolchain.Testing/LanguageContractSuite.cs · docs/language-authoring/index.md · docs/architecture/backends-and-parity.md</footer>
 </section>
 
-<section class="slide finale" data-notes="Why: close the entire story, not only the optimizer story. Say: compose the language from typed, package-owned pieces; resolve dependencies, conflicts and routes into one immutable semantic plan; compile the program through that exact route; specialize only where stable facts justify it; let execution see only what remains. Final line: make language construction extensible; make execution specific. If asked about novelty, position the contribution as an explicit .NET architecture and implementation experiment, not the invention of extensible languages. If asked about maturity, repeat that the external authoring SDK is low-level alpha and Wist is the main concrete language package today.">
-  <div class="kicker">Takeaway</div>
-  <h2>Compose the language.<br><span>Freeze the choices.</span><br>Specialize what remains.</h2>
-  <div class="final-flow"><span>packages</span><i>→</i><span>typed contracts</span><i>→</i><span>LanguagePlan</span><i>→</i><span>program route</span><i>→</i><span>specific execution</span></div>
-  <p class="last-line">Make language construction <strong>extensible.</strong> Make execution <strong>specific.</strong></p>
-  <footer class="sources final-sources">Primary references: UniversalToolchain docs/language-authoring + docs/internals/pipeline · Racket Guide “Creating Languages” · LangDev 2024 program · NCalc / Dynamic Expresso / Sprache / ANTLR</footer>
+<section class="slide finale" data-kind="main" data-notes="From previous: after verification and the alpha boundary, compress the whole architecture into the final formula. Why: close the entire story, not only the optimizer story. Say: compose the language from typed, package-owned pieces; resolve dependencies, conflicts and routes into one immutable plan; compile the program through the exact planned route; specialize only where stable facts justify it; let execution see only what remains. Final line: make language construction extensible; make execution specific. If asked about novelty, use appendix A1: different design point from Racket/MPS/MontiCore, not invention of extensible languages. If asked about maturity, repeat low-level alpha boundary.">
+  <div class="final-main">
+    <div><div class="kicker">Takeaway</div><h2>Compose the language.<br><span>Freeze the choices.</span><br>Specialize what remains.</h2><div class="final-flow"><span>packages</span><i>→</i><span>typed contracts</span><i>→</i><span>LanguagePlan</span><i>→</i><span>program route</span><i>→</i><span>specific execution</span></div><p class="last-line">Make language construction <strong>extensible.</strong> Make execution <strong>specific.</strong></p></div>
+    <div class="qr-block"><img src="qr-universaltoolchain.svg" alt="QR code to UniversalToolchain repository" /><strong>Try it / inspect the code</strong><span>github.com/Misha1302/UniversalToolchain</span><small>Press A for Q&amp;A appendix</small></div>
+  </div>
+  <footer class="sources final-sources">Primary references: UniversalToolchain docs/language-authoring + docs/internals/pipeline · Racket Guide · MPS docs · MontiCore docs · LangDev 2026 CFP</footer>
+</section>
+
+<section class="slide appendix" data-kind="appendix" data-notes="Appendix A1. Use only for Q&A about novelty or alternatives. Say: Racket owns an extensibility model inside the language and macro/expansion system. MPS and MontiCore are language workbenches that help author and generate language infrastructure. UniversalToolchain deliberately leaves parser/semantics authoring to packages and focuses on typed runtime composition and pre-execution route planning inside .NET. The claim is a different architectural point, not superiority.">
+  <header><div class="kicker">Appendix A1 · Positioning</div><h2>Why not <span>Racket / MPS / MontiCore?</span></h2></header>
+  <div class="compare-table">
+    <div class="table-head"><span></span><b>Primary strength</b><b>Composition center</b><b>UT distinction</b></div>
+    <div><strong>Racket</strong><span>language-oriented programming</span><span>reader / expander / macros</span><span>UT uses explicit compiler/runtime contracts in .NET</span></div>
+    <div><strong>MPS</strong><span>projectional language workbench</span><span>language aspects / generators</span><span>UT does not replace the authoring workbench</span></div>
+    <div><strong>MontiCore</strong><span>grammar-based language workbench</span><span>inherit / extend / embed / aggregate</span><span>UT composes package-owned executable stages</span></div>
+    <div class="accent-row"><strong>UniversalToolchain</strong><span>low-level .NET composition/runtime substrate</span><span>typed artifacts + planner + runtime provider</span><span>resolve routes before execution; specialize later</span></div>
+  </div>
+</section>
+
+<section class="slide appendix" data-kind="appendix" data-notes="Appendix A2. Use when someone asks whether LanguagePlan is just dependency injection or 'the semantics'. Say: it is a checked, immutable result of language composition. It records selected features and contributions, runtime provider, typed routes, exact package identity, PlanHash/Summary. It does not contain program values, perform binding of a specific source program or replace formal semantics. Runtime factories materialize implementations selected by the plan.">
+  <header><div class="kicker">Appendix A2 · LanguagePlan</div><h2>What the plan owns — <span>and what it does not.</span></h2></header>
+  <div class="owns-grid"><div class="owns"><h3>Owns</h3><span>resolved features</span><span>resolved contributions</span><span>runtime provider</span><span>backend artifact routes</span><span>exact package identities</span><span>PlanHash + Summary</span></div><div class="not-owns"><h3>Does not own</h3><span>program argument values</span><span>binding of a specific source before compilation</span><span>backend-specific semantics</span><span>a generated parser or semantic model</span><span>formal proof of semantic equivalence</span></div></div>
+  <footer class="sources">Current implementation: UniversalToolchain.LanguageSdk/LanguagePlan.cs</footer>
+</section>
+
+<section class="slide appendix" data-kind="appendix" data-notes="Appendix A3. Use for conflict/route-planning questions. Explain the fail-closed cases: excluded required contribution, single-owner slot collision unless explicitly replaced, missing capability provider, multiple providers without preference, ambiguous backend executor or no typed route to the backend contract. The key property is that these fail during planning instead of surfacing as ad-hoc runtime discovery.">
+  <header><div class="kicker">Appendix A3 · Fail closed</div><h2>What makes planning <span>reject a language?</span></h2></header>
+  <div class="failure-lanes"><div><b>Dependency</b><span>required contribution was explicitly excluded</span></div><div><b>Ownership</b><span>single-owner slot has an unresolved collision</span></div><div><b>Capability</b><span>no provider — or multiple providers without preference</span></div><div><b>Artifact route</b><span>no typed route reaches the backend's exact input contract</span></div><div><b>Executor</b><span>ambiguous exact backend/input match</span></div></div>
+  <p class="center-claim">A broken composition should fail <strong>before runtime materialization.</strong></p>
+</section>
+
+<section class="slide appendix" data-kind="appendix" data-notes="Appendix A4. Use for performance questions. Say: the project currently makes an architectural and local-specialization claim, not a universal speed claim. A valid benchmark must identify the exact commit/environment, perform correctness/parity checks and separate engine setup, formula compilation and prepared invocation. If asked for numbers, say they should be shown only from a current reproducible BenchmarkDotNet run; this talk deliberately avoids stale historical percentages.">
+  <header><div class="kicker">Appendix A4 · Performance evidence</div><h2>What would justify a <span>performance claim?</span></h2></header>
+  <div class="evidence-chain"><div><b>source identity</b><span>commit + environment</span></div><i>→</i><div><b>correctness</b><span>parity precheck</span></div><i>→</i><div><b>measurement boundary</b><span>cold vs prepared hot path</span></div><i>→</i><div><b>raw evidence</b><span>BenchmarkDotNet artifacts</span></div></div>
+  <div class="claim-strip"><strong>Current talk claim:</strong><span>specific machinery can disappear when facts become static.</span><b>Not:</b><span>UniversalToolchain is universally faster.</span></div>
+  <footer class="sources">docs/reference/performance-model.md · docs/reference/benchmark-methodology.md</footer>
 </section>
 
 </main>
@@ -195,6 +229,7 @@ LoadExternal&lt;double&gt;()</code></pre></div>
   <button id="prev" aria-label="Previous slide">←</button>
   <span id="counter">1 / 17</span>
   <button id="next" aria-label="Next slide">→</button>
+  <button id="appendixToggle" aria-label="Toggle appendix">A</button>
   <button id="fullscreen" aria-label="Toggle fullscreen">⛶</button>
   <button id="notesToggle" aria-label="Toggle speaker notes">N</button>
 </div>

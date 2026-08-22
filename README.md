@@ -1,9 +1,26 @@
-# LangDev presentation 2026
+# LangDev 2026 — UniversalToolchain talk
 
-Browser-based slide deck for **Build the Language, Then Make the Abstractions Disappear: Extensible Programming on .NET**.
+Conference HTML deck for **Build the Language, Then Make the Abstractions Disappear**.
 
-Open `index.html` directly in a browser. The deck has no external runtime dependencies.
+Published deck: https://misha1302.github.io/lang-dev-presentation-2026/
 
-Controls: `←` / `→` navigate, `N` toggles speaker notes, `T` opens the table of contents, `P` prints / saves to PDF.
+Main project: https://github.com/Misha1302/UniversalToolchain
 
-The layout was visually QA-checked at 1536×864, 1366×768 and 1280×720.
+## Controls
+
+- `←` / `→`, `PageUp` / `PageDown`, `Space`: navigate the current section.
+- `Home` / `End`: jump to the first / last slide of the current section.
+- `F`: fullscreen.
+- `N`: speaker notes.
+- `A`: toggle the Q&A appendix. The main talk remains 17 slides; the appendix is separate.
+- Direct links: `#1` … `#17`, and `#A1` … `#A4` for appendix slides.
+
+## Live demo
+
+Use the rehearsed commands in [`DEMO.md`](DEMO.md). They are sourced from shipped UniversalToolchain example READMEs; the main talk has a demo checkpoint on slide 11.
+
+## Validation
+
+`python3 scripts/check_deck.py` validates the authored slide contract and source-of-truth invariants. `node --check deck.js` validates JavaScript syntax. Both run in GitHub Actions on pushes and pull requests.
+
+The talk deliberately avoids historical performance percentages unless they are re-established with a current reproducible benchmark and semantic-parity precheck.
