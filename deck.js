@@ -57,7 +57,7 @@
     next.disabled = index === visibleSlides().length - 1;
     appendixToggle.classList.toggle('appendix-on', appendixMode);
     appendixToggle.setAttribute('aria-pressed', appendixMode ? 'true' : 'false');
-    notesText.textContent = current?.dataset.notes || 'No notes for this slide.';
+    notesText.textContent = (current?.dataset.notes || 'No notes for this slide.').replace(/\\n/g, '\n');
     document.title = appendixMode
       ? `Appendix A${index + 1}/${appendixSlides.length} — LangDev 2026`
       : `Slide ${index + 1}/${mainSlides.length} — Build the Language, Then Make the Abstractions Disappear`;
