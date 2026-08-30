@@ -67,16 +67,20 @@ concrete plan</p></div></div><p class="bigq">Ambiguity is a planning result, not
 <div class="sourcebar"><span>LanguageCompiler.cs · LanguageRuntime.cs · ExactRuntimeBindingTests.cs</span></div>
 </section>
 <section class="slide two" data-kind="main" data-note-key="m9">
-<div><div class="eyebrow">Title payoff</div><h2>What disappears: <span class="accent">open composition decisions</span></h2></div>
-<div class="panel"><div class="route"><span class="node">provider alternatives</span><span class="arrow">→</span><span class="node">selected contribution</span></div><div class="diagline"></div><div class="route"><span class="node">route alternatives</span><span class="arrow">→</span><span class="node">LanguageArtifactRoute</span></div><div class="diagline"></div><div class="route"><span class="node">runtime candidates</span><span class="arrow">→</span><span class="node good">exact RuntimeProvider</span></div></div><p class="bigq">The abstraction disappears as a <em>decision</em>, not necessarily as an object.</p>
-<div class="sourcebar"><span>Claim scope: staging proven; speedup not claimed</span></div>
+<div><div class="eyebrow">Deabstraction, precisely</div><h2>Planning removes <span class="accent">uncertainty</span>, not necessarily interfaces</h2></div>
+<div class="panel"><div class="grid2"><div class="panel tight broken"><h3>Open before planning</h3><p class="code">capability → provider A | B
+route → r1 | r2
+order → partial constraints
+runtime → candidate set</p></div><div class="panel tight good"><h3>Frozen in LanguagePlan</h3><p class="code">provider → exact identity
+route → exact steps + cost
+order → deterministic sequence
+runtime → exact provider / policy</p></div></div></div><p class="bigq">The planner deabstracts global <em>choices</em>. Objects, interfaces and dispatch may remain.</p>
+<div class="sourcebar"><span>Architectural guarantee: resolved composition data · performance is a separate claim</span></div>
 </section>
 <section class="slide stack" data-kind="main" data-note-key="m10">
-<div><div class="eyebrow">Specialization boundary</div><h2>Further specialization is an opportunity, not a measured result</h2></div>
-<div class="compare"><div class="panel"><div class="label">Generic representation</div><div class="code bigcode">LoadEnvironment()
-Push(slot)
-LoadExternal&lt;double&gt;()</div></div><div class="xarrow">→</div><div class="panel good"><div class="label">Illustrative specialization</div><div class="code bigcode">LoadExternal&lt;double&gt;(<span class="hi">slot</span>)</div></div></div><div class="flow" style="justify-content:center"><span class="chip">slot known</span><span class="chip">type known</span><span class="chip">capability known</span><span class="chip">future / illustrative</span></div>
-<div class="sourcebar"><span>Illustrative only · no performance measurement claim</span></div>
+<div><div class="eyebrow">Two deabstraction layers</div><h2>Staging is guaranteed; representation specialization is optional</h2></div>
+<div class="grid2"><div class="panel good"><h3>1 · Composition deabstraction</h3><p>candidate sets → concrete identities<br/>route search → concrete route<br/>partial order → concrete sequence<br/>global choice is not repeated during execution</p></div><div class="panel"><h3>2 · Representation/code specialization</h3><p>known slot / type / provider may enable simpler representation, fewer lookups or devirtualization — depending on implementation and JIT/AOT.</p></div></div><p class="bigq" style="text-align:center">Do not infer layer 2 from layer 1 without measurement.</p>
+<div class="sourcebar"><span>Layer 1 = current architecture · Layer 2 = optimization opportunity</span></div>
 </section>
 <section class="slide stack" data-kind="main" data-note-key="m11">
 <div><div class="eyebrow">Runnable evidence</div><h2>Demo: real planner → real plan → real runtime → <span class="ok">42</span></h2></div>
@@ -105,10 +109,10 @@ Run("41") = <span class="ok">42</span></div></div></div><p class="caption">CI ch
 <div class="grid4"><div class="panel"><h3>Explicit pipeline</h3><p>Best when composition is closed and stable.</p></div><div class="panel"><h3>Racket / #lang</h3><p>Language-oriented ecosystem and language boot protocol.</p></div><div class="panel"><h3>JetBrains MPS</h3><p>Language workbench and projectional tooling.</p></div><div class="panel"><h3>MontiCore</h3><p>Language components, grammars and DSL tooling.</p></div></div><p class="bigq" style="text-align:center">Our question: who owns provider, route and runtime composition decisions in .NET?</p>
 <div class="sourcebar"><span>Positioning only · no novelty claim</span></div>
 </section>
-<section class="slide two" data-kind="main" data-note-key="m14">
-<div><div class="eyebrow">Cost / boundary</div><h2>Composition protocol becomes part of the architecture</h2></div>
-<div class="panel"><div class="grid2"><div><h3 class="ok">+</h3><p>explicit decisions<br/>deterministic plan<br/>earlier diagnostics<br/>reproducible identity</p></div><div><h3 class="bad">−</h3><p>more infrastructure<br/>protocol design cost<br/>core changes for new composition semantics<br/>more tests to own</p></div></div></div><p class="bigq">Open-world for extension instances; partially closed-world for composition mechanics.</p>
-<div class="sourcebar"><span>Protocol is an architectural commitment</span></div>
+<section class="slide stack" data-kind="main" data-note-key="m14">
+<div><div class="eyebrow">Cost model</div><h2>Planning does not remove cost — it makes <span class="accent">where we pay</span> explicit</h2></div>
+<div class="grid2"><div class="panel"><h3>Planning</h3><p>provider resolution / conflicts<br/>ordering + route search<br/>canonicalization + diagnostics<br/>time + allocations</p></div><div class="panel"><h3>Runtime creation</h3><p>immutable plan memory<br/>plan verification<br/>component materialization<br/>route assembly</p></div><div class="panel good"><h3>Steady-state execution</h3><p>no global re-planning by design<br/>but provider/session calls, validation and dispatch may remain</p></div><div class="panel"><h3>Engineering / testing</h3><p>protocol + versioning discipline<br/>determinism regressions<br/>configuration state space<br/>docs and evidence maintenance</p></div></div><p class="bigq" style="text-align:center">Measure planning, runtime creation, first execution and steady state separately.</p>
+<div class="sourcebar"><span>No zero-cost claim · handwritten pipeline remains the strongest baseline</span></div>
 </section>
 <section class="slide two" data-kind="main" data-note-key="m15">
 <div><div class="eyebrow">Claim boundary</div><h2>Structural compatibility ≠ semantic compatibility</h2></div>
@@ -140,8 +144,9 @@ ExactRuntimeBindingTests.cs</p></div></div><p class="caption">Truth snapshot: 36
 [runtime] input=41 output=42</div><p class="caption">Values in angle brackets come from the actual CI run; no hard-coded fake plan output.</p>
 </section>
 <section class="slide stack" data-kind="appendix" data-note-key="a3">
-<div><div class="eyebrow">Appendix · performance</div><h2>What the talk does — and does not — claim</h2></div>
-<div class="grid2"><div class="panel good"><h3>Supported</h3><p>global composition resolves before execution<br/>runtime consumes exact selected plan<br/>ambiguity can fail during planning</p></div><div class="panel broken"><h3>Not claimed</h3><p>zero overhead<br/>faster generated code<br/>all dispatch removed<br/>universal devirtualization</p></div></div>
+<div><div class="eyebrow">Appendix · performance evidence</div><h2>Performance is four separate questions, not one slogan</h2></div>
+<div class="grid2"><div class="panel"><h3>Planning</h3><p><span class="bad">NEEDS MEASUREMENT</span><br/>10 / 100 / 1000 contributions<br/>time + allocations</p></div><div class="panel"><h3>Runtime creation</h3><p><span class="bad">NEEDS MEASUREMENT</span><br/>verification + materialization + route assembly</p></div><div class="panel"><h3>First execution</h3><p><span class="bad">NEEDS MEASUREMENT</span><br/>provider initialization / JIT / warmup separated from planning</p></div><div class="panel good"><h3>Steady state</h3><p>existing perf/allocation regression gates<br/><strong>but:</strong> no handwritten-baseline speedup claim yet</p></div></div><p class="caption">Current evidence confirms benchmark/performance gates exist, but does not provide a talk-ready universal number set. No numbers are invented.</p>
+<div class="sourcebar"><span>Evidence boundary: UniversalToolchain docs/evidence · exact measurements must bind commit + environment + raw results</span></div>
 </section>
 <section class="slide stack" data-kind="appendix" data-note-key="a4">
 <div><div class="eyebrow">Appendix · testability</div><h2>How to test the boundary</h2></div>
@@ -160,6 +165,8 @@ ExactRuntimeBindingTests.cs</p></div></div><p class="caption">Truth snapshot: 36
 <aside class="notes" id="notes"><h4>Speaker notes</h4><p></p></aside>
 <aside class="toc" id="toc"><h3>Slides</h3><div class="toc-grid" id="tocGrid"></div><p class="caption">Keys: ←/→ navigate, N notes, T table of contents, A appendix, F fullscreen, P print.</p></aside>
 <script src="speaker-notes-1.js"></script>
-<script src="speaker-notes-2.js"></script><script src="deck.js"></script>
+<script src="speaker-notes-2.js"></script>
+<script src="speaker-notes-hardening.js"></script>
+<script src="deck.js"></script>
 </body>
 </html>
