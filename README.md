@@ -1,12 +1,16 @@
 # LangDev 2026 — UniversalToolchain presentation
 
-Reworked conference deck for the accepted talk title:
+Conference deck for the accepted talk title:
 
 > Build the Language, Then Make the Abstractions Disappear
 
 Central thesis:
 
-> Modules keep local knowledge; the planner owns global composition decisions.
+> Modules keep local knowledge; the planner owns global composition decisions. Runtime materializes and executes the resolved plan rather than re-solving global composition.
+
+## Source-of-truth contract
+
+The implementation claims in the deck are pinned to `Misha1302/UniversalToolchain@36206b66548fec365be6e03381ba44d50c2cafe5`. The evidence path is the current public API: `LanguageCompiler.Compile(...)` produces an immutable `LanguagePlan`; `LanguageRuntime.Create(...)` / `LanguageBuildRuntime` materialize and execute that plan. The talk does **not** claim universal zero-cost extensibility or a measured speedup.
 
 ## Run locally
 
@@ -15,14 +19,7 @@ python3 -m http.server 8000
 # open http://localhost:8000
 ```
 
-Keyboard:
-
-- `←` / `→` / space — navigate
-- `N` — speaker notes
-- `T` — table of contents
-- `A` — include appendix slides
-- `F` — fullscreen
-- `P` — print
+Keyboard: `←` / `→` / space navigate, `N` notes, `T` TOC, `A` appendix, `F` fullscreen, `P` print.
 
 ## Validate
 
@@ -30,10 +27,11 @@ Keyboard:
 python3 scripts/check_deck.py
 node --check deck.js
 python3 scripts/check_render.py
+python3 scripts/timing_audit.py
 ```
 
-## Narrative contract
+GitHub Actions additionally checks out the exact UniversalToolchain truth snapshot and runs `demo/UniversalToolchainDemo.csproj` through project references.
 
-The deck deliberately starts with the strongest baseline: a single known language can often use an explicit host pipeline. The planner appears only after independent extensions introduce global composition decisions: provider ambiguity, artifact routing, ordering, conflicts, backend/runtime selection and early diagnostics.
+## Demo
 
-The accepted title is preserved. The “abstractions disappear” payoff is scoped: planning collapses local possibilities into stable facts, and some generic execution/IR machinery can leave the hot path when those facts are static. The deck does not claim universal zero-cost extensibility or performance wins without measurements.
+See [`DEMO.md`](DEMO.md). The live path deliberately proves two boundaries: a real planning ambiguity (`UTL2002`) resolved by `PreferCapabilityProvider`, then a real authored package compiled to `LanguagePlan`, materialized by `LanguageRuntime.Create`, and executed as `41 → 42`.

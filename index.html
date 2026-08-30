@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -8,280 +9,149 @@
 </head>
 <body>
 <div class="deck" id="deck">
-<section class="slide active center" data-kind="main" data-notes="ЗАЧЕМ: сохранить принятый conference title, но сразу переобещать его через composition staging, а не через общие performance обещания.&#10;СКАЗАТЬ: это доклад не о наборе API UniversalToolchain, а о вопросе ownership: где заканчивается языковая variability.&#10;ПЕРЕХОД: начнём с лучшего альтернативного решения — руками собранного pipeline.&#10;НЕ ПЕРЕОБЕЩАТЬ: не говорить zero-cost и не обещать ускорение без measurements.">
-  <div style="max-width:1160px">
-    <div class="eyebrow">LangDev 2026 · UniversalToolchain case study</div>
-    <h1>Build the Language,<br/><span class="accent">Then Make the Abstractions Disappear</span></h1>
-    <p class="bigq">Modules keep local knowledge. The planner owns global composition decisions.</p>
-  </div>
-  <div class="sourcebar"><span>Official title preserved</span><span>Case study, not framework tour</span></div>
+<section class="slide center" data-kind="main" data-note-key="m1">
+<div><div class="eyebrow">LangDev 2026 · UniversalToolchain case study</div><h1>Build the Language,<br/><span class="accent">Then Make the Abstractions Disappear</span></h1></div>
+<p class="bigq">Modules keep local knowledge. The planner owns global composition decisions.</p>
+<div class="sourcebar"><span>Source truth: UniversalToolchain@36206b66548f</span></div>
 </section>
-
-<section class="slide two" data-kind="main" data-notes="ЗАЧЕМ: снять strawman и признать, что planner часто не нужен.&#10;СКАЗАТЬ: если язык один и компоненты известны заранее, host pipeline проще, дешевле и честнее.&#10;ПЕРЕХОД: проблема начинается, когда компоненты становятся независимыми и optional.&#10;НЕ ПЕРЕОБЕЩАТЬ: не изображать explicit pipeline как плохую архитектуру.">
-  <div>
-    <div class="eyebrow">Strongest baseline</div>
-    <h2>For one language, assemble the pipeline by hand</h2>
-    <p class="bigq">And often, that is the best engineering choice.</p>
-  </div>
-  <div class="panel code bigcode">language
-    .UseParser(parser)
-    .UseLowering(lowering)
-    .UsePass(optimizer)
-    .UseBackend(backend);</div>
-  <div class="sourcebar"><span>Baseline: explicit host pipeline</span></div>
+<section class="slide two" data-kind="main" data-note-key="m2">
+<div><div class="eyebrow">Strongest baseline</div><h2>For one language, assemble the pipeline by hand</h2></div>
+<div class="panel code bigcode">language
+  .UseParser(parser)
+  .UseLowering(lowering)
+  .UsePass(optimizer)
+  .UseBackend(backend);</div><p class="bigq">And often, this is the best engineering choice.</p>
+<div class="sourcebar"><span>Baseline, not an anti-pattern</span></div>
 </section>
-
-<section class="slide two" data-kind="main" data-notes="ЗАЧЕМ: показать точку, где local extensibility превращается в global composition problem.&#10;СКАЗАТЬ: каждый модуль может знать только свои boundaries, но итоговая конфигурация языка должна быть одна.&#10;ПЕРЕХОД: нужен владелец решений, требующих знания всей конфигурации.&#10;НЕ ПЕРЕОБЕЩАТЬ: не утверждать, что модули изолированы семантически.">
-  <div>
-    <div class="eyebrow">Composition problem</div>
-    <h2>Local extensibility creates a <span class="accent">global</span> problem</h2>
-    <p style="margin-top:1.2rem">Who assembles one concrete language configuration?</p>
-  </div>
-  <div class="panel">
-    <div class="grid2">
-      <span class="node">optional providers</span><span class="node">ordering + conflicts</span>
-      <span class="node">artifact contracts</span><span class="node">multiple backends</span>
-      <span class="node">independent packages</span><span class="node">runtime capabilities</span>
-    </div>
-  </div>
-  <div class="sourcebar"><span>Motivation before framework taxonomy</span></div>
+<section class="slide two" data-kind="main" data-note-key="m3">
+<div><div class="eyebrow">Composition problem</div><h2>Local extensibility creates a <span class="accent">global</span> problem</h2></div>
+<div class="panel"><div class="grid2"><span class="node">optional providers</span><span class="node">ordering + conflicts</span><span class="node">artifact contracts</span><span class="node">multiple backends</span><span class="node">independent packages</span><span class="node">runtime capabilities</span></div></div><p class="bigq">Who owns the one concrete language configuration?</p>
+<div class="sourcebar"><span>LanguagePackageRegistry + LanguageDefinition</span></div>
 </section>
-
-<section class="slide stack" data-kind="main" data-notes="ЗАЧЕМ: сформулировать главный split ответственности.&#10;СКАЗАТЬ: modules declare local contracts: requires/provides/conflicts/artifacts/ordering. LanguageCompiler sees all declarations and emits LanguagePlan.&#10;ПЕРЕХОД: следующий слайд показывает первый concrete failure: two providers.&#10;НЕ ПЕРЕОБЕЩАТЬ: модули всё равно знают shared contracts на границах.">
-  <div><div class="eyebrow">Ownership split</div><h2>Local declarations → global <span class="accent">LanguagePlan</span></h2></div>
-  <div class="panel">
-    <div class="route" style="margin-bottom:2rem">
-      <span class="node">Module A</span><span class="node">Module B</span><span class="node">Module C</span><span class="arrow">→</span><span class="node accent">LanguageCompiler</span><span class="arrow">→</span><span class="node good">LanguagePlan</span>
-    </div>
-    <div class="grid2">
-      <div class="panel tight"><h3>Modules declare</h3><p class="code" style="margin-top:.9rem">requires
-provides
+<section class="slide stack" data-kind="main" data-note-key="m4">
+<div><div class="eyebrow">Ownership split</div><h2>Local declarations → global <span class="accent">LanguagePlan</span></h2></div>
+<div class="panel"><div class="route"><span class="node">packages</span><span class="arrow">→</span><span class="node">LanguagePackageRegistry</span><span class="arrow">→</span><span class="node accent">LanguageCompiler.Compile</span><span class="arrow">→</span><span class="node good">LanguagePlan</span></div><div class="grid2" style="margin-top:1.2rem"><div class="panel tight"><h3>Local declarations</h3><p class="code">requires / provides
 conflicts
-artifact contracts
-ordering</p></div>
-      <div class="panel tight good"><h3>Planner decides</h3><p class="code" style="margin-top:.9rem">selected providers
-pass order
-artifact routes
-backend executor
-runtime package</p></div>
-    </div>
-  </div>
-  <div class="sourcebar"><span>Thesis: local knowledge local, global decisions explicit</span></div>
+artifact transformation
+order / slot
+runtime provider</p></div><div class="panel tight good"><h3>Whole-language result</h3><p class="code">Features
+Contributions
+Routes
+RuntimeProvider
+PlanHash</p></div></div></div>
+<div class="sourcebar"><span>LanguageCompiler.cs · LanguagePlan.cs</span></div>
 </section>
+<section class="slide two" data-kind="main" data-note-key="m5">
+<div><div class="eyebrow">Concrete failure #1</div><h2>Two providers: the planner refuses to guess</h2></div>
+<div class="panel"><div class="code">consumer requires capability X
 
-<section class="slide two" data-kind="main" data-notes="ЗАЧЕМ: первый проверяемый failure case — ambiguity.&#10;СКАЗАТЬ: если Optimizer requires X и есть два providers X, planner не должен угадывать intention. Нужна policy/explicit selection или planning diagnostic.&#10;ПЕРЕХОД: второй failure class — не выбор provider, а route между artifacts.&#10;НЕ ПЕРЕОБЕЩАТЬ: не называть конкретный API выбора provider, если он изменился; оставить concept-level explicit policy.">
-  <div>
-    <div class="eyebrow">Concrete failure #1</div>
-    <h2>Two providers: the planner refuses to guess</h2>
-    <p style="margin-top:1.2rem">Ambiguity is a planning result, not a runtime surprise.</p>
-  </div>
-  <div class="panel">
-    <div class="code">Optimizer
-requires X</div>
-    <div class="diagline"></div>
-    <div class="fork">
-      <div class="panel tight"><h3>Provider A</h3><p class="code">provides X</p></div>
-      <div class="panel tight broken"><h3>Provider B</h3><p class="code">provides X</p><div class="failmark">×</div><p>ambiguous</p></div>
-    </div>
-    <div class="panel tight good" style="margin-top:1rem"><p class="code">explicit selection / host policy
+provider.a provides X
+provider.b provides X</div><div class="diagline"></div><div class="panel tight broken"><p class="code"><span class="bad">UTL2002</span> Capability X has multiple providers</p></div><div class="panel tight good" style="margin-top:1rem"><p class="code">PreferCapabilityProvider(X, provider.a)
         ↓
-LanguagePlan: X → Provider A</p></div>
-  </div>
-  <div class="sourcebar"><span>Failure must be visible at planning time</span></div>
+concrete plan</p></div></div><p class="bigq">Ambiguity is a planning result, not a runtime surprise.</p>
+<div class="sourcebar"><span>LanguageContributionResolutionPhase.cs · diagnostic UTL2002</span></div>
 </section>
-
-<section class="slide stack" data-kind="main" data-notes="ЗАЧЕМ: второй concrete composition problem — type-compatible artifact routing.&#10;СКАЗАТЬ: components can be selected and still not connect. Route is global because individual conversions only know input/output.&#10;ПЕРЕХОД: теперь можно показать LanguagePlan как before/after result, не DTO.&#10;НЕ ПЕРЕОБЕЩАТЬ: route compatibility is structural contract compatibility, not semantic proof.">
-  <div><div class="eyebrow">Concrete failure #2</div><h2>Is there a type-compatible route to the selected backend?</h2></div>
-  <div class="grid2">
-    <div class="panel broken centerbox">
-      <div class="route"><span class="node">SourceText</span><span class="arrow">→</span><span class="node">AST</span><span class="arrow">→</span><span class="node">AIR</span><span class="failmark">×</span><span class="node">SSA Backend</span></div>
-      <p class="bigq bad">No route</p>
-    </div>
-    <div class="panel good centerbox">
-      <div class="route"><span class="node">SourceText</span><span class="arrow">→</span><span class="node">AST</span><span class="arrow">→</span><span class="node">AIR</span><span class="arrow">→</span><span class="node">SSA</span><span class="arrow">→</span><span class="node">Backend</span></div>
-      <p class="bigq ok">Route becomes part of the plan</p>
-    </div>
-  </div>
-  <div class="sourcebar"><span>Route belongs to planning result</span></div>
+<section class="slide stack" data-kind="main" data-note-key="m6">
+<div><div class="eyebrow">Concrete failure #2</div><h2>Is there a type-compatible route to the selected backend?</h2></div>
+<div class="grid2"><div class="panel broken centerbox"><div class="route"><span class="node">SourceText</span><span class="arrow">→</span><span class="node">AST</span><span class="failmark">×</span><span class="node">Backend</span></div><p class="bigq bad">No route</p></div><div class="panel good centerbox"><div class="route"><span class="node">SourceText</span><span class="arrow">→</span><span class="node">Syntax</span><span class="arrow">→</span><span class="node">Backend</span></div><p class="bigq ok">Route becomes part of the plan</p></div></div>
+<div class="sourcebar"><span>LanguageArtifactRoutePhase.cs · LanguagePlan.Routes</span></div>
 </section>
-
-<section class="slide stack" data-kind="main" data-notes="ЗАЧЕМ: убрать восприятие LanguagePlan как DTO/list.&#10;СКАЗАТЬ: before planning есть alternatives and partial constraints; after planning — reproducible configuration with provider selection, route, order, executor.&#10;ПЕРЕХОД: раз есть plan, где граница runtime?&#10;НЕ ПЕРЕОБЕЩАТЬ: plan does not prove semantic compatibility beyond expressed contracts.">
-  <div><div class="eyebrow">Payoff</div><h2><span class="accent">LanguagePlan</span> is the collapsed result of choices</h2></div>
-  <div class="planbeforeafter">
-    <div class="panel broken">
-      <div class="label">Before planning</div>
-      <div class="decision">
-        <div>X → Provider A | Provider B</div>
-        <div>AIR → ? → Backend</div>
-        <div>pass order: partial constraints</div>
-        <div>runtime provider: candidate set</div>
-      </div>
-    </div>
-    <div class="mid">→</div>
-    <div class="panel good">
-      <div class="label">After planning</div>
-      <div class="decision">
-        <div>X → Provider A</div>
-        <div>SourceText → AST → AIR → SSA → Backend</div>
-        <div>Lower → Optimize → Cleanup</div>
-        <div>exact backend executor + runtime package</div>
-      </div>
-    </div>
-  </div>
-  <p class="bigq" style="text-align:center">Planning turns local possibilities into one reproducible configuration.</p>
+<section class="slide stack" data-kind="main" data-note-key="m7">
+<div><div class="eyebrow">Planner output</div><h2><span class="accent">LanguagePlan</span> is the collapsed result of choices</h2></div>
+<div class="planbeforeafter"><div class="panel broken"><div class="label">Before planning</div><div class="decision"><div>X → A | B</div><div>SourceText → ? → Backend</div><div>order: partial constraints</div><div>runtime: candidate set</div></div></div><div class="mid">→</div><div class="panel good"><div class="label">After planning</div><div class="decision"><div>Features / Contributions fixed</div><div>Routes[backend] fixed</div><div>RuntimeProvider fixed</div><div>PlanHash fixed</div></div></div></div><p class="bigq" style="text-align:center">One reproducible composition identity.</p>
+<div class="sourcebar"><span>LanguagePlanCanonicalizer · LanguagePlanVerifier · DefinitionPolicyPlanningTests</span></div>
 </section>
-
-<section class="slide stack" data-kind="main" data-notes="ЗАЧЕМ: провести границу planner/runtime, чтобы runtime не выглядел вторым planner.&#10;СКАЗАТЬ: runtime validates and materializes the accepted plan; it should not re-resolve providers/routes/conflicts globally.&#10;ПЕРЕХОД: это даёт честный bridge к title: fixed facts can be consumed by execution.&#10;НЕ ПЕРЕОБЕЩАТЬ: runtime validation is allowed and desirable; forbidden is повторный global planning.">
-  <div><div class="eyebrow">Planner/runtime boundary</div><h2>Runtime executes the plan; it does not rebuild the language</h2></div>
-  <div class="boundary">
-    <div class="panel"><h3 class="accent">Planner</h3><ul><li>select providers</li><li>resolve conflicts</li><li>order contributions</li><li>build artifact routes</li><li>choose exact executor</li></ul></div>
-    <div class="panel good"><h3 class="ok">Runtime</h3><ul><li>validate plan/provider match</li><li>materialize components</li><li>assemble the selected route</li><li>execute</li><li>report runtime failures</li></ul></div>
-  </div>
-  <div class="sourcebar"><span>Runtime validation ≠ second planner</span></div>
+<section class="slide stack" data-kind="main" data-note-key="m8">
+<div><div class="eyebrow">Planner/runtime boundary</div><h2>Runtime executes the plan; it does not rebuild the language</h2></div>
+<div class="boundary"><div class="panel"><h3 class="accent">Planner</h3><ul><li>resolve features + contributions</li><li>select capability/runtime providers</li><li>apply ordering + conflicts</li><li>build artifact routes</li><li>emit immutable LanguagePlan</li></ul></div><div class="panel good"><h3 class="ok">Runtime</h3><ul><li>verify exact plan/provider match</li><li>materialize planned components</li><li>assemble selected route</li><li>Run(request)</li><li>report execution failures</li></ul></div></div><p class="bigq" style="text-align:center"><code>LanguageRuntime.Create(plan, componentSources)</code></p>
+<div class="sourcebar"><span>LanguageCompiler.cs · LanguageRuntime.cs · ExactRuntimeBindingTests.cs</span></div>
 </section>
-
-<section class="slide two" data-kind="main" data-notes="ЗАЧЕМ: выполнить promise title без неподтверждённых performance claims.&#10;СКАЗАТЬ: after planning, some global decisions become stable facts. Specialization can target these facts, but this is a scoped compiler payoff.&#10;ПЕРЕХОД: показать existing deck’s best specialization example as a narrow local example.&#10;НЕ ПЕРЕОБЕЩАТЬ: сказать “can leave the hot path”, not “always zero-cost”.">
-  <div>
-    <div class="eyebrow">Why the title still fits</div>
-    <h2>Composition decisions become stable facts</h2>
-    <p class="bigq">LanguagePlan does not make everything free. It makes some decisions no longer open.</p>
-  </div>
-  <div class="panel">
-    <div class="route"><span class="node">composition decisions</span><span class="arrow">→</span><span class="node">LanguagePlan</span></div>
-    <div class="diagline"></div>
-    <div class="route"><span class="node">stable facts</span><span class="arrow">→</span><span class="node">execution / IR specialization</span></div>
-    <div class="diagline"></div>
-    <div class="route"><span class="node good">some generic machinery can leave the hot path</span></div>
-  </div>
+<section class="slide two" data-kind="main" data-note-key="m9">
+<div><div class="eyebrow">Title payoff</div><h2>What disappears: <span class="accent">open composition decisions</span></h2></div>
+<div class="panel"><div class="route"><span class="node">provider alternatives</span><span class="arrow">→</span><span class="node">selected contribution</span></div><div class="diagline"></div><div class="route"><span class="node">route alternatives</span><span class="arrow">→</span><span class="node">LanguageArtifactRoute</span></div><div class="diagline"></div><div class="route"><span class="node">runtime candidates</span><span class="arrow">→</span><span class="node good">exact RuntimeProvider</span></div></div><p class="bigq">The abstraction disappears as a <em>decision</em>, not necessarily as an object.</p>
+<div class="sourcebar"><span>Claim scope: staging proven; speedup not claimed</span></div>
 </section>
-
-<section class="slide stack" data-kind="main" data-notes="ЗАЧЕМ: сохранить сильный существующий payoff, но сделать его локальным и честным.&#10;СКАЗАТЬ: when slot/type/runtime capability are static, a concrete environment/push representation sequence may be replaced by direct operation.&#10;ПЕРЕХОД: evidence/demo must prove material claim: plan inspection and controlled failure.&#10;НЕ ПЕРЕОБЕЩАТЬ: example is illustrative/local, not universal performance statement.">
-  <div><div class="eyebrow">Local specialization example</div><h2>Now we know enough to remove something concrete</h2></div>
-  <div class="compare">
-    <div class="panel"><div class="label">Before</div><div class="code bigcode">LoadEnvironment()
+<section class="slide stack" data-kind="main" data-note-key="m10">
+<div><div class="eyebrow">Specialization boundary</div><h2>Further specialization is an opportunity, not a measured result</h2></div>
+<div class="compare"><div class="panel"><div class="label">Generic representation</div><div class="code bigcode">LoadEnvironment()
 Push(slot)
-LoadExternal&lt;double&gt;()</div></div>
-    <div class="xarrow">→</div>
-    <div class="panel good"><div class="label">After specialization</div><div class="code bigcode">LoadExternal&lt;double&gt;(<span class="hi">slot</span>)</div></div>
-  </div>
-  <div class="flow" style="justify-content:center"><span class="chip">slot is known</span><span class="chip">T = double</span><span class="chip">runtime capability is known</span><span class="chip">no universal speed claim</span></div>
+LoadExternal&lt;double&gt;()</div></div><div class="xarrow">→</div><div class="panel good"><div class="label">Illustrative specialization</div><div class="code bigcode">LoadExternal&lt;double&gt;(<span class="hi">slot</span>)</div></div></div><div class="flow" style="justify-content:center"><span class="chip">slot known</span><span class="chip">type known</span><span class="chip">capability known</span><span class="chip">future / illustrative</span></div>
+<div class="sourcebar"><span>Illustrative only · no performance measurement claim</span></div>
 </section>
-
-<section class="slide stack" data-kind="main" data-notes="ЗАЧЕМ: согласовать demo с новой narrative.&#10;СКАЗАТЬ: demo should not prove the program runs; it should show local declarations, planning, inspectable plan, valid execution, plus controlled planning failure.&#10;ПЕРЕХОД: design point относительно prior art.&#10;НЕ ПЕРЕОБЕЩАТЬ: если live demo fails, fallback output demonstrates the intended material observations.">
-  <div><div class="eyebrow">Demo shape</div><h2>Demo: inspect the plan, then break composition deliberately</h2></div>
-  <div class="grid2">
-    <div class="panel good"><h3>Happy path</h3><div class="code" style="margin-top:1rem">local declarations
+<section class="slide stack" data-kind="main" data-note-key="m11">
+<div><div class="eyebrow">Runnable evidence</div><h2>Demo: real planner → real plan → real runtime → <span class="ok">42</span></h2></div>
+<div class="grid2"><div class="panel"><h3>Controlled planning failure</h3><div class="code">Compile(...)
   ↓
-LanguageCompiler
+<span class="bad">UTL2002</span> multiple providers
   ↓
-inspect LanguagePlan
+PreferCapabilityProvider(...)</div></div><div class="panel good"><h3>Source-backed execution</h3><div class="code">LanguagePackageBuilder
   ↓
-valid configuration executes</div></div>
-    <div class="panel broken"><h3>Controlled failure</h3><div class="code" style="margin-top:1rem">ambiguous provider
-or missing route
+LanguageCompiler.Compile
   ↓
-planning diagnostic
+print PlanHash / Routes
   ↓
-no runtime surprise</div></div>
-  </div>
-  <div class="sourcebar"><span>DEMO.md should prove planning, not just execution</span></div>
+LanguageRuntime.Create
+  ↓
+Run("41") = <span class="ok">42</span></div></div></div><p class="caption">CI checks out UniversalToolchain@36206b66548f… and runs this exact demo.</p>
+<div class="sourcebar"><span>demo/Program.cs · CI exact-source checkout</span></div>
 </section>
-
-<section class="slide stack" data-kind="main" data-notes="ЗАЧЕМ: честно позиционировать среди strongest alternatives.&#10;СКАЗАТЬ: Racket, MPS and MontiCore solve important language extensibility problems. UniversalToolchain design point here is narrower: global composition planning for selected providers/routes/runtime execution in .NET.&#10;ПЕРЕХОД: из design point вывести practical decision criterion.&#10;НЕ ПЕРЕОБЕЩАТЬ: не говорить “we are first/better”.">
-  <div><div class="eyebrow">Prior art positioning</div><h2>Not “compiler vs framework” — a specific design point</h2></div>
-  <div class="grid4">
-    <div class="panel"><h3>Explicit host pipeline</h3><p style="margin-top:.8rem">Strong when components are known and composition is stable.</p></div>
-    <div class="panel"><h3>Racket / #lang</h3><p style="margin-top:.8rem">Language-oriented ecosystem and language boot protocol.</p></div>
-    <div class="panel"><h3>JetBrains MPS</h3><p style="margin-top:.8rem">Language workbench with projectional editing and rich DSL tooling.</p></div>
-    <div class="panel"><h3>MontiCore</h3><p style="margin-top:.8rem">Language components, grammars and DSL tooling.</p></div>
-  </div>
-  <p class="bigq" style="text-align:center">UniversalToolchain case study: who owns provider, route and runtime composition decisions?</p>
+<section class="slide stack" data-kind="main" data-note-key="m12">
+<div><div class="eyebrow">Decision criterion</div><h2>When does a planner pay for itself?</h2></div>
+<div class="tableish"><div class="panel"><h3>Explicit host pipeline</h3><div class="row"><strong>known components</strong><span>stable composition</span></div><div class="row"><strong>few global constraints</strong><span>direct control</span></div><div class="row"><strong>one owner</strong><span>simple is better</span></div></div><div class="panel good"><h3>Planning layer</h3><div class="row"><strong>independent extensions</strong><span>provider alternatives</span></div><div class="row"><strong>routing / conflicts / order</strong><span>whole-system decisions</span></div><div class="row"><strong>early diagnostics</strong><span>fail before execution</span></div></div></div>
+<div class="sourcebar"><span>Use the simplest owner that can decide globally</span></div>
 </section>
-
-<section class="slide stack" data-kind="main" data-notes="ЗАЧЕМ: дать audience transferable criterion.&#10;СКАЗАТЬ: use simplest owner that can make global decisions correctly. Planner pays off only with independent extension pressure and early diagnostics needs.&#10;ПЕРЕХОД: после benefits показать cost and open-world boundary.&#10;НЕ ПЕРЕОБЕЩАТЬ: не продавать planner как default.">
-  <div><div class="eyebrow">Decision criterion</div><h2>When does a planner pay for itself?</h2></div>
-  <div class="tableish">
-    <div class="panel"><h3>Explicit host pipeline</h3><div class="row"><strong>known components</strong><span>stable composition</span></div><div class="row"><strong>few global constraints</strong><span>direct control</span></div><div class="row"><strong>one team/host owns it</strong><span>simple is better</span></div></div>
-    <div class="panel good"><h3>Planning layer</h3><div class="row"><strong>independent extensions</strong><span>real provider alternatives</span></div><div class="row"><strong>routing / ordering / conflicts</strong><span>whole-system decisions</span></div><div class="row"><strong>early diagnostics needed</strong><span>fail before execution</span></div></div>
-  </div>
-  <p class="bigq" style="text-align:center">Use the simplest owner that can make the global decisions correctly.</p>
+<section class="slide stack" data-kind="main" data-note-key="m13">
+<div><div class="eyebrow">Prior art positioning</div><h2>A specific design point, not a novelty claim</h2></div>
+<div class="grid4"><div class="panel"><h3>Explicit pipeline</h3><p>Best when composition is closed and stable.</p></div><div class="panel"><h3>Racket / #lang</h3><p>Language-oriented ecosystem and language boot protocol.</p></div><div class="panel"><h3>JetBrains MPS</h3><p>Language workbench and projectional tooling.</p></div><div class="panel"><h3>MontiCore</h3><p>Language components, grammars and DSL tooling.</p></div></div><p class="bigq" style="text-align:center">Our question: who owns provider, route and runtime composition decisions in .NET?</p>
+<div class="sourcebar"><span>Positioning only · no novelty claim</span></div>
 </section>
-
-<section class="slide two" data-kind="main" data-notes="ЗАЧЕМ: показать цену approach, иначе story звучит как магия.&#10;СКАЗАТЬ: planning requires a composition protocol. New provider/pass/conversion can be local; new composition semantics may require planner core work.&#10;ПЕРЕХОД: даже с protocol есть semantic limitation.&#10;НЕ ПЕРЕОБЕЩАТЬ: partially closed-world mechanics is a design boundary, not failure.">
-  <div>
-    <div class="eyebrow">Cost / boundary</div>
-    <h2>Composition protocol becomes part of the architecture</h2>
-    <p class="bigq">Open-world for extension instances. Partially closed-world for composition mechanics.</p>
-  </div>
-  <div class="panel">
-    <div class="grid2">
-      <div><h3 class="ok">+</h3><p>explicit decisions<br/>reproducible plan<br/>earlier diagnostics</p></div>
-      <div><h3 class="bad">−</h3><p>more infrastructure<br/>protocol design cost<br/>new composition semantics may require planner changes</p></div>
-    </div>
-  </div>
+<section class="slide two" data-kind="main" data-note-key="m14">
+<div><div class="eyebrow">Cost / boundary</div><h2>Composition protocol becomes part of the architecture</h2></div>
+<div class="panel"><div class="grid2"><div><h3 class="ok">+</h3><p>explicit decisions<br/>deterministic plan<br/>earlier diagnostics<br/>reproducible identity</p></div><div><h3 class="bad">−</h3><p>more infrastructure<br/>protocol design cost<br/>core changes for new composition semantics<br/>more tests to own</p></div></div></div><p class="bigq">Open-world for extension instances; partially closed-world for composition mechanics.</p>
+<div class="sourcebar"><span>Protocol is an architectural commitment</span></div>
 </section>
-
-<section class="slide two" data-kind="main" data-notes="ЗАЧЕМ: поставить границу claim: planner checks expressed protocol only.&#10;СКАЗАТЬ: structural compatibility is necessary, not sufficient. Two components may both say AIR and still disagree semantically unless protocol captures the difference.&#10;ПЕРЕХОД: финальный transferable takeaway.&#10;НЕ ПЕРЕОБЕЩАТЬ: do not say planner eliminates coupling.">
-  <div>
-    <div class="eyebrow">Claim boundary</div>
-    <h2>Structural compatibility ≠ semantic compatibility</h2>
-    <p style="margin-top:1.2rem">The planner checks only what the composition protocol expresses.</p>
-  </div>
-  <div class="panel">
-    <div class="grid2">
-      <div class="good panel tight"><h3 class="ok">✓ checks</h3><p>dependencies / conflicts<br/>capabilities / providers<br/>ordering<br/>artifact contracts</p></div>
-      <div class="broken panel tight"><h3 class="bad">✕ does not prove</h3><p>semantic agreement<br/>hidden invariants<br/>domain assumptions<br/>all backend equivalence</p></div>
-    </div>
-  </div>
+<section class="slide two" data-kind="main" data-note-key="m15">
+<div><div class="eyebrow">Claim boundary</div><h2>Structural compatibility ≠ semantic compatibility</h2></div>
+<div class="panel"><div class="grid2"><div class="good panel tight"><h3 class="ok">✓ planner can check</h3><p>dependencies / conflicts<br/>capabilities / providers<br/>ordering<br/>artifact contracts<br/>backend/runtime coverage</p></div><div class="broken panel tight"><h3 class="bad">✕ it does not prove</h3><p>semantic agreement<br/>hidden invariants<br/>domain assumptions<br/>equivalent backend behavior<br/>performance</p></div></div></div>
+<div class="sourcebar"><span>LanguageArtifactRoute.ContractsConnect checks expressed structure</span></div>
 </section>
-
-<section class="slide center" data-kind="main" data-notes="ЗАЧЕМ: завершить не призывом использовать UT, а переносимой идеей.&#10;СКАЗАТЬ: extensibility is not only plugin APIs. If independent components must form one language, someone owns global decisions. Ask audience where these decisions are currently smeared.&#10;ПЕРЕХОД: Q&A / appendix if needed.&#10;НЕ ПЕРЕОБЕЩАТЬ: no new claims on final slide.">
-  <div style="max-width:1120px">
-    <div class="eyebrow">Takeaway</div>
-    <h2>Extensibility is not just making components pluggable</h2>
-    <p class="bigq">When independent components must form one language, someone has to own global composition decisions.</p>
-    <p class="claim" style="margin-top:2.5rem"><span class="accent">Keep local knowledge local.</span><br/>Make global decisions explicit.</p>
-  </div>
+<section class="slide center" data-kind="main" data-note-key="m16">
+<div><div class="eyebrow">Takeaway</div><h2>Extensibility is not just making components pluggable</h2></div>
+<div style="max-width:1120px"><p class="bigq">When independent components must form one language, someone has to own global composition decisions.</p><p class="claim" style="margin-top:2.5rem"><span class="accent">Keep local knowledge local.</span><br/>Make global decisions explicit.<br/><span class="ok">Then execute the resolved plan.</span></p></div>
+<div class="sourcebar"><span>Architecture takeaway, not framework advocacy</span></div>
 </section>
-
-<section class="slide stack" data-kind="appendix" data-notes="Appendix: fact-check summary for Q&A.">
-  <div><div class="eyebrow">Appendix · fact checking</div><h2>Claims kept intentionally narrow</h2></div>
-  <div class="grid2">
-    <div class="panel"><h3>Confirmed by public repo/readme</h3><p>UniversalToolchain is under Wist, supports WistEngine, restricted arithmetic, compiled delegate invocation, interpreter/CIL paths, dialect composition and external language authoring alpha.</p></div>
-    <div class="panel"><h3>Framed as architecture interpretation</h3><p>“Modules keep local knowledge; planner owns global decisions” is a talk narrative over provider selection, artifact routing, deterministic ordering and runtime assembly.</p></div>
-  </div>
+<section class="slide stack" data-kind="appendix" data-note-key="a1">
+<div><div class="eyebrow">Appendix · evidence map</div><h2>Current-source evidence behind the central claim</h2></div>
+<div class="grid2"><div class="panel"><h3>Planning</h3><p class="code">LanguageCompiler.cs
+LanguageContributionResolutionPhase.cs
+LanguageArtifactRoutePhase.cs
+LanguagePlan.cs</p></div><div class="panel good"><h3>Materialization / execution</h3><p class="code">LanguageRuntime.cs
+LanguageBuildRuntime.cs
+LanguageRouteRuntimeAssembler.cs
+ExactRuntimeBindingTests.cs</p></div></div><p class="caption">Truth snapshot: 36206b66548fec365be6e03381ba44d50c2cafe5</p>
 </section>
-
-<section class="slide stack" data-kind="appendix" data-notes="Appendix: demo fallback content.">
-  <div><div class="eyebrow">Appendix · demo fallback</div><h2>Fallback output to keep the live talk safe</h2></div>
-  <div class="panel code bigcode">$ dotnet run --project demo/PlanInspection
-✓ loaded language packages
-✓ built LanguagePlan
-  provider: X → ProviderA
-  route: SourceText → AST → AIR → SSA → Backend
-  order: Parse → Lower → Optimize → Cleanup
-
-$ dotnet run --project demo/AmbiguousProvider
-✗ planning failed: capability X has multiple matching providers</div>
+<section class="slide stack" data-kind="appendix" data-note-key="a2">
+<div><div class="eyebrow">Appendix · demo contract</div><h2>The demo is source-backed, not simulated</h2></div>
+<div class="panel code bigcode">[planning] UTL2002: multiple providers
+[planning] preferred provider: demo.provider.a
+[plan] hash: &lt;real hash&gt;
+[plan] runtime: demo.runtime@1
+[plan] route: demo | cost=&lt;real&gt; | steps=&lt;real&gt;
+[runtime] input=41 output=42</div><p class="caption">Values in angle brackets come from the actual CI run; no hard-coded fake plan output.</p>
 </section>
-
-<section class="slide stack" data-kind="appendix" data-notes="Appendix: alternative title if conference allowed changing it. Main deck keeps accepted title.">
-  <div><div class="eyebrow">Appendix · title</div><h2>Why the accepted title stays</h2></div>
-  <div class="panel"><p class="bigq">The public talk title promises disappearing abstractions. The main deck now delivers it through a staged argument: global composition decisions become fixed facts; execution/specialization can consume those facts without re-solving composition.</p></div>
+<section class="slide stack" data-kind="appendix" data-note-key="a3">
+<div><div class="eyebrow">Appendix · performance</div><h2>What the talk does — and does not — claim</h2></div>
+<div class="grid2"><div class="panel good"><h3>Supported</h3><p>global composition resolves before execution<br/>runtime consumes exact selected plan<br/>ambiguity can fail during planning</p></div><div class="panel broken"><h3>Not claimed</h3><p>zero overhead<br/>faster generated code<br/>all dispatch removed<br/>universal devirtualization</p></div></div>
 </section>
-
-<section class="slide stack" data-kind="appendix" data-notes="Appendix: relational testing boundary.">
-  <div><div class="eyebrow">Appendix · backend semantics</div><h2>Backend diversity is allowed; semantic diversity is not</h2></div>
-  <div class="panel">
-    <div class="route"><span class="node">one semantic input</span><span class="arrow">→</span><span class="node">Interpreter</span><span class="node">CIL</span><span class="arrow">→</span><span class="node good">same observable result?</span></div>
-    <p class="caption">Relational tests protect the ownership boundary; they do not prove full semantic equivalence.</p>
-  </div>
+<section class="slide stack" data-kind="appendix" data-note-key="a4">
+<div><div class="eyebrow">Appendix · testability</div><h2>How to test the boundary</h2></div>
+<div class="panel"><div class="route"><span class="node">definition/packages</span><span class="arrow">→</span><span class="node">expected diagnostic / plan hash</span><span class="arrow">→</span><span class="node">exact runtime binding</span><span class="arrow">→</span><span class="node good">observable result</span></div><p class="bigq">Test planning and execution as separate contracts.</p></div>
 </section>
 </div>
 <nav>
 <button class="navbtn" id="prev">←</button>
 <div class="progress"><span id="prog"></span></div>
-<div class="counter" id="count">1 / 15</div>
+<div class="counter" id="count">1 / 16</div>
 <button class="navbtn" id="next">→</button>
 <button class="navbtn" id="tocBtn">TOC</button>
 <button class="navbtn" id="notesBtn">Notes</button>
@@ -289,6 +159,7 @@ $ dotnet run --project demo/AmbiguousProvider
 </nav>
 <aside class="notes" id="notes"><h4>Speaker notes</h4><p></p></aside>
 <aside class="toc" id="toc"><h3>Slides</h3><div class="toc-grid" id="tocGrid"></div><p class="caption">Keys: ←/→ navigate, N notes, T table of contents, A appendix, F fullscreen, P print.</p></aside>
-<script src="deck.js"></script>
+<script src="speaker-notes-1.js"></script>
+<script src="speaker-notes-2.js"></script><script src="deck.js"></script>
 </body>
 </html>

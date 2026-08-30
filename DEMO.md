@@ -1,43 +1,23 @@
-# Demo script
+# Demo runbook — planner/runtime boundary
 
-Goal: prove the planning claim, not merely that a program runs.
+Truth snapshot: `Misha1302/UniversalToolchain@36206b66548fec365be6e03381ba44d50c2cafe5`. Target: 90–120 seconds; no live coding.
 
-## Happy path
+## What the demo proves
 
-1. Show local declarations from two or three packages.
-2. Run the planner.
-3. Inspect the resulting `LanguagePlan`:
-   - selected provider: `X -> ProviderA`
-   - route: `SourceText -> AST -> AIR -> SSA -> Backend`
-   - pass order: `Parse -> Lower -> Optimize -> Cleanup`
-   - exact backend executor / runtime package
-4. Execute the valid configuration.
+The first half creates a real `LanguagePackageDescriptor` whose consumer requires a capability with two eligible providers. `LanguageCompiler.Compile(...)` must return diagnostic `UTL2002`. The minimal correction is `LanguageDefinitionBuilder.PreferCapabilityProvider(...)`; the corrected plan then exposes the selected contributions.
 
-Expected fallback output:
+The second half uses `LanguagePackageBuilder` to author a tiny executable language: `SourceText` is parsed to an `int`, the selected backend returns `value + 1`, and `UseRouteRuntime` supplies the runtime provider. The program prints actual `LanguagePlan` fields, calls `LanguageRuntime.Create(plan, componentSources)`, and runs `"41"`, expecting `42`.
 
-```text
-$ dotnet run --project demo/PlanInspection
-✓ loaded language packages
-✓ built LanguagePlan
-  provider: X -> ProviderA
-  route: SourceText -> AST -> AIR -> SSA -> Backend
-  order: Parse -> Lower -> Optimize -> Cleanup
-✓ executed selected backend route
+## Run against a current checkout
+
+```bash
+./demo/run-demo.sh /path/to/UniversalToolchain
 ```
 
-## Controlled failure
+`run-demo.sh` refuses a missing checkout and prints the source commit when Git metadata is available. The project uses direct `ProjectReference`s into the supplied checkout; it does not substitute a stub planner or an older NuGet package.
 
-Change only one thing: add a second provider for capability `X`, or remove the AIR-to-SSA conversion.
+## Conference path
 
-Expected fallback output:
+Run once before the talk and keep the stdout. During the talk, show only: `UTL2002`; the one-line provider policy; `PlanHash` + runtime/route summary; and final `input=41 output=42`.
 
-```text
-$ dotnet run --project demo/AmbiguousProvider
-✗ planning failed: capability X has multiple matching providers
-```
-
-The audience should see that the failure belongs to planning time, not to a later accidental runtime crash.
-
-## Talk boundary
-
-Do not live-code. Use prepared commands and keep screenshot/output fallback available.
+If source checkout/build fails, say that the live environment is blocked and use the CI artifact from the last validated presentation commit. Do not invent a hash, route cost, or successful runtime output.

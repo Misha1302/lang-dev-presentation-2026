@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>14</LangVersion>
+  </PropertyGroup>
+  <Target Name="RequireUniversalToolchainRoot" BeforeTargets="ResolveProjectReferences" Condition="'$(UniversalToolchainRoot)' == ''">
+    <Error Text="Set -p:UniversalToolchainRoot=/path/to/UniversalToolchain checkout." />
+  </Target>
+  <ItemGroup Condition="'$(UniversalToolchainRoot)' != ''">
+    <ProjectReference Include="$(UniversalToolchainRoot)/UniversalToolchain/UniversalToolchain.Language.Abstractions/UniversalToolchain.Language.Abstractions.csproj" />
+    <ProjectReference Include="$(UniversalToolchainRoot)/UniversalToolchain/UniversalToolchain.FeatureSdk/UniversalToolchain.FeatureSdk.csproj" />
+    <ProjectReference Include="$(UniversalToolchainRoot)/UniversalToolchain/UniversalToolchain.LanguageSdk/UniversalToolchain.LanguageSdk.csproj" />
+    <ProjectReference Include="$(UniversalToolchainRoot)/UniversalToolchain/UniversalToolchain.Runtime/UniversalToolchain.Runtime.csproj" />
+    <ProjectReference Include="$(UniversalToolchainRoot)/UniversalToolchain/UniversalToolchain.LanguageAuthoring/UniversalToolchain.LanguageAuthoring.csproj" />
+  </ItemGroup>
+</Project>

@@ -16,16 +16,34 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
       - name: Validate authored deck contract
         run: python3 scripts/check_deck.py
       - name: Check JavaScript syntax
         run: node --check deck.js
+      - name: Audit speaker timing
+        run: python3 scripts/timing_audit.py
+      - name: Checkout exact UniversalToolchain truth snapshot
+        uses: actions/checkout@v4
+        with:
+          repository: Misha1302/UniversalToolchain
+          ref: 36206b66548fec365be6e03381ba44d50c2cafe5
+          path: _deps/UniversalToolchain
+      - name: Run source-backed planner/runtime demo
+        run: |
+          dotnet run --project demo/UniversalToolchainDemo.csproj -p:UniversalToolchainRoot="$GITHUB_WORKSPACE/_deps/UniversalToolchain" | tee demo-source-output.txt
+          grep -q "\[planning\] UTL2002:" demo-source-output.txt
+          grep -q "\[runtime\] input=41 output=42" demo-source-output.txt
       - name: Render-check all slides at conference viewports
         run: python3 scripts/check_render.py
-      - name: Upload representative render screenshots
+      - name: Upload validation evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: presentation-render-screenshots
-          path: render-artifacts/*.png
+          name: presentation-validation-evidence
+          path: |
+            render-artifacts/*.png
+            demo-source-output.txt
           if-no-files-found: ignore
