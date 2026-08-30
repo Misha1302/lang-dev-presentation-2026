@@ -78,7 +78,7 @@ runtime → exact provider / policy</p></div></div></div><p class="bigq">The pla
 <div class="sourcebar"><span>Architectural guarantee: resolved composition data · performance is a separate claim</span></div>
 </section>
 <section class="slide stack" data-kind="main" data-note-key="m10">
-<div><div class="eyebrow">Two deabstraction layers</div><h2>Staging is guaranteed; representation specialization is optional</h2></div>
+<div><div class="eyebrow">Two deabstraction layers</div><h2>Further specialization: staging is guaranteed; representation specialization is optional</h2></div>
 <div class="grid2"><div class="panel good"><h3>1 · Composition deabstraction</h3><p>candidate sets → concrete identities<br/>route search → concrete route<br/>partial order → concrete sequence<br/>global choice is not repeated during execution</p></div><div class="panel"><h3>2 · Representation/code specialization</h3><p>known slot / type / provider may enable simpler representation, fewer lookups or devirtualization — depending on implementation and JIT/AOT.</p></div></div><p class="bigq" style="text-align:center">Do not infer layer 2 from layer 1 without measurement.</p>
 <div class="sourcebar"><span>Layer 1 = current architecture · Layer 2 = optimization opportunity</span></div>
 </section>
@@ -110,7 +110,7 @@ Run("41") = <span class="ok">42</span></div></div></div><p class="caption">CI ch
 <div class="sourcebar"><span>Positioning only · no novelty claim</span></div>
 </section>
 <section class="slide stack" data-kind="main" data-note-key="m14">
-<div><div class="eyebrow">Cost model</div><h2>Planning does not remove cost — it makes <span class="accent">where we pay</span> explicit</h2></div>
+<div><div class="eyebrow">Composition protocol · cost model</div><h2>Planning does not remove cost — it makes <span class="accent">where we pay</span> explicit</h2></div>
 <div class="grid2"><div class="panel"><h3>Planning</h3><p>provider resolution / conflicts<br/>ordering + route search<br/>canonicalization + diagnostics<br/>time + allocations</p></div><div class="panel"><h3>Runtime creation</h3><p>immutable plan memory<br/>plan verification<br/>component materialization<br/>route assembly</p></div><div class="panel good"><h3>Steady-state execution</h3><p>no global re-planning by design<br/>but provider/session calls, validation and dispatch may remain</p></div><div class="panel"><h3>Engineering / testing</h3><p>protocol + versioning discipline<br/>determinism regressions<br/>configuration state space<br/>docs and evidence maintenance</p></div></div><p class="bigq" style="text-align:center">Measure planning, runtime creation, first execution and steady state separately.</p>
 <div class="sourcebar"><span>No zero-cost claim · handwritten pipeline remains the strongest baseline</span></div>
 </section>
