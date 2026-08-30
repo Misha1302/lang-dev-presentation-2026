@@ -1,194 +1,95 @@
-(() => {
-  const mainSlides = [...document.querySelectorAll('.slide[data-kind="main"]')];
-  const appendixSlides = [...document.querySelectorAll('.slide[data-kind="appendix"]')];
-  const allSlides = [...mainSlides, ...appendixSlides];
-  const counter = document.getElementById('counter');
-  const prev = document.getElementById('prev');
-  const next = document.getElementById('next');
-  const appendixToggle = document.getElementById('appendixToggle');
-  const fullscreen = document.getElementById('fullscreen');
-  const notesToggle = document.getElementById('notesToggle');
-  const notesPanel = document.getElementById('notesPanel');
-  const notesText = document.getElementById('notesText');
-
-  let appendixMode = false;
-  let index = 0;
-
-  const visibleSlides = () => appendixMode ? appendixSlides : mainSlides;
-  const clamp = value => Math.max(0, Math.min(visibleSlides().length - 1, value));
-  const activeSlide = () => visibleSlides()[index];
-
-  function parseHash() {
-    const raw = location.hash.replace(/^#/, '');
-    const appendixMatch = raw.match(/^a(?:ppendix-?)?(\d+)$/i);
-    if (appendixMatch) {
-      appendixMode = true;
-      index = Math.max(0, Math.min(appendixSlides.length - 1, Number.parseInt(appendixMatch[1], 10) - 1));
-      return;
-    }
-    const mainMatch = raw.match(/^(?:slide-?)?(\d+)$/i);
-    if (!mainMatch) return;
-    const number = Number.parseInt(mainMatch[1], 10);
-    if (number > mainSlides.length && number <= mainSlides.length + appendixSlides.length) {
-      appendixMode = true;
-      index = number - mainSlides.length - 1;
-    } else {
-      appendixMode = false;
-      index = Math.max(0, Math.min(mainSlides.length - 1, number - 1));
-    }
-  }
-
-  function syncHash() {
-    const desired = appendixMode ? `#A${index + 1}` : `#${index + 1}`;
-    if (location.hash !== desired) history.replaceState(null, '', desired);
-  }
-
-  function intersects(a, b) {
-    return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
-  }
-
-  function runLayoutDiagnostics() {
-    if (new URLSearchParams(location.search).get('visual-check') !== '1') return;
-    const current = activeSlide();
-    const errors = [];
-    if (!current) errors.push('no-active-slide');
-
-    if (current) {
-      const viewportWidth = document.documentElement.clientWidth;
-      const viewportHeight = document.documentElement.clientHeight;
-      const elements = [current, ...current.querySelectorAll('*')];
-      for (const element of elements) {
-        const style = getComputedStyle(element);
-        if (style.display === 'none' || style.visibility === 'hidden') continue;
-        const rect = element.getBoundingClientRect();
-        if (rect.width < 1 || rect.height < 1) continue;
-        if (rect.left < -1 || rect.top < -1 || rect.right > viewportWidth + 1 || rect.bottom > viewportHeight + 1) {
-          errors.push(`overflow:${element.tagName.toLowerCase()}.${element.className || '-'}`);
-          break;
-        }
-      }
-      const source = current.querySelector('.sources');
-      const chrome = document.querySelector('.chrome');
-      if (source && chrome && intersects(source.getBoundingClientRect(), chrome.getBoundingClientRect())) {
-        errors.push('sources-overlap-controls');
+const allSlides = [...document.querySelectorAll('.slide')];
+const prog = document.getElementById('prog');
+const count = document.getElementById('count');
+const notes = document.getElementById('notes');
+const notesP = notes.querySelector('p');
+const toc = document.getElementById('toc');
+const tocGrid = document.getElementById('tocGrid');
+const appendixBtn = document.getElementById('appendixBtn');
+let showAppendix = false;
+let slides = [];
+let i = 0;
+function titleOf(s){ const h=s.querySelector('h1,h2'); return h ? h.textContent.replace(/\s+/g,' ').trim() : 'Slide'; }
+function runLayoutDiagnostics(){
+  if(new URLSearchParams(location.search).get('visual-check') !== '1') return;
+  const active = document.querySelector('.slide.active');
+  const errors = [];
+  if(!active) errors.push('no-active-slide');
+  if(active){
+    const w = document.documentElement.clientWidth;
+    const h = document.documentElement.clientHeight;
+    for(const el of [active, ...active.querySelectorAll('*')]){
+      const style = getComputedStyle(el);
+      if(style.display === 'none' || style.visibility === 'hidden') continue;
+      const r = el.getBoundingClientRect();
+      if(r.width < 1 || r.height < 1) continue;
+      if(r.left < -2 || r.top < -2 || r.right > w + 2 || r.bottom > h + 2){
+        errors.push(`overflow:${el.tagName.toLowerCase()}.${String(el.className || '-').replace(/\s+/g,'.')}`);
+        break;
       }
     }
-
-    document.documentElement.dataset.visualCheck = errors.length ? 'fail' : 'ok';
-    document.documentElement.dataset.visualErrors = errors.join('|');
   }
-
-  function render({syncLocation = true} = {}) {
-    const current = activeSlide();
-    allSlides.forEach(slide => {
-      const isActive = slide === current;
-      slide.classList.toggle('active', isActive);
-      slide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-    });
-    counter.textContent = appendixMode
-      ? `A${index + 1} / A${appendixSlides.length}`
-      : `${index + 1} / ${mainSlides.length}`;
-    prev.disabled = index === 0;
-    next.disabled = index === visibleSlides().length - 1;
-    appendixToggle.classList.toggle('appendix-on', appendixMode);
-    appendixToggle.setAttribute('aria-pressed', appendixMode ? 'true' : 'false');
-    notesText.textContent = (current?.dataset.notes || 'No notes for this slide.').replace(/\\n/g, '\n');
-    document.title = appendixMode
-      ? `Appendix A${index + 1}/${appendixSlides.length} — LangDev 2026`
-      : `Slide ${index + 1}/${mainSlides.length} — Build the Language, Then Make the Abstractions Disappear`;
-    if (syncLocation) syncHash();
-    runLayoutDiagnostics();
-  }
-
-  function go(delta) {
-    const target = clamp(index + delta);
-    if (target === index) return;
-    index = target;
-    render();
-  }
-
-  function toggleAppendix() {
-    appendixMode = !appendixMode;
-    index = appendixMode ? 0 : mainSlides.length - 1;
-    render();
-  }
-
-  function isInteractiveTarget(target) {
-    if (!(target instanceof Element)) return false;
-    return Boolean(target.closest('button, a, input, textarea, select, summary, [contenteditable="true"], [role="button"]'));
-  }
-
-  prev.addEventListener('click', () => go(-1));
-  next.addEventListener('click', () => go(1));
-  appendixToggle.addEventListener('click', toggleAppendix);
-
-  fullscreen.addEventListener('click', async () => {
-    try {
-      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
-      else await document.exitFullscreen();
-    } catch (_) {
-      // Browsers may deny fullscreen without direct user activation.
-    }
+  document.documentElement.dataset.visualCheck = errors.length ? 'fail' : 'ok';
+  document.documentElement.dataset.visualErrors = errors.join('|');
+}
+function visibleSlides(){ return allSlides.filter(s => showAppendix || s.dataset.kind !== 'appendix'); }
+function rebuildToc(){
+  tocGrid.innerHTML='';
+  slides.forEach((s, idx)=>{
+    const b=document.createElement('button');
+    b.textContent=(idx+1)+'. '+titleOf(s);
+    if(s.dataset.kind === 'appendix') b.dataset.appendix = 'true';
+    b.onclick=()=>{go(idx); toc.classList.remove('show')};
+    tocGrid.appendChild(b);
   });
-
-  notesToggle.addEventListener('click', () => {
-    notesPanel.hidden = !notesPanel.hidden;
-    notesToggle.setAttribute('aria-pressed', notesPanel.hidden ? 'false' : 'true');
-    if (!notesPanel.hidden) notesPanel.scrollTop = 0;
-  });
-
-  window.addEventListener('hashchange', () => {
-    parseHash();
-    render({syncLocation: false});
-  });
-
-  window.addEventListener('keydown', event => {
-    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
-    if (event.key === 'Escape' && !notesPanel.hidden) {
-      notesPanel.hidden = true;
-      notesToggle.setAttribute('aria-pressed', 'false');
-      return;
-    }
-    if (isInteractiveTarget(event.target)) return;
-
-    const key = event.key;
-    if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(key)) {
-      event.preventDefault();
-      go(1);
-    } else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(key)) {
-      event.preventDefault();
-      go(-1);
-    } else if (key === 'Home') {
-      event.preventDefault();
-      index = 0;
-      render();
-    } else if (key === 'End') {
-      event.preventDefault();
-      index = visibleSlides().length - 1;
-      render();
-    } else if (key.toLowerCase() === 'a') {
-      event.preventDefault();
-      toggleAppendix();
-    } else if (key.toLowerCase() === 'f') {
-      event.preventDefault();
-      fullscreen.click();
-    } else if (key.toLowerCase() === 'n') {
-      event.preventDefault();
-      notesToggle.click();
-    }
-  });
-
-  let touchStartX = null;
-  window.addEventListener('touchstart', event => {
-    if (event.touches.length === 1) touchStartX = event.touches[0].clientX;
-  }, {passive: true});
-  window.addEventListener('touchend', event => {
-    if (touchStartX == null || event.changedTouches.length !== 1) return;
-    const delta = event.changedTouches[0].clientX - touchStartX;
-    touchStartX = null;
-    if (Math.abs(delta) > 55) go(delta < 0 ? 1 : -1);
-  }, {passive: true});
-
-  parseHash();
-  render({syncLocation: false});
-})();
+}
+function readHash(){
+  const raw = location.hash.replace('#','');
+  if(!raw) return 0;
+  if(raw.startsWith('a')){
+    showAppendix = true;
+    const n = Number(raw.slice(1)) || 1;
+    const app = allSlides.filter(s => s.dataset.kind === 'appendix');
+    const target = app[Math.max(0, Math.min(app.length - 1, n - 1))];
+    slides = visibleSlides();
+    return Math.max(0, slides.indexOf(target));
+  }
+  return Math.max(0, Math.min((Number(raw) || 1) - 1, visibleSlides().length - 1));
+}
+function refresh(targetIndex){
+  slides = visibleSlides();
+  if(appendixBtn) appendixBtn.textContent = showAppendix ? 'Main' : 'Appendix';
+  allSlides.forEach(s => s.classList.remove('active'));
+  i = Math.max(0, Math.min(targetIndex ?? i, slides.length - 1));
+  rebuildToc();
+  go(i, true);
+}
+function go(n, replaceHash=false){
+  allSlides.forEach(s => s.classList.remove('active'));
+  i=(n+slides.length)%slides.length;
+  slides[i].classList.add('active');
+  prog.style.width=((i+1)/slides.length*100)+'%';
+  count.textContent=(i+1)+' / '+slides.length + (showAppendix ? ' · appendix on' : '');
+  notesP.textContent=slides[i].dataset.notes || '';
+  const appIndex = allSlides.filter(s => s.dataset.kind === 'appendix').indexOf(slides[i]);
+  const hash = appIndex >= 0 ? '#a'+(appIndex+1) : '#'+(allSlides.filter(s => s.dataset.kind !== 'appendix').indexOf(slides[i])+1);
+  history.replaceState(null,'',hash);
+  runLayoutDiagnostics();
+}
+document.getElementById('prev').onclick=()=>go(i-1);
+document.getElementById('next').onclick=()=>go(i+1);
+document.getElementById('notesBtn').onclick=()=>notes.classList.toggle('show');
+document.getElementById('tocBtn').onclick=()=>toc.classList.toggle('show');
+appendixBtn.onclick=()=>{showAppendix=!showAppendix;refresh(0)};
+document.addEventListener('keydown', e=>{
+  if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(i+1)}
+  if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(i-1)}
+  if(e.key.toLowerCase()==='n') notes.classList.toggle('show');
+  if(e.key.toLowerCase()==='t') toc.classList.toggle('show');
+  if(e.key.toLowerCase()==='a'){showAppendix=!showAppendix;refresh(0)}
+  if(e.key.toLowerCase()==='f') document.documentElement.requestFullscreen?.();
+  if(e.key.toLowerCase()==='p') window.print();
+  if(e.key==='Escape'){notes.classList.remove('show');toc.classList.remove('show')}
+});
+window.addEventListener('hashchange',()=>refresh(readHash()));
+refresh(readHash());

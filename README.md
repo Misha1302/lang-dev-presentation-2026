@@ -1,28 +1,39 @@
-# LangDev 2026 — UniversalToolchain talk
+# LangDev 2026 — UniversalToolchain presentation
 
-Conference HTML deck for **Build the Language, Then Make the Abstractions Disappear**.
+Reworked conference deck for the accepted talk title:
 
-Published deck: https://misha1302.github.io/lang-dev-presentation-2026/
+> Build the Language, Then Make the Abstractions Disappear
 
-Main project: https://github.com/Misha1302/UniversalToolchain
+Central thesis:
 
-## Controls
+> Modules keep local knowledge; the planner owns global composition decisions.
 
-- `←` / `→`, `PageUp` / `PageDown`, `Space`: navigate the current section.
-- `Home` / `End`: jump to the first / last slide of the current section.
-- `F`: fullscreen.
-- `N`: speaker notes.
-- `A`: toggle the Q&A appendix. The main talk remains 15 slides; the appendix is separate.
-- Direct links: `#1` … `#15`, and `#A1` … `#A4` for appendix slides.
+## Run locally
 
-## Live demo
+```bash
+python3 -m http.server 8000
+# open http://localhost:8000
+```
 
-Use the rehearsed commands in [`DEMO.md`](DEMO.md). They are sourced from shipped UniversalToolchain example READMEs; the main talk has a demo checkpoint on slide 11.
+Keyboard:
 
-## Validation
+- `←` / `→` / space — navigate
+- `N` — speaker notes
+- `T` — table of contents
+- `A` — include appendix slides
+- `F` — fullscreen
+- `P` — print
 
-`python3 scripts/check_deck.py` validates the authored slide contract and source-of-truth invariants. `node --check deck.js` validates JavaScript syntax. `python3 scripts/check_render.py` opens every main and appendix slide in headless Chrome at **1920×1080** and **1366×768**, rejects viewport overflow or source/control overlap, and captures representative screenshots.
+## Validate
 
-All three checks run in GitHub Actions on pushes and pull requests; render screenshots are uploaded as a workflow artifact.
+```bash
+python3 scripts/check_deck.py
+node --check deck.js
+python3 scripts/check_render.py
+```
 
-The talk deliberately avoids historical performance percentages unless they are re-established with a current reproducible benchmark and semantic-parity precheck.
+## Narrative contract
+
+The deck deliberately starts with the strongest baseline: a single known language can often use an explicit host pipeline. The planner appears only after independent extensions introduce global composition decisions: provider ambiguity, artifact routing, ordering, conflicts, backend/runtime selection and early diagnostics.
+
+The accepted title is preserved. The “abstractions disappear” payoff is scoped: planning collapses local possibilities into stable facts, and some generic execution/IR machinery can leave the hot path when those facts are static. The deck does not claim universal zero-cost extensibility or performance wins without measurements.

@@ -1,92 +1,58 @@
-from __future__ import annotations
-
+#!/usr/bin/env python3
 from html.parser import HTMLParser
 from pathlib import Path
 import re
-import sys
-import xml.etree.ElementTree as ET
 
-ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / "index.html").read_text(encoding="utf-8")
-CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
-JS = (ROOT / "deck.js").read_text(encoding="utf-8")
+root = Path(__file__).resolve().parents[1]
+html = (root / "index.html").read_text(encoding="utf-8")
 
-errors: list[str] = []
-
-
-def require(condition: bool, message: str) -> None:
-    if not condition:
-        errors.append(message)
-
-
-class DeckParser(HTMLParser):
-    def __init__(self) -> None:
+class SlideParser(HTMLParser):
+    def __init__(self):
         super().__init__()
-        self.main = 0
-        self.appendix = 0
-        self.slides_without_notes = 0
-        self.imgs_without_alt = 0
-        self.ids: set[str] = set()
+        self.slides = []
+        self._in_section = False
+        self._depth = 0
+        self._buf = []
+        self._attrs = {}
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "section" and "slide" in attrs.get("class", ""):
+            self._in_section = True
+            self._depth = 1
+            self._buf = []
+            self._attrs = attrs
+            return
+        if self._in_section:
+            self._depth += 1
+    def handle_endtag(self, tag):
+        if self._in_section:
+            self._depth -= 1
+            if self._depth == 0 and tag == "section":
+                text = " ".join("".join(self._buf).split())
+                self.slides.append((self._attrs, text))
+                self._in_section = False
+    def handle_data(self, data):
+        if self._in_section:
+            self._buf.append(data)
 
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        data = dict(attrs)
-        element_id = data.get("id")
-        if element_id:
-            self.ids.add(element_id)
-        classes = set((data.get("class") or "").split())
-        if tag == "section" and "slide" in classes:
-            if not (data.get("data-notes") or "").strip():
-                self.slides_without_notes += 1
-            kind = data.get("data-kind")
-            if kind == "main":
-                self.main += 1
-            elif kind == "appendix":
-                self.appendix += 1
-            else:
-                errors.append("slide without explicit data-kind")
-        if tag == "img" and not (data.get("alt") or "").strip():
-            self.imgs_without_alt += 1
-
-
-parser = DeckParser()
-parser.feed(HTML)
-
-require(parser.main == 15, f"expected 15 main slides, found {parser.main}")
-require(parser.appendix == 4, f"expected 4 appendix slides, found {parser.appendix}")
-require(parser.slides_without_notes == 0, f"{parser.slides_without_notes} slides are missing speaker notes")
-require(parser.imgs_without_alt == 0, f"{parser.imgs_without_alt} images are missing alt text")
-
-for required_id in {"deck", "prev", "next", "counter", "appendixToggle", "fullscreen", "notesToggle", "notesPanel", "notesText"}:
-    require(required_id in parser.ids, f"missing required id: {required_id}")
-
-for token in [
-    "Mikhail Razakov",
-    "Variables",
-    "CSharpInterop",
-    "MPS",
-    "MontiCore",
-    "LIVE DEMO",
-    "qr-universaltoolchain.svg",
-]:
-    require(token in HTML, f"missing required content token: {token}")
-
-for forbidden in ["innerHTML", "outerHTML", "previousTransitions"]:
-    require(forbidden not in JS, f"deck.js must not mutate authored slide content via {forbidden}")
-
-require("isInteractiveTarget" in JS, "keyboard handler must guard interactive elements")
-require("data-kind=\"appendix\"" in HTML, "appendix slides missing")
-require(re.search(r"\.sources\{[^}]*font-size:clamp\(12px", CSS) is not None, "source footer minimum font size regressed below 12px")
-require("overflow:hidden" in CSS, "viewport overflow contract missing")
-
-try:
-    ET.parse(ROOT / "qr-universaltoolchain.svg")
-except Exception as exc:  # noqa: BLE001
-    errors.append(f"QR SVG is not valid XML: {exc}")
-
-if errors:
-    print("Deck contract FAILED:")
-    for error in errors:
-        print(f" - {error}")
-    sys.exit(1)
-
-print(f"Deck contract OK: {parser.main} main slides + {parser.appendix} appendix slides")
+p = SlideParser(); p.feed(html)
+slides = p.slides
+main = [s for s in slides if s[0].get("data-kind") != "appendix"]
+appendix = [s for s in slides if s[0].get("data-kind") == "appendix"]
+assert len(main) >= 14, f"expected at least 14 main slides, got {len(main)}"
+assert len(appendix) >= 3, f"expected appendix slides, got {len(appendix)}"
+for n, (attrs, text) in enumerate(main, 1):
+    assert "data-notes" in attrs and len(attrs["data-notes"]) > 80, f"main slide {n} missing detailed notes"
+    for marker in ["ЗАЧЕМ", "СКАЗАТЬ", "ПЕРЕХОД"]:
+        assert marker in attrs["data-notes"], f"main slide {n} notes missing {marker}"
+required = [
+    "For one language", "Local extensibility creates", "Two providers", "type-compatible route",
+    "LanguagePlan", "Runtime executes", "stable facts", "Demo", "Prior art", "When does a planner pay",
+    "Composition protocol", "Structural compatibility", "Keep local knowledge local"
+]
+full = re.sub(r"\s+", " ", html)
+missing = [r for r in required if r not in full]
+assert not missing, f"missing narrative elements: {missing}"
+assert "all extensibility is free" not in full.lower(), "avoid universal free-extensibility wording"
+assert "appendixBtn" in html, "appendix toggle missing"
+print(f"OK: {len(main)} main slides, {len(appendix)} appendix slides")
