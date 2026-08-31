@@ -4,15 +4,15 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LangDev Presentation — Build the Language, Then Make the Abstractions Disappear</title>
+<title>LangDev Presentation — Build an Extensible Language, Run a Concrete One</title>
 <link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
 <div class="deck" id="deck">
 <section class="slide center" data-kind="main" data-note-key="m1">
-<div><div class="eyebrow">LangDev 2026 · UniversalToolchain case study</div><h1>Build the Language,<br/><span class="accent">Then Make the Abstractions Disappear</span></h1></div>
-<p class="bigq">Modules keep local knowledge. The planner owns global composition decisions.</p>
-<div class="sourcebar"><span>Source truth: UniversalToolchain@36206b66548f</span></div>
+<div><div class="eyebrow">LangDev 2026 · UniversalToolchain case study</div><h1>Build an Extensible Language,<br/><span class="accent">Run a Concrete One</span></h1></div>
+<p class="bigq">Resolve composition before execution — keep open choices out of the hot path.</p>
+<div class="sourcebar"><span>Source truth: UniversalToolchain@7005371d6c30</span></div>
 </section>
 <section class="slide two" data-kind="main" data-note-key="m2">
 <div><div class="eyebrow">Strongest baseline</div><h2>For one language, assemble the pipeline by hand</h2></div>
@@ -42,7 +42,7 @@ PlanHash</p></div></div></div>
 <div class="sourcebar"><span>LanguageCompiler.cs · LanguagePlan.cs</span></div>
 </section>
 <section class="slide two" data-kind="main" data-note-key="m5">
-<div><div class="eyebrow">Concrete failure #1</div><h2>Two providers: the planner refuses to guess</h2></div>
+<div><div class="eyebrow">Concrete failure #1</div><h2>Provider ambiguity fails before execution</h2></div>
 <div class="panel"><div class="code">consumer requires capability X
 
 provider.a provides X
@@ -57,30 +57,24 @@ concrete plan</p></div></div><p class="bigq">Ambiguity is a planning result, not
 <div class="sourcebar"><span>LanguageArtifactRoutePhase.cs · LanguagePlan.Routes</span></div>
 </section>
 <section class="slide stack" data-kind="main" data-note-key="m7">
-<div><div class="eyebrow">Planner output</div><h2><span class="accent">LanguagePlan</span> is the collapsed result of choices</h2></div>
-<div class="planbeforeafter"><div class="panel broken"><div class="label">Before planning</div><div class="decision"><div>X → A | B</div><div>SourceText → ? → Backend</div><div>order: partial constraints</div><div>runtime: candidate set</div></div></div><div class="mid">→</div><div class="panel good"><div class="label">After planning</div><div class="decision"><div>Features / Contributions fixed</div><div>Routes[backend] fixed</div><div>RuntimeProvider fixed</div><div>PlanHash fixed</div></div></div></div><p class="bigq" style="text-align:center">One reproducible composition identity.</p>
-<div class="sourcebar"><span>LanguagePlanCanonicalizer · LanguagePlanVerifier · DefinitionPolicyPlanningTests</span></div>
+<div><div class="eyebrow">Planner output</div><h2><span class="accent">LanguagePlan</span> turns open choices into concrete data</h2></div>
+<div class="planbeforeafter"><div class="panel broken"><div class="label">Extensible world</div><div class="decision"><div>provider = A | B</div><div>route = R1 | R2 | R3</div><div>runtime = X | Y</div><div>order = partial constraints</div></div></div><div class="mid">→</div><div class="panel good"><div class="label">Concrete LanguagePlan</div><div class="decision"><div>provider = A</div><div>route = R2</div><div>runtime = X</div><div>order = deterministic sequence</div></div></div></div><p class="bigq" style="text-align:center">Open composition choices become concrete plan data.</p>
+<div class="sourcebar"><span>LanguagePlan.cs · LanguagePlanCanonicalizer · LanguagePlanVerifier</span></div>
 </section>
 <section class="slide stack" data-kind="main" data-note-key="m8">
 <div><div class="eyebrow">Planner/runtime boundary</div><h2>Runtime executes the plan; it does not rebuild the language</h2></div>
-<div class="boundary"><div class="panel"><h3 class="accent">Planner</h3><ul><li>resolve features + contributions</li><li>select capability/runtime providers</li><li>apply ordering + conflicts</li><li>build artifact routes</li><li>emit immutable LanguagePlan</li></ul></div><div class="panel good"><h3 class="ok">Runtime</h3><ul><li>verify exact plan/provider match</li><li>materialize planned components</li><li>assemble selected route</li><li>Run(request)</li><li>report execution failures</li></ul></div></div><p class="bigq" style="text-align:center"><code>LanguageRuntime.Create(plan, componentSources)</code></p>
+<div class="boundary"><div class="panel"><h3 class="accent">Planner</h3><ul><li>resolve features + contributions</li><li>select capability/runtime providers</li><li>apply ordering + conflicts</li><li>build artifact routes</li><li>emit immutable LanguagePlan</li></ul></div><div class="panel good"><h3 class="ok">Runtime</h3><ul><li>verify exact plan/provider match</li><li>materialize planned components</li><li>assemble selected route</li><li>Run(request)</li><li>report execution failures</li></ul></div></div><p class="bigq" style="text-align:center">No second global composition pass.</p>
 <div class="sourcebar"><span>LanguageCompiler.cs · LanguageRuntime.cs · ExactRuntimeBindingTests.cs</span></div>
 </section>
-<section class="slide two" data-kind="main" data-note-key="m9">
-<div><div class="eyebrow">Deabstraction, precisely</div><h2>Planning removes <span class="accent">uncertainty</span>, not necessarily interfaces</h2></div>
-<div class="panel"><div class="grid2"><div class="panel tight broken"><h3>Open before planning</h3><p class="code">capability → provider A | B
-route → r1 | r2
-order → partial constraints
-runtime → candidate set</p></div><div class="panel tight good"><h3>Frozen in LanguagePlan</h3><p class="code">provider → exact identity
-route → exact steps + cost
-order → deterministic sequence
-runtime → exact provider / policy</p></div></div></div><p class="bigq">The planner deabstracts global <em>choices</em>. Objects, interfaces and dispatch may remain.</p>
-<div class="sourcebar"><span>Architectural guarantee: resolved composition data · performance is a separate claim</span></div>
+<section class="slide stack" data-kind="main" data-note-key="m9">
+<div><div class="eyebrow">Staging payoff</div><h2>Extensible at composition time. <span class="accent">Concrete at execution time.</span></h2></div>
+<div class="planbeforeafter"><div class="panel"><div class="label">Extensible world</div><div class="decision"><div>packages + providers</div><div>routes + backends</div><div>ordering + conflicts</div><div>open composition choices</div></div></div><div class="mid"><span class="node accent">LanguagePlan</span></div><div class="panel good"><div class="label">Concrete world</div><div class="decision"><div>exact provider</div><div>exact route</div><div>exact runtime</div><div>exact ordering</div></div></div></div><p class="bigq" style="text-align:center">The runtime executes resolved choices instead of reopening them.</p>
+<div class="sourcebar"><span>Extensibility does not have to live in the hot path · remaining runtime costs are separate</span></div>
 </section>
 <section class="slide stack" data-kind="main" data-note-key="m10">
-<div><div class="eyebrow">Two deabstraction layers</div><h2>Further specialization: staging is guaranteed; representation specialization is optional</h2></div>
-<div class="grid2"><div class="panel good"><h3>1 · Composition deabstraction</h3><p>candidate sets → concrete identities<br/>route search → concrete route<br/>partial order → concrete sequence<br/>global choice is not repeated during execution</p></div><div class="panel"><h3>2 · Representation/code specialization</h3><p>known slot / type / provider may enable simpler representation, fewer lookups or devirtualization — depending on implementation and JIT/AOT.</p></div></div><p class="bigq" style="text-align:center">Do not infer layer 2 from layer 1 without measurement.</p>
-<div class="sourcebar"><span>Layer 1 = current architecture · Layer 2 = optimization opportunity</span></div>
+<div><div class="eyebrow">Two deabstraction layers</div><h2>Composition deabstraction is guaranteed. Code specialization is optional.</h2></div>
+<div class="grid2"><div class="panel good"><h3>1 · Current guarantee</h3><p>candidate sets → concrete identities<br/>route search → concrete route<br/>partial order → concrete sequence<br/>global composition is not repeated by Run</p></div><div class="panel"><h3>2 · Separate optimization problem</h3><p>interfaces and objects may remain<br/>validation and indirect calls may remain<br/>JIT/AOT may specialize further<br/>measure it before claiming a win</p></div></div><p class="bigq" style="text-align:center">The abstraction disappears as a decision — not necessarily as an object.</p>
+<div class="sourcebar"><span>Planning does not imply devirtualization or zero runtime overhead</span></div>
 </section>
 <section class="slide stack" data-kind="main" data-note-key="m11">
 <div><div class="eyebrow">Runnable evidence</div><h2>Demo: real planner → real plan → real runtime → <span class="ok">42</span></h2></div>
@@ -96,7 +90,7 @@ print PlanHash / Routes
   ↓
 LanguageRuntime.Create
   ↓
-Run("41") = <span class="ok">42</span></div></div></div><p class="caption">CI checks out UniversalToolchain@36206b66548f… and runs this exact demo.</p>
+Run("41") = <span class="ok">42</span></div></div></div><p class="caption">CI checks out UniversalToolchain@7005371d6c30… and runs this exact demo.</p>
 <div class="sourcebar"><span>demo/Program.cs · CI exact-source checkout</span></div>
 </section>
 <section class="slide stack" data-kind="main" data-note-key="m12">
@@ -110,9 +104,9 @@ Run("41") = <span class="ok">42</span></div></div></div><p class="caption">CI ch
 <div class="sourcebar"><span>Positioning only · no novelty claim</span></div>
 </section>
 <section class="slide stack" data-kind="main" data-note-key="m14">
-<div><div class="eyebrow">Composition protocol · cost model</div><h2>Planning does not remove cost — it makes <span class="accent">where we pay</span> explicit</h2></div>
-<div class="grid2"><div class="panel"><h3>Planning</h3><p>provider resolution / conflicts<br/>ordering + route search<br/>canonicalization + diagnostics<br/>time + allocations</p></div><div class="panel"><h3>Runtime creation</h3><p>immutable plan memory<br/>plan verification<br/>component materialization<br/>route assembly</p></div><div class="panel good"><h3>Steady-state execution</h3><p>no global re-planning by design<br/>but provider/session calls, validation and dispatch may remain</p></div><div class="panel"><h3>Engineering / testing</h3><p>protocol + versioning discipline<br/>determinism regressions<br/>configuration state space<br/>docs and evidence maintenance</p></div></div><p class="bigq" style="text-align:center">Measure planning, runtime creation, first execution and steady state separately.</p>
-<div class="sourcebar"><span>No zero-cost claim · handwritten pipeline remains the strongest baseline</span></div>
+<div><div class="eyebrow">Cost model</div><h2>Extensibility changes where we pay — <span class="accent">not whether cost exists.</span></h2></div>
+<div class="grid2"><div class="panel"><h3>1 · Planning</h3><p>resolve providers / conflicts<br/>order + route search<br/>canonicalize + diagnose<br/>time + allocations</p></div><div class="panel"><h3>2 · Runtime creation</h3><p>verify immutable plan<br/>materialize components<br/>assemble selected route<br/>construct sessions</p></div><div class="panel"><h3>3 · First execution</h3><p>parse / lower / codegen where applicable<br/>initialize providers<br/>JIT / cold caches<br/>first-use costs</p></div><div class="panel good"><h3>4 · Steady state</h3><p>execute concrete selected path<br/>no global re-planning by architecture<br/>dispatch / validation / allocations may remain</p></div></div><p class="bigq" style="text-align:center">Don't repeatedly pay for decisions already made.</p>
+<div class="sourcebar"><span>No re-planning ≠ zero overhead · plus protocol/versioning/testing cost · benchmark each boundary separately</span></div>
 </section>
 <section class="slide two" data-kind="main" data-note-key="m15">
 <div><div class="eyebrow">Claim boundary</div><h2>Structural compatibility ≠ semantic compatibility</h2></div>
@@ -120,9 +114,9 @@ Run("41") = <span class="ok">42</span></div></div></div><p class="caption">CI ch
 <div class="sourcebar"><span>LanguageArtifactRoute.ContractsConnect checks expressed structure</span></div>
 </section>
 <section class="slide center" data-kind="main" data-note-key="m16">
-<div><div class="eyebrow">Takeaway</div><h2>Extensibility is not just making components pluggable</h2></div>
-<div style="max-width:1120px"><p class="bigq">When independent components must form one language, someone has to own global composition decisions.</p><p class="claim" style="margin-top:2.5rem"><span class="accent">Keep local knowledge local.</span><br/>Make global decisions explicit.<br/><span class="ok">Then execute the resolved plan.</span></p></div>
-<div class="sourcebar"><span>Architecture takeaway, not framework advocacy</span></div>
+<div><div class="eyebrow">Takeaway</div><h2>Be extensible when composing. <span class="accent">Be concrete when executing.</span></h2></div>
+<div style="max-width:1120px"><p class="claim">Extensions describe possibilities.<br/>Planning resolves one <span class="accent">LanguagePlan</span>.<br/><span class="ok">Runtime executes the resolved language.</span></p><p class="bigq">Global composition decisions do not need to remain dynamic during repeated execution.</p></div>
+<div class="sourcebar"><span>Architecture takeaway · not a claim that every remaining runtime abstraction disappears</span></div>
 </section>
 <section class="slide stack" data-kind="appendix" data-note-key="a1">
 <div><div class="eyebrow">Appendix · evidence map</div><h2>Current-source evidence behind the central claim</h2></div>
@@ -132,7 +126,7 @@ LanguageArtifactRoutePhase.cs
 LanguagePlan.cs</p></div><div class="panel good"><h3>Materialization / execution</h3><p class="code">LanguageRuntime.cs
 LanguageBuildRuntime.cs
 LanguageRouteRuntimeAssembler.cs
-ExactRuntimeBindingTests.cs</p></div></div><p class="caption">Truth snapshot: 36206b66548fec365be6e03381ba44d50c2cafe5</p>
+ExactRuntimeBindingTests.cs</p></div></div><p class="caption">Truth snapshot: 7005371d6c30175dff4b0e9f906a26218b0ee54d</p>
 </section>
 <section class="slide stack" data-kind="appendix" data-note-key="a2">
 <div><div class="eyebrow">Appendix · demo contract</div><h2>The demo is source-backed, not simulated</h2></div>
@@ -144,9 +138,9 @@ ExactRuntimeBindingTests.cs</p></div></div><p class="caption">Truth snapshot: 36
 [runtime] input=41 output=42</div><p class="caption">Values in angle brackets come from the actual CI run; no hard-coded fake plan output.</p>
 </section>
 <section class="slide stack" data-kind="appendix" data-note-key="a3">
-<div><div class="eyebrow">Appendix · performance evidence</div><h2>Performance is four separate questions, not one slogan</h2></div>
-<div class="grid2"><div class="panel"><h3>Planning</h3><p><span class="bad">NEEDS MEASUREMENT</span><br/>10 / 100 / 1000 contributions<br/>time + allocations</p></div><div class="panel"><h3>Runtime creation</h3><p><span class="bad">NEEDS MEASUREMENT</span><br/>verification + materialization + route assembly</p></div><div class="panel"><h3>First execution</h3><p><span class="bad">NEEDS MEASUREMENT</span><br/>provider initialization / JIT / warmup separated from planning</p></div><div class="panel good"><h3>Steady state</h3><p>existing perf/allocation regression gates<br/><strong>but:</strong> no handwritten-baseline speedup claim yet</p></div></div><p class="caption">Current evidence confirms benchmark/performance gates exist, but does not provide a talk-ready universal number set. No numbers are invented.</p>
-<div class="sourcebar"><span>Evidence boundary: UniversalToolchain docs/evidence · exact measurements must bind commit + environment + raw results</span></div>
+<div><div class="eyebrow">Appendix · performance evidence</div><h2>Architecture result ≠ benchmark result</h2></div>
+<div class="grid2"><div class="panel"><h3>Planning</h3><p><span class="bad">NEEDS MEASUREMENT</span><br/>resolution + route search<br/>time + allocations</p></div><div class="panel"><h3>Runtime creation</h3><p><span class="bad">NEEDS MEASUREMENT</span><br/>verification + materialization<br/>route/session assembly</p></div><div class="panel"><h3>First execution</h3><p><span class="bad">NEEDS MEASUREMENT</span><br/>initialization / JIT / cold path<br/>separate from planning</p></div><div class="panel good"><h3>Steady state</h3><p><span class="bad">NEEDS MEASUREMENT</span><br/>prepared invocation vs comparable baseline<br/>same workload boundary only</p></div></div><p class="caption"><code>N × (Ccomposition + Cexecution)</code> vs <code>Ccomposition + N × Cexecution</code>: <code>Ccomposition / N</code> is a cost model, not benchmark evidence.</p>
+<div class="sourcebar"><span>Current harness: MigrationArchitectureBoundary · FormulaHotPath · FormulaCompilation · FormulaConvenience</span></div>
 </section>
 <section class="slide stack" data-kind="appendix" data-note-key="a4">
 <div><div class="eyebrow">Appendix · testability</div><h2>How to test the boundary</h2></div>

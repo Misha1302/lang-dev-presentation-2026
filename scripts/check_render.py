@@ -53,7 +53,7 @@ try:
                     detail = result.stdout[start:end]
                 failures.append(f"{width}x{height} {target}: {detail}")
 
-    representative = ["#1", "#2", "#4", "#6", "#8", "#10", "#13", "#16"]
+    representative = ["#1", "#2", "#4", "#6", "#7", "#8", "#9", "#10", "#14", "#16"]
     for width, height in viewports:
         for target in representative:
             output = ARTIFACTS / f"{width}x{height}-{target[1:]}.png"

@@ -19,17 +19,21 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Validate authored deck contract
+      - name: Validate authored HTML, live notes and narrative contract
         run: python3 scripts/check_deck.py
-      - name: Check JavaScript syntax
-        run: node --check deck.js
+      - name: Check JavaScript syntax for deck and live speaker notes
+        run: |
+          node --check deck.js
+          node --check speaker-notes-1.js
+          node --check speaker-notes-2.js
+          node --check speaker-notes-hardening.js
       - name: Audit speaker timing
         run: python3 scripts/timing_audit.py
       - name: Checkout exact UniversalToolchain truth snapshot
         uses: actions/checkout@v4
         with:
           repository: Misha1302/UniversalToolchain
-          ref: 36206b66548fec365be6e03381ba44d50c2cafe5
+          ref: 7005371d6c30175dff4b0e9f906a26218b0ee54d
           path: _deps/UniversalToolchain
       - name: Run source-backed planner/runtime demo
         run: |

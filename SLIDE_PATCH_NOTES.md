@@ -1,81 +1,138 @@
-# Slide patch notes
+# Slide patch notes — 2026-09-01
 
-These are safe presentation-only changes to apply manually to `index.html`, speaker notes and/or appendix. They do not require production code changes.
+Truth snapshot: `Misha1302/UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`.
 
-## Main-deck wording changes
+This patch is presentation-only. UniversalToolchain production code/API/behavior is intentionally unchanged.
 
-### Title / thesis
+## Material main-deck changes
 
-Current style is already close. Prefer:
+### Slide 1 — title / thesis
 
-> Modules keep local knowledge. The planner owns global composition decisions.
+Changed to:
 
-Speaker note addition:
+> **Build an Extensible Language, Run a Concrete One**
 
-> The planner does not remove complexity. It changes where complexity lives and how it is represented.
+Opening thesis:
 
-### Handwritten baseline slide
+> **Resolve composition before execution — keep open choices out of the hot path.**
 
-Keep this early. Add speaker note:
+This title keeps extensibility explicit, communicates open → concrete execution, carries a performance consequence without promising zero cost, and is understandable without knowing UniversalToolchain APIs.
 
-> For one fixed language with known parser, lowering, optimizer and backend, this is often the better architecture. UniversalToolchain starts to pay for itself only when components are contributed independently and create global choices.
+### Slide 5 — provider ambiguity wording
 
-### Provider ambiguity slide
+Scoped the heading to the actual guarantee:
 
-Change title from broad “planner refuses to guess” to scoped wording:
+> **Provider ambiguity fails before execution**
 
-> Provider ambiguity fails before execution
+This avoids implying that every possible ambiguity class is rejected identically.
 
-Speaker note:
+### Slide 7 — composition deabstraction
 
-> I am deliberately saying provider ambiguity here. Equal-cost route selection is a separate policy question; determinism alone does not prove semantic equivalence.
+Rewritten as a literal before/after:
 
-### LanguagePlan slide
+```text
+provider = A | B          provider = A
+route = R1 | R2 | R3  →  route = R2
+runtime = X | Y           runtime = X
+order = partial           order = deterministic
+```
 
-Add bottom caption:
+Payoff: **open composition choices become concrete plan data**.
 
-> Resolved composition data, not a service container and not a semantic proof.
+### Slide 8 — exact planner/runtime boundary
 
-### Runtime boundary slide
+Kept the strong planner/runtime split and made the payoff explicit:
 
-Add note:
+> **No second global composition pass.**
 
-> Runtime validates/materializes the selected graph. It should reject mismatches; it should not rediscover global provider or route choices.
+Runtime verification/materialization remains visible and is not mislabeled as zero-cost execution.
 
-### Payoff slide
+### Slide 9 — staging payoff
 
-Keep “open composition decisions disappear”. Avoid “abstractions disappear” as zero-overhead claim. Add:
+Replaced the older generic deabstraction framing with the core mental model:
 
-> The abstraction disappears as an open decision, not necessarily as an allocated object or runtime cost.
+> **Extensible at composition time. Concrete at execution time.**
 
-### Costs slide
+The slide shows an extensible world (`packages/providers/routes/ordering/conflicts`) → `LanguagePlan` → concrete provider/route/runtime/order.
 
-Ensure explicit costs:
+### Slide 10 — two deabstraction layers
 
-- planning time;
-- framework concepts;
-- configuration state space;
-- need for evidence/benchmarks;
-- structural guarantees are weaker than semantic guarantees.
+Made the distinction explicit:
 
-## Appendix slides to add or strengthen
+1. composition deabstraction — current guarantee;
+2. representation/code specialization — separate optional optimization.
 
-1. What planning does not prove.
-2. Equal-cost route ambiguity.
-3. PlanHash is representation identity.
-4. Valid plan is not a sandbox.
-5. PlanFuzz as research/testing layer, not production proof.
-6. NativeAOT/trimming: measured scope only.
-7. Thread-safety: lifecycle coordination is not arbitrary provider thread-safety.
-8. Future work: cache/version solver/PlanningReport/SAT/repo split decisions.
+The slide explicitly allows interfaces, objects, validation and indirect dispatch to remain.
 
-## Demo fallback
+### Slide 14 — four cost boundaries
 
-If live demo fails, switch to evidence story:
+Rebuilt around:
 
-1. show claim/evidence map;
-2. show `LanguageCompiler.Compile` -> `LanguagePlan` -> `LanguageRuntime.Create` boundary;
-3. show ambiguity diagnostic and explicit preference;
-4. say exact runtime/build validation is CI-bound to a pinned truth snapshot.
+> **Extensibility changes where we pay — not whether cost exists.**
 
-Do not improvise unmeasured performance claims.
+Visible boundaries are now:
+
+1. Planning;
+2. Runtime creation;
+3. First execution;
+4. Steady state.
+
+Bottom line:
+
+> **Don't repeatedly pay for decisions already made.**
+
+And the guardrail is visible:
+
+> **No re-planning ≠ zero overhead.**
+
+### Slide 16 — takeaway
+
+Changed final memory hook to:
+
+> **Be extensible when composing. Be concrete when executing.**
+
+The final three-step story is extensions → planning → resolved runtime.
+
+## Appendix performance change
+
+All four numerical boundaries are now `NEEDS MEASUREMENT` for the exact current truth snapshot. The appendix names the current benchmark surfaces but does not invent or reuse numbers from unrelated workloads/revisions.
+
+Added conceptual amortization only:
+
+```text
+N × (Ccomposition + Cexecution)
+vs
+Ccomposition + N × Cexecution
+```
+
+`Ccomposition / N` is explicitly labeled a cost model, not benchmark evidence.
+
+## Speaker-note hardening
+
+The live override notes now contain prepared answers for:
+
+- “Is extensibility free?” — no;
+- “Are you claiming zero-cost abstractions?” — no;
+- “Then why should this be faster?” — architecture does not guarantee faster final code;
+- runtime validation vs second planning pass;
+- current architecture guarantee vs optional JIT/AOT specialization;
+- four cost boundaries and amortization;
+- exact-current-revision benchmark evidence boundary.
+
+The existing slide-12 note already contains the DI distinction: DI materializes known bindings; the planner resolves a domain-specific whole-language composition before materialization.
+
+## Preserved material
+
+Unchanged in role/narrative:
+
+- handwritten pipeline as strongest baseline;
+- planner is not always needed;
+- UTL2002 case;
+- route construction;
+- `LanguagePlan`;
+- exact planner/runtime boundary;
+- structural ≠ semantic compatibility;
+- prior-art positioning;
+- source-backed `41 → 42` demo;
+- 16 main slides + 4 appendix slides;
+- existing visual language.

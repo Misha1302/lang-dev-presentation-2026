@@ -1,21 +1,48 @@
 # Independent adversarial review
 
-## Issue 1 — “abstractions disappear” could be read as a zero-overhead claim
+Truth snapshot reviewed against `Misha1302/UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`.
 
-Fix: the main payoff slide now says open **composition decisions** disappear; the following slide explicitly lists specialization as future/illustrative and the appendix rejects zero-overhead claims.
+## Verdict
 
-## Issue 2 — a conceptual demo would not prove the architecture
+The revised narrative is defensible if the performance statement remains a staging claim:
 
-Fix: replaced simulated output with a source-backed program using current `LanguagePackageBuilder`, `LanguageCompiler`, `LanguagePlan` and `LanguageRuntime`. CI checks out the exact truth commit and executes it.
+> Extensions describe possibilities. Planning resolves global composition choices into one concrete `LanguagePlan`. Runtime executes that resolved plan instead of reopening those decisions.
 
-## Issue 3 — runtime validation might look like a second planner
+The implementation supports that boundary. It does not support a universal zero-overhead or speedup claim.
 
-Fix: the boundary slide distinguishes exact plan/provider/route validation from global provider/route resolution and points to `ExactRuntimeBindingTests`.
+## Hostile review
 
-## Issue 4 — structural route compatibility could be oversold as semantic compatibility
+| Hostile question | Result | Evidence / correction |
+| --- | --- | --- |
+| Does the title imply zero-cost extensibility? | PASS | New title says extensible → concrete; slide 10 explicitly says interfaces/validation/dispatch may remain. |
+| Does this imply all dispatch disappears? | PASS | Explicitly rejected on slides 9–10 and in speaker notes. |
+| Does planning imply JIT/AOT devirtualization? | PASS | Representation/code specialization is labeled a separate optional optimization problem. |
+| Does planning always pay off? | PASS | Handwritten pipeline remains the strongest baseline; slide 12 gives the decision criterion. |
+| Does route `Cost` imply a globally minimum-cost language? | PASS | Route cost is treated as a protocol routing metric, not execution performance or global configuration optimality. |
+| Does this imply Wist equals handwritten C# performance? | PASS | No speedup claim; appendix requires comparable-boundary measurements. |
+| Are setup and steady-state costs mixed? | PASS | Slide 14 separates planning, runtime creation, first execution and steady state. |
+| Is amortization presented as a benchmark? | PASS | Appendix labels `Ccomposition / N` a conceptual cost model only. |
+| Is the hot-path claim actually enforced by current architecture? | PASS, scoped | `LanguageCompiler` performs global planning; `LanguageRuntime.Run` uses the already-created session and does not call the compiler or route search. Remaining validation/dispatch are not excluded. |
+| Could runtime secretly perform a second composition pass? | PASS for current public path | `LanguageRuntime.Create` verifies exact plan/provider/route bindings and materializes selected components; this is validation/materialization, not global provider/route resolution. |
+| Does a concrete plan prove semantic compatibility? | PASS | Dedicated slide keeps structural ≠ semantic compatibility. |
+| Does deterministic routing prove equivalent semantics among tied routes? | PASS | Not claimed; determinism is reproducibility, not semantic proof. |
 
-Fix: dedicated claim-boundary slide states exactly what `ContractsConnect`/declared protocol checks and what remains outside it.
+## Performance evidence disposition
 
-## Issue 5 — planner could be framed as the default even when a handwritten pipeline is simpler
+Current source contains correctly separated benchmark surfaces:
 
-Fix: retained the explicit-pipeline slide as the strongest baseline and added a decision-criterion slide that recommends the simplest owner able to make whole-system decisions.
+- `MigrationArchitectureBoundaryBenchmarks` for `LanguagePlan_Compile` and `WistEngine_CreateAndDispose`;
+- `FormulaHotPathBenchmarks` for prepared steady-state delegates with parity checking and a prepared C# baseline;
+- `FormulaCompilationBenchmarks` for compilation/engine-creation boundaries;
+- `FormulaConvenienceBenchmarks` for `Evaluate` convenience cost.
+
+The benchmark methodology explicitly forbids comparing convenience `Evaluate` with prepared delegates as if they measured the same execution boundary, and treats Dry runs as smoke rather than performance evidence.
+
+No exact-current-revision raw result bundle with commit, environment, BenchmarkDotNet configuration and raw artifacts is bound into this presentation. Therefore numerical claims remain `NEEDS MEASUREMENT`.
+
+## Remaining risks
+
+1. `LanguageRuntime.Create` and `Run` still perform real validation/materialization/session work; the talk must never compress “no re-planning” into “no overhead”.
+2. Transformation route `Cost` is a domain planning weight. Calling the result “minimum-cost language” would overstate the algorithm.
+3. Optional JIT/AOT specialization remains future empirical work.
+4. The presentation pins source truth to an exact commit; any future UniversalToolchain change requires re-running the evidence and demo contract before moving the pin.
