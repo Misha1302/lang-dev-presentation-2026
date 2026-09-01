@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Validate authored HTML, live notes and narrative contract
+      - name: Validate authored HTML, live notes, narrative and demo/source contract
         run: python3 scripts/check_deck.py
       - name: Check JavaScript syntax for deck and live speaker notes
         run: |
@@ -27,7 +27,7 @@ jobs:
           node --check speaker-notes-1.js
           node --check speaker-notes-2.js
           node --check speaker-notes-hardening.js
-      - name: Audit speaker timing
+      - name: Audit authored conference timing budget
         run: python3 scripts/timing_audit.py
       - name: Checkout exact UniversalToolchain truth snapshot
         uses: actions/checkout@v4
@@ -35,10 +35,11 @@ jobs:
           repository: Misha1302/UniversalToolchain
           ref: 7005371d6c30175dff4b0e9f906a26218b0ee54d
           path: _deps/UniversalToolchain
-      - name: Run source-backed planner/runtime demo
+      - name: Run canonical source-backed planner/runtime demo
         run: |
-          dotnet run --project demo/UniversalToolchainDemo.csproj -p:UniversalToolchainRoot="$GITHUB_WORKSPACE/_deps/UniversalToolchain" | tee demo-source-output.txt
+          ./demo/run-demo.sh "$GITHUB_WORKSPACE/_deps/UniversalToolchain" | tee demo-source-output.txt
           grep -q "\[planning\] UTL2002:" demo-source-output.txt
+          grep -q "\[planning\] preferred provider: demo.provider.a" demo-source-output.txt
           grep -q "\[runtime\] input=41 output=42" demo-source-output.txt
       - name: Render-check all slides at conference viewports
         run: python3 scripts/check_render.py
