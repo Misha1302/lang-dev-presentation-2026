@@ -1,4 +1,4 @@
-const DECK_QA_CONTRACT = 'split-main-appendix-v1';
+const DECK_QA_CONTRACT = 'balanced-causal-v2';
 document.documentElement.dataset.deckQaContract = DECK_QA_CONTRACT;
 const allSlides = [...document.querySelectorAll('.slide')];
 const prog = document.getElementById('prog');
@@ -120,8 +120,8 @@ function runNavigationDiagnostics(){
   key('PageUp'); expect(activeKey()==='m1','PageUp');
   key(' '); expect(activeKey()==='m2','Space');
   setHash('#16'); expect(activeKey()==='m16' && count.textContent.startsWith('16 / 16'),'deep-16');
-  setHash('#a1'); expect(activeKey()==='a1' && count.textContent.startsWith('1 / 8 · appendix'),'deep-a1');
-  setHash('#a8'); expect(activeKey()==='a8' && count.textContent.startsWith('8 / 8 · appendix'),'deep-a8');
+  setHash('#a1'); expect(activeKey()==='a1' && count.textContent.startsWith('1 / 10 · appendix'),'deep-a1');
+  setHash('#a10'); expect(activeKey()==='a10' && count.textContent.startsWith('10 / 10 · appendix'),'deep-a10');
   setHash('#1'); appendixBtn.click(); expect(activeKey()==='a1' && location.hash==='#a1' && appendixBtn.textContent==='Main','Appendix-button');
   appendixBtn.click(); expect(activeKey()==='m1' && location.hash==='#1' && appendixBtn.textContent==='Appendix','Main-button');
   document.getElementById('tocBtn').click();
