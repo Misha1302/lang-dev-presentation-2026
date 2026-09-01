@@ -5,6 +5,7 @@ import json, re
 
 root=Path(__file__).resolve().parents[1]
 html=(root/'index.html').read_text(encoding='utf-8')
+css=(root/'styles.css').read_text(encoding='utf-8')
 js1=(root/'speaker-notes-1.js').read_text(encoding='utf-8')
 js2=(root/'speaker-notes-2.js').read_text(encoding='utf-8')
 js3=(root/'speaker-notes-hardening.js').read_text(encoding='utf-8')
@@ -35,7 +36,7 @@ p=SlideParser(); p.feed(html)
 main=[s for s in p.slides if s[0].get('data-kind')!='appendix']
 appendix=[s for s in p.slides if s[0].get('data-kind')=='appendix']
 assert len(main)==16, f'expected 16 main slides, got {len(main)}'
-assert len(appendix)==4, f'expected 4 appendix slides, got {len(appendix)}'
+assert len(appendix)==8, f'expected 8 appendix slides, got {len(appendix)}'
 
 main_notes=[]
 for n,(attrs,_) in enumerate(main,1):
@@ -51,32 +52,38 @@ notes_words=sum(len(re.findall(r'\b[\wА-Яа-яЁё.-]+\b',n)) for n in main_no
 assert 2200<=notes_words<=3250, f'speaker notes word count out of contract: {notes_words}'
 
 required=[
-    'Build an Extensible Language, Run a Concrete One',
-    'Resolve composition before execution',
-    'For one language',
-    'Local extensibility creates',
+    'Build an Extensible Language,',
+    'Run a Concrete One',
+    'One fixed language is easy',
+    'Wist infrastructure',
+    'At first, this still looks like options',
+    'Configuration becomes',
+    'Local authors declare facts. The integrator chooses a language. The planner sees the whole.',
     'UTL2002',
     'PreferCapabilityProvider',
+    'LanguageArtifactRoute',
     'LanguagePlan',
+    'Open possibilities close',
     'LanguageRuntime.Create',
-    'Runtime executes',
-    'Extensible at composition time',
+    'Extensible at composition time.',
     'Composition deabstraction',
-    'Code specialization is optional',
-    'Demo',
-    'Prior art',
-    'When does a planner pay',
-    'Extensibility changes where we pay',
-    'First execution',
-    'No re-planning',
-    'Structural compatibility',
-    'Be extensible when composing',
-    'NEEDS MEASUREMENT',
+    'No exact-current benchmark artifact',
+    'Structural compatibility is not semantic compatibility',
+    'Use the simplest owner',
+    'TensorRules',
+    'No exact-current raw result artifact',
     '7005371d6c30175dff4b0e9f906a26218b0ee54d'
 ]
 full=re.sub(r'\s+',' ',html+' '+js1+' '+js2+' '+js3)
 missing=[x for x in required if x not in full]
 assert not missing, f'missing narrative/evidence elements: {missing}'
+
+layout_primitives=[
+    '.phase{', '.family-grid{', '.pillgrid{', '.interaction{', '.roles{',
+    '.route-story{', '.plan-card{', '.timeline{', '.comparecards{', '.costs{', '.decisionrule{'
+]
+missing_layout=[x for x in layout_primitives if x not in css]
+assert not missing_layout, f'missing current-deck layout primitives: {missing_layout}'
 
 for forbidden in ['zero-cost extensibility','all abstractions disappear','StubLanguageCompiler']:
     assert forbidden.lower() not in full.lower(), f'forbidden/obsolete claim present: {forbidden}'

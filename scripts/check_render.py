@@ -13,7 +13,7 @@ ARTIFACTS.mkdir(exist_ok=True)
 
 browser = next((name for name in [
     "google-chrome-stable", "google-chrome", "chromium-browser", "chromium"
-] if shutil.which(name)), None)
+] if shutil.which(name)), None
 if browser is None:
     print("Render check FAILED: Chrome/Chromium was not found")
     sys.exit(1)
@@ -27,7 +27,7 @@ common = [browser, "--headless=new", "--disable-gpu", "--disable-dev-shm-usage",
 try:
     time.sleep(0.6)
     viewports = [(1920, 1080), (1366, 768)]
-    targets = [f"#{i}" for i in range(1, 17)] + [f"#a{i}" for i in range(1, 5)]
+    targets = [f"#{i}" for i in range(1, 17)] + [f"#a{i}" for i in range(1, 9)]
     failures: list[str] = []
     for width, height in viewports:
         for target in targets:
@@ -53,9 +53,8 @@ try:
                     detail = result.stdout[start:end]
                 failures.append(f"{width}x{height} {target}: {detail}")
 
-    representative = ["#1", "#2", "#4", "#6", "#7", "#8", "#9", "#10", "#14", "#16"]
     for width, height in viewports:
-        for target in representative:
+        for target in targets:
             output = ARTIFACTS / f"{width}x{height}-{target[1:]}.png"
             url = f"http://127.0.0.1:8878/{target}"
             try:
@@ -74,7 +73,7 @@ try:
         for failure in failures:
             print(f" - {failure}")
         sys.exit(1)
-    print(f"Render check OK: {len(targets) * len(viewports)} slide/viewport states")
+    print(f"Render check OK: {len(targets) * len(viewports)} slide/viewport states; {len(targets) * len(viewports)} screenshots")
 finally:
     server.terminate()
     try:
