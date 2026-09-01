@@ -128,7 +128,7 @@ demo_contract = demo_source + "\n" + demo_run + "\n" + demo_doc
 for anchor in [
     'new LanguagePackageId("Demo.Ambiguity")',
     'PreferCapabilityProvider(capability, providerA)',
-    'new LanguagePackageId("Demo.Runtime")',
+    'LanguagePackageBuilder.Create("Demo.Runtime", "1")',
     'new LanguageExecutionRequest("41", backend)',
     'Expected 42',
     'UTL2002',
