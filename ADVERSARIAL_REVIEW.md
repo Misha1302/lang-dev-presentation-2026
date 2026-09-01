@@ -1,112 +1,123 @@
-# Adversarial review — post-redesign
+# Adversarial review — balanced causal narrative
 
-Truth snapshot: `UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`.
+Truth snapshot: `UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`. Review date: `2026-09-01`.
 
-## Narrative verdict
+## Null-hypothesis verdict
 
-The baseline deck had a causal gap: after admitting that a handwritten pipeline is usually best, it jumped directly into providers/conflicts/routes before establishing why anyone needs multiple language configurations. The redesign closes that gap with a current Wist language-family story before planner vocabulary.
+**Baseline:** keep the 16-slide planner/runtime deck.
+
+That baseline already had a strong first ten slides, but after the staging thesis was demonstrated it spent five slides repeating boundaries:
+
+```text
+takeaway
+→ what disappears
+→ performance decomposition
+→ correctness boundary
+→ decision rule
+```
+
+The tail was safe but increasingly defensive. It also left a source mismatch: main slide 11 described a real Wist `MinimalArithmetic` demo while `demo/Program.cs` executed synthetic `Demo.Ambiguity` + `Demo.Runtime`.
+
+**Verdict:** keep the strongest planner/runtime spine, fix the demo truth, and spend the recovered conceptual budget on exactly two compiler ideas that are connected to the selected environment.
+
+## One-sentence causal test
+
+The talk can be described without “Part 1 / Part 2”:
+
+> Whole-language planning selects one concrete environment; local compiler passes then use explicit semantic and selected-capability evidence to decide which rewrites are legal before that environment executes.
+
+If rehearsal cannot preserve this sentence, cut compiler detail rather than adding more mechanisms.
+
+## Why the redesign is stronger
+
+- keeps 16 main slides;
+- keeps the source-backed UTL2002 / plan / runtime demonstration;
+- replaces a boundary-heavy tail instead of growing the deck;
+- introduces only **semantic-contract legality** and **capability-gated specialization**;
+- makes the compiler section causal: selected environment → actual capability context → legal specialization;
+- moves performance, IR stage contracts, semantic trust, and maturity details into Q&A appendix;
+- removes the false impression that the planner itself produces all semantic guarantees.
 
 ## Hostile pass
 
-### “Why extensibility?”
-Answered on main slide 3 with real shipped Wist presets. Practical value is reuse of one language infrastructure across different feature/backend/policy configurations rather than maintaining a compiler fork per profile.
+### Narrative overload
 
-### “Why not flags / CompilerOptions?”
-Main slides 4–5 concede flags while options are independent. Planner appears only after dependencies, provider alternatives, conflicts/order, artifact routes and runtime/backend compatibility make choices whole-language decisions.
+New main nouns after slide 11: `semantic descriptor` and `capability context`. `SSA`, SCCP, e-graphs and IR facts are not new main-deck topics.
 
-### “Why not a builder?”
-A builder is sufficient when the integrator already knows the exact graph. It does not by itself define the policy for resolving independently declared global constraints. Appendix A3 makes this distinction explicit.
+**Pass condition:** the audience can follow slides 12–16 without knowing SSA theory.
 
-### “Why not DI?”
-DI is strong at materializing a chosen object graph. UniversalToolchain's planning phase addresses the earlier question: which provider, route, ordering and runtime should constitute the graph under the expressed language protocol? DI may still be used after resolution. No claim that DI cannot be extended with custom policy logic.
+### Two-talk problem
 
-### “Is this overengineering?”
-Yes, if one owner knows a stable pipeline. Main slides 2 and 16 explicitly recommend handwritten composition in that case.
+Slide 12 explicitly states:
 
-### “Why multiple dialects instead of forks?”
-If variants intentionally share most language infrastructure, presets/definitions let the common implementation evolve once while integrators select different surfaces/backends/policies. Forks remain valid when variants truly need independent evolution or semantics.
+```text
+Planning: What exists?
+Compiler pass: What may I change?
+```
 
-### “Who extends the language?”
-Main slide 6 separates conceptual framework author, package authors, language integrator and runtime user. They may be the same person/team; the architecture matters when they are not.
+Slide 14 reconnects both sides through `LanguagePlan + selected backend → capability context`.
 
-### “What if two extensions disagree?”
-Expressed conflicts/order/provider ambiguity can fail planning. Semantic disagreements that are not encoded in the protocol are outside the planner's proof boundary.
+**Result:** PASS, provided the speaker does not turn slide 13 into a CSE tutorial.
 
-### “Who guarantees semantic compatibility?”
-Not `LanguagePlan`. Main slide 15 explicitly separates structural from semantic compatibility.
+### Compiler vanity
 
-### “Is LanguagePlan just a dependency graph / DTO?”
-No in the current API: it contains resolved package identities/contributions, runtime provider, concrete artifact routes, canonical hash and summary. It is still data; the point is that those data bind later materialization and are inspectable/testable.
+CSE and constant folding appear only as consequences of the same semantic safety predicate. The point is not “the project has optimizations”; the point is “legality consumes explicit properties.”
 
-### “What does PlanHash prove?”
-Canonical identity of the expressed resolved plan for reproducibility/debugging/testing. It does not prove semantic equivalence, security, program identity or performance equivalence.
+**Result:** PASS.
 
-### “Is runtime really static?”
-The deck does not call it static. Runtime still validates exact plan/provider constraints and request inputs, owns objects/sessions and may dispatch dynamically.
+### Demo theatre
 
-### “Is runtime validation planning again?”
-No current `LanguageRuntime.Create` re-runs the feature/contribution/route phases. It verifies and materializes the already selected plan. This is an exact-binding boundary, not a second global composition search.
+The visible slide now matches the exact executable path: synthetic ambiguity → explicit preference → plan → runtime → `41 → 42`. The synthetic package is labeled, and the slide no longer claims Wist semantics.
 
-### “Does extensibility hurt performance?”
-It can. The deck separates planning, runtime creation, first execution and steady-state costs. Only the staging fact is source-backed; magnitude requires measurement.
+**Result:** PASS after CI exercises `demo/run-demo.sh`.
 
-### “Is it zero-cost?”
-No. Explicitly not claimed.
+### Implementation maturity
 
-### “Does JIT remove the abstractions?”
-Not guaranteed by planning. JIT/AOT specialization is a separate optimization question and remains `NEEDS MEASUREMENT`.
+- semantic-gated CSE/folding: implemented;
+- Wist plan/backend capability gating + backend validation: implemented;
+- IR fact/capability checks: implemented, appendix only;
+- e-graph: bounded symbolic simplifier, appendix/Q&A only;
+- performance: needs measurement.
 
-### “Have you measured it?”
-Not with an exact-current raw result artifact used by this deck. Therefore no numerical performance claim appears.
+**Result:** PASS.
 
-### “When does planning pay off?”
-Workload-specific. It can amortize only when a plan/runtime is reused enough that avoided repeated global decisions are meaningful relative to planning/runtime-creation cost. This needs measurement for a concrete workload.
+### Timing
 
-### “Is route Cost a performance metric?”
-No. It is summed planning metadata used by route selection; the deck explicitly says it is not measured runtime latency.
+Canonical authored budget: 21:05 inside a 25:00 content slot. Demo is 2:00, interactions are short prediction/reveals, leaving 3:55 hard buffer before Q&A.
 
-### “What if equal-cost routes exist?”
-That is a deterministic planning-protocol question. Selection/tie behavior must be tested; equal planning cost does not imply semantic equivalence.
+**Result:** PASS if rehearsal stays under 22:00.
 
-### “Is route selection deterministic?”
-The architecture intends deterministic resolved plans under the expressed protocol; this is reproducibility of resolution, not semantic equivalence. Do not generalize beyond tested/current rules.
+### Audience prerequisites
 
-### “Is it thread-safe?”
-Not a central claim. The Wist facade documents that one `WistEngine` rejects overlapping public operations and recommends separate engines for concurrency. Do not advertise universal thread safety.
+No SSA lesson is required. Slide 13 uses three-address-like notation only. `pure`, `deterministic`, `trusted`, and `capability` are explained by consequence.
 
-### “Is it secure / a sandbox?”
-No. Restricted policy can constrain composition and host interop but is not process isolation. Third-party extension trust/isolation is a separate security problem.
+**Result:** PASS.
 
-### “Can a malicious plugin hurt me?”
-Yes, in-process extension code must be treated according to the host's trust model. Planning validation does not sandbox arbitrary code.
+### Memorability
 
-### “Why not MLIR?”
-MLIR is an extensible multi-dialect IR ecosystem with operations/types/attributes and conversion infrastructure. UniversalToolchain addresses a different design point: composing a whole runnable language configuration into an explicit plan/runtime boundary in .NET. They can be complementary.
+One phrase:
 
-### “Why not Racket?”
-Racket's `#lang` ecosystem makes language choice/creation a first-class module protocol. UniversalToolchain focuses on typed package contributions, global resolution and exact runtime binding. No superiority or novelty claim.
+> Resolve globally. Justify locally. Execute concretely.
 
-### “Why not MPS?”
-MPS is a full language workbench with language modules, extension and projectional tooling. UniversalToolchain is not a replacement IDE/workbench; its narrow focus here is runtime/compiler composition staging.
+One picture: global plan on the left, local rewrite evidence on the right.
 
-### “Why not MontiCore?”
-MontiCore provides reusable language components and composition through grammar inheritance, embedding and aggregation. UniversalToolchain does not claim the same composition model; it demonstrates a different typed planning/runtime design point.
+One example: two `foo(x)` calls.
 
-### “What's novel?”
-The talk does not make a novelty claim. It presents a concrete architecture and the staging reasoning behind it.
+**Result:** PASS.
 
-### “When should I not use it?”
-When one owner can correctly and clearly wire a stable pipeline; when variants should truly be independent forks; when the composition protocol cannot express the semantic constraints you need; or when planner infrastructure costs more than the extensibility problem warrants.
+## Main attack surfaces for Q&A
 
-## Newcomer noun audit
+1. Why not DI/builder?
+2. Why not LLVM/MLIR?
+3. Does `LanguagePlan` prove semantic compatibility?
+4. What if semantic metadata lies?
+5. What if selected backend cannot consume optimized IR?
+6. Does extensibility hurt performance?
+7. How is the planner/runtime boundary testable?
+8. What is experimental vs implemented?
+9. Is restricted composition a sandbox?
+10. Is the “e-graph” actually an e-graph/equality-saturation framework?
+11. Do IR contracts schedule passes?
+12. Why use a synthetic demo rather than Wist?
 
-- slides 1–2: no UT nouns required;
-- slide 3: only Wist + three variant names;
-- slide 4: `.wistdialect` only;
-- slide 5: generic feature/capability/contribution/backend vocabulary;
-- slide 6: first `LanguageDefinition` / `LanguageCompiler`;
-- slide 9: first full `LanguagePlan` field view;
-- slide 10: `LanguageRuntime`;
-- after slide 10 no new core UT noun is needed.
-
-This is materially lower simultaneous jargon than the planner-first baseline.
+Canonical answers live in `CLAIM_BOUNDARIES_40_QA.md` and exact maturity statuses live in `claims.md`.
