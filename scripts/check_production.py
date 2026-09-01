@@ -17,7 +17,8 @@ if ARTIFACTS.exists():
 ARTIFACTS.mkdir()
 
 PRODUCTION = "https://misha1302.github.io/lang-dev-presentation-2026/"
-MARKER = "split-main-appendix-v1"
+MARKER = "balanced-causal-v2"
+THESIS = "Resolve globally. Justify locally. Execute concretely."
 sha = os.environ.get("GITHUB_SHA", "unknown")
 
 browser = next((name for name in [
@@ -27,8 +28,8 @@ if browser is None:
     print("Production check FAILED: Chrome/Chromium was not found")
     sys.exit(1)
 
-# Pages deploys independently from this workflow. Poll a cache-busted live
-# asset until the final-release marker is really visible on the public site.
+# GitHub Pages deploys independently from this workflow. Poll cache-busted live
+# assets until this redesign's marker is actually visible on the public site.
 deadline = time.time() + 300
 asset_url = f"{PRODUCTION}deck.js?qa={quote(sha)}"
 last_error = ""
@@ -38,15 +39,18 @@ while time.time() < deadline:
             body = response.read().decode("utf-8")
         if MARKER in body:
             break
-        last_error = "release marker not present yet"
+        last_error = "balanced release marker not present yet"
     except Exception as exc:
         last_error = str(exc)
     time.sleep(5)
 else:
-    print(f"Production check FAILED: public deck.js did not reach final marker: {last_error}")
+    print(f"Production check FAILED: public deck.js did not reach redesign marker: {last_error}")
     sys.exit(1)
 
-common = [browser, "--headless=new", "--disable-gpu", "--disable-dev-shm-usage", "--no-sandbox", "--no-first-run"]
+common = [
+    browser, "--headless=new", "--disable-gpu", "--disable-dev-shm-usage",
+    "--no-sandbox", "--no-first-run",
+]
 failures: list[str] = []
 
 nav_url = f"{PRODUCTION}?nav-check=1&qa={quote(sha)}#1"
@@ -67,8 +71,15 @@ else:
             end = nav_result.stdout.find('"', start)
             detail = nav_result.stdout[start:end]
         failures.append(f"production navigation: {detail}")
+    if THESIS not in nav_result.stdout:
+        failures.append("production thesis: balanced causal anchor missing from live DOM")
+    if 'data-deck-qa-contract="balanced-causal-v2"' not in nav_result.stdout:
+        failures.append("production marker: DOM contract is not balanced-causal-v2")
 
-representative = ["#1", "#3", "#6", "#8", "#9", "#10", "#14", "#16", "#a1", "#a8"]
+representative = [
+    "#1", "#5", "#7", "#9", "#11", "#12", "#13", "#14", "#15", "#16",
+    "#a1", "#a7", "#a8", "#a9", "#a10",
+]
 for target in representative:
     url = f"{PRODUCTION}?visual-check=1&qa={quote(sha)}{target}"
     try:
@@ -94,7 +105,10 @@ for target in representative:
     shot_url = f"{PRODUCTION}?qa={quote(sha)}{target}"
     try:
         shot = subprocess.run(
-            common + ["--window-size=1366,768", "--hide-scrollbars", f"--screenshot={output}", shot_url],
+            common + [
+                "--window-size=1366,768", "--hide-scrollbars",
+                f"--screenshot={output}", shot_url,
+            ],
             capture_output=True, text=True, timeout=30,
         )
     except subprocess.TimeoutExpired:
@@ -103,13 +117,13 @@ for target in representative:
     if shot.returncode != 0 or not output.exists():
         failures.append(f"production screenshot {target}: failed")
 
-if len(list(ARTIFACTS.glob("*.png"))) != len(representative):
-    failures.append("production screenshot coverage incomplete")
-
 if failures:
     print("Production check FAILED:")
     for failure in failures:
         print(f" - {failure}")
     sys.exit(1)
 
-print(f"Production check OK: live marker current; navigation PASS; {len(representative)} representative screenshots")
+print(
+    f"Production check OK: marker={MARKER}; thesis present; "
+    f"navigation PASS; {len(representative)} representative states PASS"
+)
