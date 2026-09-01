@@ -42,6 +42,11 @@ jobs:
           grep -q "\[runtime\] input=41 output=42" demo-source-output.txt
       - name: Render-check all slides at conference viewports
         run: python3 scripts/check_render.py
+      - name: Re-open deployed GitHub Pages in Chromium
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: python3 scripts/check_production.py
       - name: Upload validation evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -49,5 +54,6 @@ jobs:
           name: presentation-validation-evidence
           path: |
             render-artifacts/*.png
+            production-artifacts/*.png
             demo-source-output.txt
           if-no-files-found: ignore

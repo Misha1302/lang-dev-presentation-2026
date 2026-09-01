@@ -107,3 +107,10 @@ nav{position:fixed;left:50%;bottom:1.4vh;transform:translateX(-50%);display:flex
   .slide[data-kind="appendix"] .grid2>.panel,.slide[data-kind="appendix"] .grid3>.panel,.slide[data-kind="appendix"] .grid4>.panel{min-height:145px}
   .slide[data-kind="appendix"]>.panel{min-height:155px}
 }
+
+/* Production footer lanes: content, source evidence and fixed navigation each
+   get a distinct vertical band. This prevents human-visible collisions that
+   ordinary viewport-overflow checks cannot detect. */
+:root{--footer-source-offset:68px;--footer-content-reserve:108px}
+.slide{padding-bottom:max(11vh,var(--footer-content-reserve))}
+.sourcebar{bottom:max(8vh,var(--footer-source-offset))}

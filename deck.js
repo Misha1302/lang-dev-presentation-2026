@@ -1,3 +1,5 @@
+const DECK_QA_CONTRACT = 'split-main-appendix-v1';
+document.documentElement.dataset.deckQaContract = DECK_QA_CONTRACT;
 const allSlides = [...document.querySelectorAll('.slide')];
 const prog = document.getElementById('prog');
 const count = document.getElementById('count');
@@ -10,6 +12,7 @@ let showAppendix = false;
 let slides = [];
 let i = 0;
 function titleOf(s){ const h=s.querySelector('h1,h2'); return h ? h.textContent.replace(/\s+/g,' ').trim() : 'Slide'; }
+function rectsOverlap(a,b){ return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top; }
 function runLayoutDiagnostics(){
   if(new URLSearchParams(location.search).get('visual-check') !== '1') return;
   const active = document.querySelector('.slide.active');
@@ -28,11 +31,21 @@ function runLayoutDiagnostics(){
         break;
       }
     }
+    const nav = document.querySelector('nav');
+    if(nav){
+      const navRect = nav.getBoundingClientRect();
+      for(const el of active.querySelectorAll('.sourcebar a,.sourcebar span')){
+        if(rectsOverlap(el.getBoundingClientRect(), navRect)){
+          errors.push('overlap:sourcebar-navigation');
+          break;
+        }
+      }
+    }
   }
   document.documentElement.dataset.visualCheck = errors.length ? 'fail' : 'ok';
   document.documentElement.dataset.visualErrors = errors.join('|');
 }
-function visibleSlides(){ return allSlides.filter(s => showAppendix || s.dataset.kind !== 'appendix'); }
+function visibleSlides(){ return allSlides.filter(s => showAppendix ? s.dataset.kind === 'appendix' : s.dataset.kind !== 'appendix'); }
 function rebuildToc(){
   tocGrid.innerHTML='';
   slides.forEach((s, idx)=>{
@@ -45,7 +58,7 @@ function rebuildToc(){
 }
 function readHash(){
   const raw = location.hash.replace('#','');
-  if(!raw) return 0;
+  if(!raw){ showAppendix = false; return 0; }
   if(raw.startsWith('a')){
     showAppendix = true;
     const n = Number(raw.slice(1)) || 1;
@@ -54,6 +67,7 @@ function readHash(){
     slides = visibleSlides();
     return Math.max(0, slides.indexOf(target));
   }
+  showAppendix = false;
   return Math.max(0, Math.min((Number(raw) || 1) - 1, visibleSlides().length - 1));
 }
 function refresh(targetIndex){
@@ -69,7 +83,7 @@ function go(n, replaceHash=false){
   i=(n+slides.length)%slides.length;
   slides[i].classList.add('active');
   prog.style.width=((i+1)/slides.length*100)+'%';
-  count.textContent=(i+1)+' / '+slides.length + (showAppendix ? ' · appendix on' : '');
+  count.textContent=(i+1)+' / '+slides.length + (showAppendix ? ' · appendix' : '');
   notesP.textContent=slides[i].dataset.notes || '';
   const appIndex = allSlides.filter(s => s.dataset.kind === 'appendix').indexOf(slides[i]);
   const hash = appIndex >= 0 ? '#a'+(appIndex+1) : '#'+(allSlides.filter(s => s.dataset.kind !== 'appendix').indexOf(slides[i])+1);
@@ -92,4 +106,36 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){notes.classList.remove('show');toc.classList.remove('show')}
 });
 window.addEventListener('hashchange',()=>refresh(readHash()));
+function runNavigationDiagnostics(){
+  if(new URLSearchParams(location.search).get('nav-check') !== '1') return;
+  const errors = [];
+  const expect = (condition, message)=>{ if(!condition) errors.push(message); };
+  const activeKey = ()=>document.querySelector('.slide.active')?.dataset.noteKey;
+  const setHash = hash=>{ history.replaceState(null,'',hash); window.dispatchEvent(new HashChangeEvent('hashchange')); };
+  const key = value=>document.dispatchEvent(new KeyboardEvent('keydown',{key:value,bubbles:true,cancelable:true}));
+  setHash('#1'); expect(activeKey()==='m1' && count.textContent.startsWith('1 / 16'),'deep-1');
+  key('ArrowRight'); expect(activeKey()==='m2' && location.hash==='#2','ArrowRight');
+  key('ArrowLeft'); expect(activeKey()==='m1' && location.hash==='#1','ArrowLeft');
+  key('PageDown'); expect(activeKey()==='m2','PageDown');
+  key('PageUp'); expect(activeKey()==='m1','PageUp');
+  key(' '); expect(activeKey()==='m2','Space');
+  setHash('#16'); expect(activeKey()==='m16' && count.textContent.startsWith('16 / 16'),'deep-16');
+  setHash('#a1'); expect(activeKey()==='a1' && count.textContent.startsWith('1 / 8 · appendix'),'deep-a1');
+  setHash('#a8'); expect(activeKey()==='a8' && count.textContent.startsWith('8 / 8 · appendix'),'deep-a8');
+  setHash('#1'); appendixBtn.click(); expect(activeKey()==='a1' && location.hash==='#a1' && appendixBtn.textContent==='Main','Appendix-button');
+  appendixBtn.click(); expect(activeKey()==='m1' && location.hash==='#1' && appendixBtn.textContent==='Appendix','Main-button');
+  document.getElementById('tocBtn').click();
+  expect(toc.classList.contains('show') && tocGrid.querySelectorAll('button').length===16,'TOC-open');
+  tocGrid.querySelectorAll('button')[2]?.click();
+  expect(activeKey()==='m3' && location.hash==='#3' && !toc.classList.contains('show'),'TOC-navigate');
+  document.getElementById('notesBtn').click();
+  expect(notes.classList.contains('show') && notesP.textContent.trim().length>0,'Notes-open');
+  document.getElementById('tocBtn').click();
+  key('Escape');
+  expect(!notes.classList.contains('show') && !toc.classList.contains('show'),'Escape');
+  setHash('#1');
+  document.documentElement.dataset.navCheck = errors.length ? 'fail' : 'ok';
+  document.documentElement.dataset.navErrors = errors.join('|');
+}
 refresh(readHash());
+runNavigationDiagnostics();
