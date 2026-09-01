@@ -4,28 +4,36 @@ Conference deck:
 
 > **Build an Extensible Language, Run a Concrete One**
 
-Opening thesis:
+Final causal thesis:
 
-> **Resolve composition before execution — keep open choices out of the hot path.**
+> **Global planning selects one concrete execution environment; local compiler passes justify rewrites from explicit semantic contracts and from the capabilities that selected environment actually exposes.**
 
-Central architecture claim:
+Memory anchor:
 
-> Extensions describe possibilities. Planning resolves global composition choices into one concrete `LanguagePlan`. Runtime executes that resolved plan instead of reopening those decisions.
+> **Resolve globally. Justify locally. Execute concretely.**
 
-Performance consequence, deliberately scoped:
+## Audience memory target
 
-> Extensibility does not inherently require global composition decisions to remain dynamic during repeated execution.
+One sentence: the anchor above.
 
-The deck does **not** claim that extensibility is free, that all runtime abstractions/dispatch disappear, that planning guarantees JIT/AOT devirtualization, or that UniversalToolchain/Wist is generally as fast as or faster than handwritten C#.
+One picture: whole-language choices collapse into `LanguagePlan`; local passes then consume semantic + capability evidence.
+
+One example: the same `foo(x)` call may or may not be reusable depending on `pure + deterministic + trusted`.
 
 ## Source-of-truth contract
 
-Implementation claims are pinned to `Misha1302/UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`.
+Redesign audit base:
 
-The current public path is:
+- presentation: `6cafa311480f454e6aec0634bf0e3f8478e1c4ac`;
+- UniversalToolchain implementation truth: `7005371d6c30175dff4b0e9f906a26218b0ee54d`;
+- research date: `2026-09-01`.
+
+Implementation claims follow this evidence order: implementation → tests → executable behavior → architecture docs → README/comments.
+
+The global path is:
 
 ```text
-packages + definition
+packages + LanguageDefinition
         ↓
 LanguageCompiler.Compile
         ↓
@@ -33,25 +41,120 @@ immutable LanguagePlan
         ↓
 LanguageRuntime.Create
         ↓
-repeated execution on the selected plan/session
+repeated execution on the selected environment
 ```
 
-`LanguageRuntime.Create` performs exact validation/materialization. That is not a second global provider/route planning pass. `LanguageRuntime.Run` validates the request against the already-selected plan and dispatches to the created session.
+The local compiler path highlighted in the talk is deliberately separate:
 
-## Performance evidence boundary
+```text
+explicit semantic descriptor
++ selected-environment capabilities
+        ↓
+rewrite legality / specialization gate
+        ↓
+optimized representation
+        ↓
+backend validates what it receives
+```
 
-The talk separates four cost boundaries:
+`LanguagePlan` resolves composition structure. It does **not** manufacture every semantic guarantee used by optimizers.
 
-1. planning;
-2. runtime creation;
-3. first execution;
-4. steady-state execution.
+## LangDev 2026 conference contract
 
-Current UniversalToolchain source has separate benchmark surfaces for architecture-boundary setup/planning, formula compilation, convenience `Evaluate`, and prepared hot invocation. The benchmark methodology explicitly forbids mixing those workloads.
+Last verified: **2026-09-01** from the official LangDev site: <https://langdevcon.org/>.
 
-No raw exact-current-revision result bundle with commit/environment/config/raw BenchmarkDotNet artifacts is bound into this presentation, so numerical values remain **NEEDS MEASUREMENT**. The amortization equation in the appendix is a conceptual cost model, not benchmark evidence.
+- conference: LangDev 2026;
+- dates: **8–9 October 2026**;
+- venue: **Meliá Costa del Sol, Torremolinos, Málaga, Spain**;
+- speaker slot: **25 min talk + 5 min Q&A**;
+- language: English;
+- applied/tool demonstrations are encouraged;
+- a public companion repository is encouraged when possible;
+- preliminary/unfinished work is welcome when its status is clear.
 
-## Run locally
+This repository therefore optimizes for a source-backed demo, explicit maturity labels, reproducibility, and a talk target below the 25-minute hard content limit.
+
+## Main narrative
+
+```text
+one fixed language
+        ↓
+a family introduces choices
+        ↓
+choices stop being independent
+        ↓
+global composition needs one owner
+        ↓
+LanguageCompiler resolves ambiguity / routes / runtime
+        ↓
+LanguagePlan describes one concrete environment
+        ↓
+LanguageRuntime materializes and executes it
+
+BUT
+
+knowing what exists
+        ≠
+knowing which compiler rewrite is legal
+
+        ↓
+local passes consume explicit semantic evidence
++ capabilities exposed by the selected environment
+        ↓
+legal rewrite / legal specialization
+        ↓
+concrete execution
+```
+
+Main-deck compiler concept budget: **two** concepts only:
+
+1. semantic-contract-driven transformation legality;
+2. capability-gated specialization.
+
+SSA is notation, not a separate lesson. IR fact contracts and the bounded e-graph-style simplifier stay in appendix/Q&A.
+
+## Truth boundaries
+
+- planning removes unresolved composition decisions from repeated execution **≠** all runtime objects/dispatch disappear;
+- structural compatibility **≠** semantic correctness proof;
+- a semantic descriptor **≠** proof that its metadata is truthful;
+- a declared/selected capability **≠** a performance claim;
+- restricted composition **≠** sandboxing;
+- no repeated global planning **≠** zero runtime overhead;
+- the current `EGraphOptimizerModule` is a bounded straight-line symbolic simplifier, **not** a general equality-saturation framework;
+- current IR stage contracts validate a supplied pass sequence; they do **not** automatically schedule passes.
+
+Numerical performance claims remain **NEEDS MEASUREMENT** because this deck is not bound to an exact-current raw benchmark-result artifact.
+
+## Talk timing budget
+
+The canonical timing audit in `scripts/timing_audit.py` targets:
+
+- main talk: **21:05**;
+- source-backed demo: **2:00** inside that budget;
+- prediction/reveal interaction allowance: **~0:50** inside that budget;
+- buffer before the 25:00 hard content limit: **3:55**;
+- Q&A: **5:00** official separate window.
+
+If behind schedule, cut explanatory detail from slides 3, 8, and appendix references; do not cut the causal bridge (12), semantic prediction (13), capability path (14), or final anchor (16).
+
+## Demo
+
+See [`DEMO.md`](DEMO.md).
+
+The primary demo intentionally uses a tiny synthetic package so the architecture is observable without depending on Wist syntax/semantics:
+
+```text
+UTL2002 ambiguity
+→ explicit PreferCapabilityProvider
+→ concrete LanguagePlan
+→ LanguageRuntime.Create
+→ input=41 output=42
+```
+
+The demo proves composition/runtime staging, not Wist semantics and not performance.
+
+## Run the deck locally
 
 ```bash
 python3 -m http.server 8000
@@ -72,24 +175,10 @@ python3 scripts/timing_audit.py
 python3 scripts/check_render.py
 ```
 
-GitHub Actions additionally checks out the exact UniversalToolchain truth snapshot and runs `demo/UniversalToolchainDemo.csproj` through project references.
+GitHub Actions additionally:
 
-## Demo
-
-See [`DEMO.md`](DEMO.md). The live path proves two source-backed boundaries: a real planning ambiguity (`UTL2002`) resolved by `PreferCapabilityProvider`, then a real authored package compiled to `LanguagePlan`, materialized by `LanguageRuntime.Create`, and executed as `41 → 42`.
-
-## Narrative map
-
-```text
-handwritten pipeline works
-        ↓
-independent extensions create global composition decisions
-        ↓
-planner owns those decisions
-        ↓
-LanguagePlan collapses open choices into concrete data
-        ↓
-runtime validates/materializes and executes the resolved language
-        ↓
-extensibility need not mean dynamic global composition in the hot path
-```
+- checks out exact UniversalToolchain `7005371d6c30175dff4b0e9f906a26218b0ee54d`;
+- exercises the canonical `demo/run-demo.sh`;
+- asserts the UTL2002 negative case and `41 → 42` result;
+- renders every main/appendix slide at required and stress viewports;
+- reopens deployed GitHub Pages after pushes to `main` and checks the release marker, navigation, final thesis, and representative screenshots.

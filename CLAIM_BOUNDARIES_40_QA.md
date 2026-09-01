@@ -1,159 +1,103 @@
-# Claim boundaries and hostile Q&A for LangDev 2026
+# Claim boundaries and hostile Q&A — LangDev 2026
 
 Truth snapshot: `Misha1302/UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`.
 
-This is presentation/speaker-prep material. It adds no UniversalToolchain production API, feature or abstraction.
+This file is the rehearsal/Q&A owner. Implementation maturity is owned by [`claims.md`](claims.md); operational demo details are owned by [`DEMO.md`](DEMO.md).
 
 ## Core wording
 
 Use:
 
-> **Build an Extensible Language, Run a Concrete One**
+> **Resolve globally. Justify locally. Execute concretely.**
 
-> Extensions describe possibilities. Planning resolves global composition choices into one concrete `LanguagePlan`. Runtime executes that resolved plan instead of reopening those decisions.
+> Global planning selects one concrete execution environment; local compiler passes justify rewrites from explicit semantic contracts and from the capabilities that this selected environment actually exposes.
 
-> **Extensible at composition time. Concrete at execution time.**
+Do **not** turn this into:
 
-> Extensibility does not inherently require global composition decisions to remain dynamic during repeated execution.
-
-> **The runtime should not repeatedly pay for decisions that were already made.**
-
-> Planning does not remove cost. It makes where we pay explicit.
-
-Do not turn these into:
-
-- zero-cost extensibility;
+- the planner proves semantics;
+- the planner produces all optimizer guarantees;
 - extensibility is free;
-- same speed as handwritten C#;
-- all abstractions disappear;
-- all dispatch disappears;
-- planning guarantees devirtualization;
-- UniversalToolchain always produces the fastest pipeline;
-- “minimum-cost language” or global configuration optimality;
-- an unconditional claim that extensibility does not sacrifice performance.
+- all abstractions/dispatch disappear;
+- capability availability implies a performance win;
+- valid plan implies sandbox/security;
+- current e-graph module is general equality saturation.
 
-## Two meanings of deabstraction
+## 1. Why not just DI or a builder?
 
-### Composition deabstraction — current architecture
+If the host already knows the exact graph, use them. The planner addresses an earlier ownership problem: independent packages declare dependencies/providers/conflicts/routes, and one whole-language phase resolves those choices before materialization. DI may still build objects afterward.
 
-Before planning, provider/route/runtime/order can be alternatives or constraints. After planning they are concrete `LanguagePlan` data. The abstraction disappears **as an open decision**, not necessarily as an allocated object.
+## 2. Why not LLVM or MLIR?
 
-### Representation/code specialization — separate optimization
+They solve different layers. LLVM is compiler infrastructure around established IR/toolchain contracts; MLIR provides extensible multi-level IR and dialect/conversion infrastructure. This talk focuses on whole runnable-language composition in .NET and then on local rewrite evidence. They can be complementary; no superiority claim.
 
-Interfaces, objects, validation and indirect calls may remain. JIT/AOT may specialize some of them, but that is an implementation- and workload-specific optimization problem with its own evidence requirement.
+## 3. Does `LanguagePlan` prove semantic compatibility?
 
-## Performance answer in 30 seconds
+No. It proves only what the expressed structural/configuration protocol can check: selected identities, dependencies, conflicts, routes, runtime/backend coverage, and related invariants.
 
-**Won't extensibility hurt performance?**
+## 4. What if `CallableDescriptor` metadata lies?
 
-The architectural result and empirical result are different. Current source stages global composition before execution: `LanguageCompiler` resolves providers, ordering and artifact routes into `LanguagePlan`; `LanguageRuntime.Run` executes through the already-created plan/session rather than invoking the semantic planner again. That removes repeated global composition from the execution boundary, not every runtime abstraction. Planning, runtime creation, first-use work, validation, dispatch and generated-code quality still cost something, so their size must be benchmarked separately.
+Then an optimizer may be given false evidence. Current local CSE/folding require trusted descriptor levels in addition to purity/determinism, but that is still a trust/specification boundary. Typed metadata makes assumptions explicit and testable; it does not make them automatically true.
 
-**So is extensibility free?**
+## 5. Why is `pure + deterministic + trusted` interesting?
 
-No. Planning, materialization and remaining runtime abstractions all have costs. The narrower claim is that provider, route, ordering and runtime selection do not need to be rediscovered during every execution.
+Because the legality rule is attached to semantic properties rather than hard-coded operation names. The same optimizer mechanism can conservatively preserve unknown/effectful/untrusted calls and reuse a trusted deterministic pure call without language-specific name knowledge.
 
-**Are you claiming zero-cost abstractions?**
+## 6. What if the selected backend cannot execute the specialization?
 
-No. Composition choices become concrete before execution. Interfaces, objects, validation and dispatch may remain. Eliminating some of them is a separate specialization problem.
+The current Wist path combines selected backend capabilities with plan intrinsic policy before the optimizer sees `Supports(...)`. If support/policy rejects an intrinsic, the optimizer sees it as unavailable. Backend boundaries also validate emitted AIR and fail closed for forbidden intrinsics.
 
-**Then why should this be faster?**
+## 7. Is capability-gated specialization universal in UniversalToolchain?
 
-The architecture does not guarantee that the final program is faster than handwritten code. It guarantees that repeated execution does not need to reopen the global composition problem. Whether the remaining steady-state overhead is negligible is workload-dependent and measurable.
+No. The talk claims the exact current Wist typed-intrinsic path. Generalizing it to every optimizer/backend is outside current evidence.
 
-**Why not just use DI?**
+## 8. Does extensibility hurt performance?
 
-DI is good at materializing known bindings. Here the missing step is earlier: resolve a domain-specific whole-language composition graph — capability providers, conflicts, ordering, artifact routes and runtime provider — into validated plan data before materialization. If those choices are already known, use the simpler host pipeline/DI solution.
+It can. The source-backed architectural claim is only that global composition does not have to be rediscovered on every execution. Planning, materialization, validation, dispatch, allocations, JIT/backend startup and generated-code quality still cost something.
 
-## Cost boundaries
+## 9. Have you measured it?
 
-1. **Planning:** feature/contribution resolution, provider selection, conflicts, ordering, route search, canonicalization, diagnostics, allocations.
-2. **Runtime creation:** plan verification, component materialization, route/session assembly.
-3. **First execution:** parsing/lowering/codegen where applicable, initialization, JIT, cold caches.
-4. **Steady state:** concrete selected path; no global re-planning by architecture, but validation, provider/session calls, dispatch, allocations and generated-code quality may remain.
+Not with a presentation-bound exact-current raw benchmark artifact. Therefore the deck has no numerical performance claim. Planning/runtime creation/first execution/steady state are all `NEEDS MEASUREMENT` for this talk.
 
-`No re-planning ≠ zero overhead.`
+## 10. Does “concrete execution” mean no dynamic dispatch?
 
-Conceptual amortization only:
+No. “Concrete” refers to resolved whole-language choices. Interfaces, objects, indirect calls and validation may remain.
 
-```text
-naive dynamic composition: N × (Ccomposition + Cexecution)
-staged composition:        Ccomposition + N × Cexecution
-per-run composition share: Ccomposition / N
-```
+## 11. Does `PlanHash` prove correctness?
 
-This decomposition is not benchmark evidence and does not prove total UniversalToolchain performance beats an alternative.
+No. It is canonical identity of the expressed resolved plan, useful for reproducibility/drift/testing. It is not semantic equivalence, a security attestation, or a performance identity.
 
-## Benchmark evidence boundary
+## 12. Is restricted composition a sandbox?
 
-Current source has separate BenchmarkDotNet surfaces for:
+No. Policies can restrict selected features/interop/runtime choices, but they do not create process isolation or malicious-code containment.
 
-- `MigrationArchitectureBoundaryBenchmarks` — `LanguagePlan_Compile`, `WistEngine_CreateAndDispose`;
-- `FormulaHotPathBenchmarks` — prepared C# / NCalc / Wist delegates, with parity checks;
-- `FormulaCompilationBenchmarks` — existing-engine compilation and create-engine+compile;
-- `FormulaConvenienceBenchmarks` — `Evaluate` convenience paths.
+## 13. Do `IrStageContract`s automatically schedule passes?
 
-Do not compare `Evaluate` with a prepared C# delegate and label the difference “runtime execution overhead”: those workloads include different work. Do not publish Dry/Smoke results as precise performance evidence.
+No. Current `SsaOptimizerPipeline` iterates a supplied pass list. Contracts decide whether running the next supplied pass is legal (`RequiresFacts`, `RequiresCapabilities`) and update facts afterward (`Produces`, `Preserves`, `Invalidates`).
 
-For the current truth snapshot, a presentation-bound raw exact-environment result set is not available, so numerical planning/runtime/first/steady-state claims are `NEEDS MEASUREMENT`.
+## 14. Is `EGraphOptimizerModule` a production e-graph/equality-saturation engine?
 
-## Required narrative sequence
+No. Current implementation is a bounded straight-line symbolic simplifier/canonicalizer over a restricted arithmetic subset, guarded by intrinsic capabilities. Keep `e-graph` out of the main narrative.
 
-1. Handwritten pipeline works and is often best.
-2. Independent extensions create global composition decisions.
-3. Planner owns those decisions.
-4. `LanguagePlan` collapses the open choice space into concrete data.
-5. Runtime validates/materializes and executes that plan; it does not perform a second global planning pass.
-6. Therefore extensibility does not inherently require dynamic global composition in repeated execution.
-7. Remaining performance cost is split into four measured boundaries.
-8. Structural compatibility still does not prove semantic compatibility.
+## 15. Why a synthetic demo instead of real Wist?
 
-## Hostile rehearsal set
+Because the demo's job is to isolate the planner/runtime boundary in 90–120 seconds. `Demo.Ambiguity` exposes UTL2002 deterministically, and `Demo.Runtime` exposes plan→route→runtime→execution without language-syntax noise. Wist remains source evidence elsewhere, but the executable slide must match the executable source.
 
-1. Planner hides complexity? — No; it changes ownership and representation.
-2. Why not handwritten? — For fixed known pipelines, handwritten is often better.
-3. Why not DI? — DI materializes known bindings; the planner resolves whole-language choices before materialization.
-4. Dependency manager? — No; general ecosystem version solving is not claimed.
-5. Two providers? — `UTL2002` fails before execution unless preference is explicit.
-6. Two equal-cost routes? — Deterministic tie-break gives reproducibility, not semantic equivalence.
-7. Does `LanguagePlan` prove correctness? — No; it proves selected declared structure.
-8. `PlanHash` proof? — No; canonical representation identity.
-9. Safe plugins? — No; a valid plan is not a sandbox.
-10. Runtime second planner? — No on the current public path; it validates/materializes exact selected bindings.
-11. Performance? — Separate planning, runtime creation, first execution and steady state.
-12. 1000 contributions? — Needs synthetic measurement before scale claims or caching work.
-13. 2^N tests? — Explicit plans enable configuration-aware sampling, not exhaustive proof.
-14. PlanFuzz proves UT? — No; it is a possible consumer of plan data.
-15. PlanFuzz better than ordinary fuzzing? — Needs equal-budget experiment.
-16. Wist leakage into generic core? — Real boundary risk; keep language semantics outside generic core.
-17. Why not MLIR/LLVM? — Different ownership problem; use them when they own the relevant IR/pass composition.
-18. Semantic compatibility? — Not automatic; requires specs/tests/oracles.
-19. Optimizer correctness? — Separate verifier/parity/property testing problem.
-20. Lying metadata? — Supply-chain/trust problem outside structural planning guarantees.
-21. NativeAOT? — Claim only exact measured consumers.
-22. Thread-safe? — Lifecycle coordination is not arbitrary provider thread safety.
-23. Deterministic = correct? — No; reproducible can be reproducibly wrong.
-24. Hash drift? — Bind evidence to canonicalization/version/source identity.
-25. Debug bad plan? — Inspect diagnostics, selected contributions, routes, runtime and hash/lock representation.
-26. PlanningReport now? — Only if current typed plan/diagnostics repeatedly prove insufficient.
-27. Why no SAT solver? — No need until the domain constraints require one.
-28. Authoring ergonomics? — Alpha-level concern; do not confuse convenience DSLs with architecture proof.
-29. Backend-neutral complete? — Claim only current tested contracts, not universal backend portability.
-30. Structural route but semantic mismatch? — Tests/oracles catch what the protocol does not express.
-31. Beats handwritten? — Not claimed.
-32. Break-even point? — Workload/organization dependent; independent global choices justify the architecture, not a universal numeric threshold.
-33. Lock freezes semantics? — It freezes representation/provenance, not semantic truth.
-34. Package version conflict solved? — General ecosystem solving is outside current claim.
-35. Runtime fallback? — It must be explicit; invisible semantic fallback would violate the ownership story.
-36. Claims drift? — Pin the presentation to exact source and re-audit on source movement.
-37. Old truth snapshot? — Update the source pin only after code/tests/docs/demo review.
-38. Split repos now? — Not required for this talk; architecture boundary matters more than repository topology.
-39. What can planner reject? — Expressed structural/configuration failures, not unknown semantics.
-40. One-sentence architecture claim? — Extensions describe possibilities; planning resolves one plan; runtime executes it.
-41. Is extensibility free? — No; only repeated global composition is staged out.
-42. Does planning remove dispatch? — No guarantee.
-43. Does planning guarantee devirtualization? — No.
-44. Does planning always pay off? — No; slide 2 deliberately keeps the simpler baseline.
-45. Is amortization a benchmark? — No; it is a cost decomposition.
-46. Could `Run` secretly route again? — Current `LanguageRuntime.Run` does not invoke semantic planning/route search; it validates plan-bound inputs and calls the created session.
-47. Is route `Cost` runtime cost? — No; it is the declared planning weight used by route construction.
-48. If benchmarks are bad? — Admit the cost and use the planner only where explicit composition ownership is worth it.
+## 16. How is this testable?
+
+Planning can be tested as definition/registry → plan/diagnostics. Runtime can be tested as exact plan → materialization/execution. Compiler legality can be tested with positive and negative semantic descriptors. Capability gating can be tested both at optimizer `Supports(...)` and backend validation.
+
+## 17. What happens with unknown semantic information?
+
+Fail conservatively: do not justify the rewrite. Current local CSE requires a descriptor and known instruction/terminator shapes; constant folding requires descriptor + safe semantics + constant operands + successful evaluator.
+
+## 18. Is deterministic selection the same as correct selection?
+
+No. Reproducibility can be reproducibly wrong. Deterministic planning is a protocol property; semantic correctness still needs specifications/tests/oracles.
+
+## 19. When should I not use this architecture?
+
+When one owner can clearly wire the stable pipeline; when variants should be independent implementations; when the composition protocol cannot express the constraints that matter; or when the ownership problem is smaller than the planner infrastructure.
+
+## 20. One-sentence answer if time is gone
+
+> Independent components create global choices, so resolve those once; then let each compiler rewrite proceed only when explicit local semantics and the selected environment justify it.
