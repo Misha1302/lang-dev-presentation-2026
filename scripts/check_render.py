@@ -13,7 +13,7 @@ ARTIFACTS.mkdir(exist_ok=True)
 
 browser = next((name for name in [
     "google-chrome-stable", "google-chrome", "chromium-browser", "chromium"
-] if shutil.which(name)), None
+] if shutil.which(name)), None)
 if browser is None:
     print("Render check FAILED: Chrome/Chromium was not found")
     sys.exit(1)
