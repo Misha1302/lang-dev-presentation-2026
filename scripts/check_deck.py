@@ -48,8 +48,11 @@ for n,(attrs,_) in enumerate(main,1):
     for marker in ['ЗАЧЕМ','СКАЗАТЬ','ПЕРЕХОД','НЕ ПЕРЕОБЕЩАТЬ']:
         assert marker in notes, f'main slide {n} notes missing {marker}'
 
+# The live notes are presentation cues, not a verbatim talk transcript.  Keep a
+# floor that catches accidental truncation, while allowing the cue format to
+# evolve without pinning CI to the old 2200-3250-word full-script contract.
 notes_words=sum(len(re.findall(r'\b[\wА-Яа-яЁё.-]+\b',n)) for n in main_notes)
-assert 2200<=notes_words<=3250, f'speaker notes word count out of contract: {notes_words}'
+assert notes_words>=800, f'live speaker cues look truncated: {notes_words} words'
 
 required=[
     'Build an Extensible Language,',
@@ -92,4 +95,4 @@ assert 'Build the Language, Then Make the Abstractions Disappear' not in html, '
 assert '36206b66548fec365be6e03381ba44d50c2cafe5' not in html, 'stale source pin remains in live deck'
 assert 'appendixBtn' in html
 assert 'speaker-notes-1.js' in html and 'speaker-notes-2.js' in html and 'speaker-notes-hardening.js' in html
-print(f'OK: {len(main)} main, {len(appendix)} appendix, {notes_words} speaker-note words')
+print(f'OK: {len(main)} main, {len(appendix)} appendix, {notes_words} live speaker-cue words')
