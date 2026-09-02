@@ -1,0 +1,182 @@
+/* Presenter Mode is a layout shell around the existing 100vw × 100vh deck.
+   The deck is transformed as one surface so its vw/vh-based composition does not reflow. */
+body.presenter-mode{
+  --presenter-panel-px:32vw;
+  --presenter-left-px:66.5vw;
+}
+body.presenter-mode .deck{
+  position:fixed;
+  left:var(--presenter-deck-left,1.5vw);
+  top:var(--presenter-deck-top,16vh);
+  width:100vw;
+  height:100vh;
+  transform-origin:top left;
+  transform:scale(var(--presenter-scale,.65));
+  isolation:isolate;
+  overflow:hidden;
+  border:1px solid rgba(237,243,255,.12);
+  border-radius:24px;
+  box-shadow:0 28px 90px rgba(0,0,0,.38);
+  background:radial-gradient(circle at 18% 18%,rgba(125,211,252,.20),transparent 30%),radial-gradient(circle at 82% 12%,rgba(196,181,253,.16),transparent 26%),radial-gradient(circle at 50% 94%,rgba(134,239,172,.08),transparent 30%),linear-gradient(120deg,#070b17 0%,#111833 54%,#080b16 100%);
+}
+body.presenter-mode .deck:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background-image:linear-gradient(rgba(255,255,255,.032) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.032) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(circle at center,black,transparent 78%);
+}
+body.presenter-mode nav{
+  left:calc(var(--presenter-left-px,66.5vw) / 2);
+  right:auto;
+  transform:translateX(-50%);
+  bottom:1.8vh;
+}
+body.presenter-mode .notes{
+  display:flex;
+  flex-direction:column;
+  right:0;
+  top:0;
+  width:var(--presenter-panel-px,32vw);
+  height:100vh;
+  max-height:none;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:0 1.45rem 2.25rem;
+  border:0;
+  border-left:1px solid var(--line);
+  border-radius:0;
+  background:#0b1124;
+  box-shadow:-24px 0 70px rgba(0,0,0,.22);
+  scrollbar-gutter:stable;
+  overscroll-behavior:contain;
+}
+.presenter-note-header{
+  position:sticky;
+  top:0;
+  z-index:2;
+  margin:0 -1.45rem 1rem;
+  padding:1.4rem 1.45rem 1.2rem;
+  border-bottom:1px solid var(--line);
+  background:rgba(11,17,36,.97);
+}
+.presenter-slide-count{
+  color:var(--accent);
+  font-size:12px;
+  font-weight:850;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.notes .presenter-slide-title{
+  margin:.55rem 0 0;
+  font-size:clamp(22px,1.65vw,32px);
+  line-height:1.08;
+  letter-spacing:-.035em;
+  color:var(--fg);
+  overflow-wrap:anywhere;
+}
+.presenter-note-sections{
+  display:grid;
+  gap:1rem;
+  width:min(100%,46rem);
+  min-width:0;
+}
+.presenter-note-section{
+  min-width:0;
+  padding:.15rem 0 .15rem 1rem;
+  border-left:3px solid rgba(174,184,212,.24);
+}
+.presenter-note-section h3{
+  margin:0 0 .45rem;
+  font-size:12px;
+  line-height:1.2;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#93a4cb;
+}
+.presenter-note-section p{
+  margin:0;
+  font-size:clamp(17px,1.12vw,22px);
+  line-height:1.52;
+  color:#d8e1f7;
+  white-space:pre-line;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.presenter-note-section[data-note-section="СКАЗАТЬ"]{
+  padding:.9rem 1rem;
+  border:1px solid rgba(125,211,252,.30);
+  border-left:4px solid var(--accent);
+  border-radius:14px;
+  background:rgba(125,211,252,.07);
+}
+.presenter-note-section[data-note-section="СКАЗАТЬ"] h3{color:var(--accent)}
+.presenter-note-section[data-note-section="СКАЗАТЬ"] p{color:var(--fg);font-weight:560}
+.presenter-note-section[data-note-section="НЕ ПЕРЕОБЕЩАТЬ"]{
+  border-left-color:rgba(252,165,165,.62);
+  background:rgba(252,165,165,.035);
+}
+.presenter-note-section[data-note-section="НЕ ПЕРЕОБЕЩАТЬ"] h3{color:#eab5bd}
+body.presenter-mode .toc{
+  right:calc(var(--presenter-panel-px,32vw) + 1.25vw);
+  left:auto;
+  width:min(520px,42vw);
+}
+.navbtn:focus-visible,.toc-grid button:focus-visible{
+  outline:3px solid rgba(125,211,252,.85);
+  outline-offset:3px;
+}
+@media(max-width:1400px) and (min-width:1100px){
+  body.presenter-mode .notes{padding-left:1.1rem;padding-right:1.1rem}
+  .presenter-note-header{margin-left:-1.1rem;margin-right:-1.1rem;padding-left:1.1rem;padding-right:1.1rem}
+  .presenter-note-section p{font-size:17px;line-height:1.46}
+  .notes .presenter-slide-title{font-size:22px}
+  body.presenter-mode nav{gap:.36rem}
+  body.presenter-mode .navbtn{padding:.48rem .68rem;font-size:12px}
+  body.presenter-mode .progress{width:150px}
+  body.presenter-mode .counter{min-width:92px;font-size:12px}
+}
+@media(max-width:1099px){
+  body.presenter-mode .deck{
+    position:relative;
+    left:auto;
+    top:auto;
+    transform:none;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+  }
+  body.presenter-mode .deck:before{display:none}
+  body.presenter-mode nav{left:1rem;right:1rem;transform:none}
+  body.presenter-mode .notes{
+    right:1.5vw;
+    top:1.5vh;
+    width:min(620px,92vw);
+    height:auto;
+    max-height:83vh;
+    padding:0 1.1rem 1.25rem;
+    border:1px solid var(--line);
+    border-radius:20px;
+    box-shadow:0 24px 80px rgba(0,0,0,.38);
+  }
+  .presenter-note-header{margin:0 -1.1rem 1rem;padding:1rem 1.1rem .9rem;border-radius:20px 20px 0 0}
+  body.presenter-mode .toc{right:1.5vw;width:min(520px,92vw)}
+}
+@media print{
+  body.presenter-mode .deck{
+    position:relative!important;
+    left:auto!important;
+    top:auto!important;
+    width:100vw!important;
+    height:auto!important;
+    transform:none!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:none!important;
+  }
+  body.presenter-mode .deck:before{display:none!important}
+  body.presenter-mode .notes{display:none!important}
+}
