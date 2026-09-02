@@ -52,33 +52,55 @@ server = subprocess.Popen(
 common = [browser, "--headless=new", "--disable-gpu", "--disable-dev-shm-usage", "--no-sandbox", "--no-first-run"]
 required_viewports = [(1920, 1080), (1366, 768)]
 stress_viewports = [(1536, 864), (1280, 720)]
+presenter_viewports = [(1920, 1080), (1366, 768), (1280, 720)]
+presenter_targets = [
+    "#1",
+    f"#{min(5, main_count)}",
+    f"#{min(6, main_count)}",
+    f"#{min(10, main_count)}",
+    f"#{main_count}",
+]
+if appendix_count:
+    presenter_targets.append(f"#a{min(5, appendix_count)}")
+presenter_targets = list(dict.fromkeys(presenter_targets))
+
+
+def inspect_dom(width: int, height: int, target: str, presenter: bool = False) -> str | None:
+    mode = "presenter=1&" if presenter else ""
+    url = f"http://127.0.0.1:8878/?{mode}visual-check=1{target}"
+    try:
+        result = subprocess.run(
+            common + [f"--window-size={width},{height}", "--dump-dom", url],
+            capture_output=True, text=True, timeout=20,
+        )
+    except subprocess.TimeoutExpired:
+        return "browser timeout"
+    if result.returncode != 0:
+        return f"browser exit {result.returncode}"
+    if 'data-visual-check="ok"' in result.stdout:
+        return None
+    marker = 'data-visual-errors="'
+    start = result.stdout.find(marker)
+    if start < 0:
+        return "visual status missing"
+    start += len(marker)
+    end = result.stdout.find('"', start)
+    return result.stdout[start:end]
 
 try:
     time.sleep(0.6)
     failures: list[str] = []
     for width, height in required_viewports + stress_viewports:
         for target in targets:
-            url = f"http://127.0.0.1:8878/?visual-check=1{target}"
-            try:
-                result = subprocess.run(
-                    common + [f"--window-size={width},{height}", "--dump-dom", url],
-                    capture_output=True, text=True, timeout=20,
-                )
-            except subprocess.TimeoutExpired:
-                failures.append(f"{width}x{height} {target}: browser timeout")
-                continue
-            if result.returncode != 0:
-                failures.append(f"{width}x{height} {target}: browser exit {result.returncode}")
-                continue
-            if 'data-visual-check="ok"' not in result.stdout:
-                marker = 'data-visual-errors="'
-                start = result.stdout.find(marker)
-                detail = "visual status missing"
-                if start >= 0:
-                    start += len(marker)
-                    end = result.stdout.find('"', start)
-                    detail = result.stdout[start:end]
-                failures.append(f"{width}x{height} {target}: {detail}")
+            detail = inspect_dom(width, height, target)
+            if detail:
+                failures.append(f"audience {width}x{height} {target}: {detail}")
+
+    for width, height in presenter_viewports:
+        for target in presenter_targets:
+            detail = inspect_dom(width, height, target, presenter=True)
+            if detail:
+                failures.append(f"presenter {width}x{height} {target}: {detail}")
 
     nav_url = "http://127.0.0.1:8878/?nav-check=1#1"
     try:
@@ -111,7 +133,24 @@ try:
             if result.returncode != 0 or not output.exists():
                 failures.append(f"screenshot {width}x{height} {target}: failed")
 
-    expected_screenshots = len(targets) * len(required_viewports)
+    for width, height in presenter_viewports:
+        for target in presenter_targets:
+            output = ARTIFACTS / f"presenter-{width}x{height}-{target[1:]}.png"
+            url = f"http://127.0.0.1:8878/?presenter=1{target}"
+            try:
+                result = subprocess.run(
+                    common + [f"--window-size={width},{height}", "--hide-scrollbars", f"--screenshot={output}", url],
+                    capture_output=True, text=True, timeout=20,
+                )
+            except subprocess.TimeoutExpired:
+                failures.append(f"presenter screenshot {width}x{height} {target}: timeout")
+                continue
+            if result.returncode != 0 or not output.exists():
+                failures.append(f"presenter screenshot {width}x{height} {target}: failed")
+
+    expected_audience_screenshots = len(targets) * len(required_viewports)
+    expected_presenter_screenshots = len(presenter_targets) * len(presenter_viewports)
+    expected_screenshots = expected_audience_screenshots + expected_presenter_screenshots
     actual_screenshots = len(list(ARTIFACTS.glob("*.png")))
     if actual_screenshots != expected_screenshots:
         failures.append(f"screenshot coverage: expected {expected_screenshots}, got {actual_screenshots}")
@@ -121,10 +160,13 @@ try:
         for failure in failures:
             print(f" - {failure}")
         sys.exit(1)
-    geometry_states = len(targets) * (len(required_viewports) + len(stress_viewports))
+    audience_geometry = len(targets) * (len(required_viewports) + len(stress_viewports))
+    presenter_geometry = len(presenter_targets) * len(presenter_viewports)
     print(
         f"Render check OK: {main_count} main + {appendix_count} appendix; "
-        f"{expected_screenshots} required screenshots; {geometry_states} geometry states; navigation PASS"
+        f"{expected_audience_screenshots} audience screenshots + "
+        f"{expected_presenter_screenshots} presenter screenshots; "
+        f"{audience_geometry + presenter_geometry} geometry states; navigation + presenter sync PASS"
     )
 finally:
     server.terminate()
