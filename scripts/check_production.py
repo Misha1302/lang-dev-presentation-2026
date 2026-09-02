@@ -17,8 +17,8 @@ if ARTIFACTS.exists():
 ARTIFACTS.mkdir()
 
 PRODUCTION = "https://misha1302.github.io/lang-dev-presentation-2026/"
-MARKER = "balanced-causal-v2"
-THESIS = "Resolve globally. Justify locally. Execute concretely."
+MARKER = "planning-core-v3"
+THESIS = "Declare locally. Resolve globally. Execute concretely."
 sha = os.environ.get("GITHUB_SHA", "unknown")
 
 browser = next((name for name in [
@@ -28,8 +28,6 @@ if browser is None:
     print("Production check FAILED: Chrome/Chromium was not found")
     sys.exit(1)
 
-# GitHub Pages deploys independently from this workflow. Poll cache-busted live
-# assets until this redesign's marker is actually visible on the public site.
 deadline = time.time() + 300
 asset_url = f"{PRODUCTION}deck.js?qa={quote(sha)}"
 last_error = ""
@@ -39,7 +37,7 @@ while time.time() < deadline:
             body = response.read().decode("utf-8")
         if MARKER in body:
             break
-        last_error = "balanced release marker not present yet"
+        last_error = "planning-core release marker not present yet"
     except Exception as exc:
         last_error = str(exc)
     time.sleep(5)
@@ -72,13 +70,13 @@ else:
             detail = nav_result.stdout[start:end]
         failures.append(f"production navigation: {detail}")
     if THESIS not in nav_result.stdout:
-        failures.append("production thesis: balanced causal anchor missing from live DOM")
-    if 'data-deck-qa-contract="balanced-causal-v2"' not in nav_result.stdout:
-        failures.append("production marker: DOM contract is not balanced-causal-v2")
+        failures.append("production thesis: planning-core anchor missing from live DOM")
+    if 'data-deck-qa-contract="planning-core-v3"' not in nav_result.stdout:
+        failures.append("production marker: DOM contract is not planning-core-v3")
 
 representative = [
-    "#1", "#5", "#7", "#9", "#11", "#12", "#13", "#14", "#15", "#16",
-    "#a1", "#a7", "#a8", "#a9", "#a10",
+    "#1", "#4", "#5", "#6", "#7", "#8", "#9", "#10", "#11", "#12", "#13", "#14", "#15",
+    "#a1", "#a5", "#a7", "#a10",
 ]
 for target in representative:
     url = f"{PRODUCTION}?visual-check=1&qa={quote(sha)}{target}"

@@ -60,7 +60,7 @@ p = SlideParser()
 p.feed(html)
 main = [s for s in p.slides if s[0].get("data-kind") != "appendix"]
 appendix = [s for s in p.slides if s[0].get("data-kind") == "appendix"]
-assert len(main) == 16, f"expected 16 main slides, got {len(main)}"
+assert len(main) == 15, f"expected 15 main slides, got {len(main)}"
 assert len(appendix) == 10, f"expected 10 appendix slides, got {len(appendix)}"
 
 all_keys = []
@@ -72,7 +72,7 @@ for n, (attrs, _) in enumerate(p.slides, 1):
     assert key in notes_by_key, f"slide {n} missing speaker note content for {key}"
     assert len(notes_by_key[key]) > 120, f"speaker note {key} looks truncated"
 
-assert [s[0].get("data-note-key") for s in main] == [f"m{i}" for i in range(1, 17)]
+assert [s[0].get("data-note-key") for s in main] == [f"m{i}" for i in range(1, 16)]
 assert [s[0].get("data-note-key") for s in appendix] == [f"a{i}" for i in range(1, 11)]
 
 main_notes = []
@@ -87,28 +87,22 @@ words = sum(len(re.findall(r"\b[\wА-Яа-яЁё.-]+\b", n)) for n in main_notes
 assert words >= 1000, f"live speaker cues look truncated: {words} words"
 
 required = [
-    "Build an Extensible Language,",
-    "Resolve globally. Justify locally. Execute concretely.",
-    "One fixed language is easy",
+    "When Extensibility",
+    "Declare locally. Resolve globally. Execute concretely.",
+    "If one owner knows the pipeline",
     "Configuration becomes",
-    "UTL2002",
-    "PreferCapabilityProvider",
+    "dialect MinimalArithmetic",
+    "Local transformations turn one pipeline into a",
     "LanguageArtifactRoute",
+    "structurally, not semantically",
+    "Route cost is a planning metric",
     "LanguagePlan",
     "LanguageRuntime.Create",
     "Resolve one ambiguity; run one resolved language",
-    "Planning answers",
-    "Optimization asks",
-    "Can the compiler evaluate",
-    "pure",
-    "deterministic",
-    "trusted",
-    "The selected environment can",
-    "Supports(...)?",
-    "One architecture",
-    "automatic pass scheduling",
-    "bounded straight-line symbolic simplifier",
+    "There are two different",
+    "Evaluate(code)",
     "NEEDS MEASUREMENT",
+    "Use a planner only when cross-stage variability pays for it",
     "7005371d6c30175dff4b0e9f906a26218b0ee54d",
 ]
 full = re.sub(r"\s+", " ", html + " " + js2 + " " + js3 + " " + claims + " " + readme)
@@ -123,7 +117,7 @@ layout_primitives = [
 missing_layout = [x for x in layout_primitives if x not in css]
 assert not missing_layout, f"missing current-deck layout primitives: {missing_layout}"
 
-# Demo/source consistency: semantic anchors, not brittle full-stdout matching.
+# Demo/source consistency: keep current source-backed fallback honest.
 demo_contract = demo_source + "\n" + demo_run + "\n" + demo_doc
 for anchor in [
     'new LanguagePackageId("Demo.Ambiguity")',
@@ -135,11 +129,11 @@ for anchor in [
 ]:
     assert anchor in demo_contract, f"demo contract anchor missing: {anchor}"
 
-slide11 = main[10][1]
+slide10 = main[9][1]
 for anchor in ["UTL2002", "PreferCapabilityProvider", "LanguagePlan", "LanguageRuntime.Create", "41", "42"]:
-    assert anchor in slide11, f"slide 11 no longer matches demo: {anchor}"
+    assert anchor in slide10, f"slide 10 no longer matches current demo: {anchor}"
 for stale in ["MinimalArithmeticId", "40 + 2", "6 * 7", "real Wist dialect"]:
-    assert stale not in slide11, f"stale Wist demo claim remains on slide 11: {stale}"
+    assert stale not in slide10, f"stale Wist demo claim remains on slide 10: {stale}"
 
 old_sha = "36206b66548fec365be6e03381ba44d50c2cafe5"
 for name, text in [
@@ -154,18 +148,21 @@ for name, text in [
 expected_sha = "7005371d6c30175dff4b0e9f906a26218b0ee54d"
 assert expected_sha in demo_run, "run-demo.sh is not pinned to current truth snapshot"
 
+main_text = " ".join(text for _, text in main)
+for removed_main_topic in ["foo(x)", "Supports(...)?", "EGraph", "automatic pass scheduling"]:
+    assert removed_main_topic not in main_text, f"removed compiler mini-talk leaked back into main: {removed_main_topic}"
+
 for forbidden in [
     "zero-cost extensibility",
     "all abstractions disappear",
     "general equality saturation engine",
 ]:
-    assert forbidden.lower() not in " ".join(text for _, text in main).lower(), f"forbidden live claim: {forbidden}"
+    assert forbidden.lower() not in main_text.lower(), f"forbidden live claim: {forbidden}"
 
-assert "Build the Language, Then Make the Abstractions Disappear" not in html
-assert "balanced-causal-v2" in (root / "deck.js").read_text(encoding="utf-8")
+assert "planning-core-v3" in (root / "deck.js").read_text(encoding="utf-8")
 assert "speaker-notes-1.js" in html and "speaker-notes-2.js" in html and "speaker-notes-hardening.js" in html
 
 print(
     f"OK: {len(main)} main, {len(appendix)} appendix, {len(all_keys)} note keys, "
-    f"{words} live cue words; demo/source consistency PASS"
+    f"{words} live cue words; planning-core narrative + demo consistency PASS"
 )

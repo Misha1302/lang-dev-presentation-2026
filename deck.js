@@ -1,4 +1,4 @@
-const DECK_QA_CONTRACT = 'balanced-causal-v2';
+const DECK_QA_CONTRACT = 'planning-core-v3';
 document.documentElement.dataset.deckQaContract = DECK_QA_CONTRACT;
 const allSlides = [...document.querySelectorAll('.slide')];
 const prog = document.getElementById('prog');
@@ -113,19 +113,19 @@ function runNavigationDiagnostics(){
   const activeKey = ()=>document.querySelector('.slide.active')?.dataset.noteKey;
   const setHash = hash=>{ history.replaceState(null,'',hash); window.dispatchEvent(new HashChangeEvent('hashchange')); };
   const key = value=>document.dispatchEvent(new KeyboardEvent('keydown',{key:value,bubbles:true,cancelable:true}));
-  setHash('#1'); expect(activeKey()==='m1' && count.textContent.startsWith('1 / 16'),'deep-1');
+  setHash('#1'); expect(activeKey()==='m1' && count.textContent.startsWith('1 / 15'),'deep-1');
   key('ArrowRight'); expect(activeKey()==='m2' && location.hash==='#2','ArrowRight');
   key('ArrowLeft'); expect(activeKey()==='m1' && location.hash==='#1','ArrowLeft');
   key('PageDown'); expect(activeKey()==='m2','PageDown');
   key('PageUp'); expect(activeKey()==='m1','PageUp');
   key(' '); expect(activeKey()==='m2','Space');
-  setHash('#16'); expect(activeKey()==='m16' && count.textContent.startsWith('16 / 16'),'deep-16');
+  setHash('#15'); expect(activeKey()==='m15' && count.textContent.startsWith('15 / 15'),'deep-15');
   setHash('#a1'); expect(activeKey()==='a1' && count.textContent.startsWith('1 / 10 · appendix'),'deep-a1');
   setHash('#a10'); expect(activeKey()==='a10' && count.textContent.startsWith('10 / 10 · appendix'),'deep-a10');
   setHash('#1'); appendixBtn.click(); expect(activeKey()==='a1' && location.hash==='#a1' && appendixBtn.textContent==='Main','Appendix-button');
   appendixBtn.click(); expect(activeKey()==='m1' && location.hash==='#1' && appendixBtn.textContent==='Appendix','Main-button');
   document.getElementById('tocBtn').click();
-  expect(toc.classList.contains('show') && tocGrid.querySelectorAll('button').length===16,'TOC-open');
+  expect(toc.classList.contains('show') && tocGrid.querySelectorAll('button').length===15,'TOC-open');
   tocGrid.querySelectorAll('button')[2]?.click();
   expect(activeKey()==='m3' && location.hash==='#3' && !toc.classList.contains('show'),'TOC-navigate');
   document.getElementById('notesBtn').click();

@@ -1,37 +1,34 @@
 # Claim ledger — LangDev 2026
 
-Truth snapshot: `Misha1302/UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`. Re-audited: `2026-09-01`.
+Truth snapshot: `Misha1302/UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`.
 
-## IMPLEMENTED — current source-backed
+## Main-talk load-bearing claims — CURRENT
 
-### Global composition
+### Whole-language planning
 
-- `LanguageCompiler` is the public semantic planner for the current path; it resolves features, contributions/provider ambiguity and artifact routes into `LanguagePlan` or diagnostics.
-- Provider ambiguity can fail as `UTL2002`; `PreferCapabilityProvider(...)` makes the integrator's choice explicit.
+- `LanguageCompiler` is the current public whole-language planner for this path: it resolves feature closure, contributions/provider choices and artifact routes into `LanguagePlan` or diagnostics.
+- Provider ambiguity can fail as `UTL2002`; `PreferCapabilityProvider(...)` makes the language integrator's policy explicit.
+- Artifact transformations expose source/target contracts and planning cost; the route phase chooses a deterministic type-compatible path under the expressed protocol and stores it as `LanguageArtifactRoute`.
+- Deterministic route selection is a protocol property. It is **not** semantic equivalence or correctness proof.
+- Route `TotalCost` is a planning quantity. It is **not** execution-time latency.
+
+### Concrete decision record
+
 - `LanguagePlan` contains resolved Features, Contributions, RuntimeProvider, Routes, PlanHash and Summary.
-- Runtime creation verifies/materializes the selected plan. `LanguageRuntime.Run` does not invoke a second global feature/provider/route planning pass.
-- Artifact route compatibility is structural; route `TotalCost` is a planning quantity, not runtime latency.
+- `PlanHash` is useful canonical identity for the expressed plan; it is **not** semantic/security proof.
 
-### Local semantic legality
+### Runtime ownership
 
-- `CallableDescriptor` carries optimizer-visible semantic properties including effects, determinism, algebraic traits and trust.
-- `SsaConstantFoldingPass` folds a call only when its descriptor is pure, deterministic, trusted, operands are known constants and the evaluator succeeds.
-- `SsaLocalCommonSubexpressionEliminationPass` eliminates repeated calls only when the descriptor is pure, deterministic and trusted; unknown/unsupported shapes fail conservatively.
+- `LanguageRuntime.Create` verifies exact binding and materializes the selected plan.
+- `LanguageRuntime.Run` does not invoke a second global feature/provider/route planning pass.
+- This supports the architectural claim that whole-language composition need not be rediscovered for every repeated execution.
+- It does **not** support “zero overhead”, “all abstractions disappear” or a numerical speed claim.
 
-### Selected-environment capability legality
+### Two staging boundaries
 
-- `WistIntrinsicPlanPolicy` derives allow/forbid policy from `LanguagePlan` for the selected backend.
-- `WistDirectRuntimeComponents` combines actual selected-backend intrinsic support with that plan policy before initializing optimizers.
-- Optimizers observe this through `IOptimizerIntrinsicCapabilityContext.Supports(...)`.
-- Wist backend boundaries validate emitted AIR against the selected plan and fail closed for forbidden typed intrinsics.
-- `WistIntrinsicPlanPolicyTests` exercises both optimizer-visible rejection and backend rejection.
-
-### IR stage contracts
-
-- `SsaOptimizerPipeline` runs the supplied pass list in order.
-- Before each pass it validates `RequiresFacts` and `RequiresCapabilities`.
-- After each pass it applies `Produces`, `Preserves`, and `Invalidates`.
-- This is contract-checked pass execution, not an automatic pass scheduler.
+- `WistEngine.Create` constructs the selected language environment: definition → compiler → plan → runtime.
+- `Compile<TDelegate>` is a separate compiled-program reuse boundary.
+- `Evaluate(code)` reuses the environment but is not equivalent to invoking an already materialized reusable compiled delegate.
 
 ## DEMO-ONLY
 
@@ -40,18 +37,21 @@ Truth snapshot: `Misha1302/UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b
 ```text
 UTL2002
 → PreferCapabilityProvider(...provider.a...)
-→ LanguagePlan
+→ LanguagePlan + route
 → LanguageRuntime.Create
 → input=41 output=42
 ```
 
-The synthetic demo isolates the architecture. It does **not** claim to execute Wist `MinimalArithmetic`.
+The current synthetic demo isolates planner/runtime ownership. It does **not** claim Wist `MinimalArithmetic` semantics, arbitrary semantic route equivalence or benchmark performance.
 
-## PARTIALLY IMPLEMENTED / BOUNDED
+## APPENDIX / Q&A — CURRENT BUT NOT CENTRAL NARRATIVE
 
-- Capability-gated specialization is demonstrated by the current Wist typed-intrinsic path. Do not generalize it into a guarantee that every optimizer/backend in UniversalToolchain is capability-gated.
-- `EGraphOptimizerModule` is a bounded straight-line symbolic simplifier/canonicalizer over a restricted arithmetic subset with capability guards. Do not call it a general equality-saturation engine or production e-graph framework.
-- Semantic descriptors are consumed as explicit evidence. Their truthfulness remains a trust/specification boundary; typed metadata is not automatic semantic proof.
+- semantic-descriptor-gated local CSE / constant folding;
+- selected-environment capability gating for current Wist typed intrinsics;
+- IR stage fact/capability contract checks on a supplied pass sequence;
+- bounded straight-line `EGraphOptimizerModule` behavior.
+
+These mechanisms remain useful evidence/Q&A material, but they are deliberately removed from the 15-slide main causal chain so the talk does not become an optimizer/API tour.
 
 ## NEEDS MEASUREMENT
 
@@ -66,25 +66,27 @@ No exact-current raw benchmark-result artifact is bound into this deck, so there
 
 ## NOT CURRENTLY SUPPORTED / NOT CLAIMED
 
-- automatic semantic compatibility proof for extensions;
-- proof that descriptor metadata is behaviorally truthful;
+- automatic semantic compatibility proof for alternative routes;
+- proof that deterministic routing implies correct program semantics;
+- execution-time optimality from route planning `Cost`;
 - automatic pass scheduling from `IrStageContract`;
 - general equality saturation;
-- planner-driven universal devirtualization/specialization;
 - sandboxing arbitrary in-process extensions;
-- proof that a selected route is execution-time optimal;
 - zero-cost extensibility;
 - all runtime interfaces/dispatch disappear;
-- UniversalToolchain is universally better than handwritten pipelines, DI, builders, LLVM/MLIR, Racket or language workbenches.
+- UniversalToolchain is universally better than handwritten pipelines, DI, builders, LLVM/MLIR, Racket or language workbenches;
+- a route-changing conference demo until such a demo is implemented and CI-backed.
 
 ## Core wording
 
 Use:
 
-> **Resolve globally. Justify locally. Execute concretely.**
+> **Declare locally. Resolve globally. Execute concretely.**
 
 Expanded:
 
-> Global planning selects one concrete execution environment; local compiler passes then justify rewrites from explicit semantic contracts and from the capabilities that this selected environment actually exposes.
+> Independent extensions declare local facts and transformations; whole-language planning resolves interacting choices into one inspectable `LanguagePlan`; runtime materializes exactly that resolved environment.
 
-Do not replace it with “the planner proves semantics” or “the planner produces all optimizer guarantees”.
+Anti-takeaway:
+
+> If one owner already knows the stable pipeline, wire it by hand.
