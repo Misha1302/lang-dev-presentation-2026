@@ -75,13 +75,16 @@ body.presenter-mode .notes{
   line-height:1.08;
   letter-spacing:-.035em;
   color:var(--fg);
+  overflow-wrap:anywhere;
 }
 .presenter-note-sections{
   display:grid;
   gap:1rem;
   width:min(100%,46rem);
+  min-width:0;
 }
 .presenter-note-section{
+  min-width:0;
   padding:.15rem 0 .15rem 1rem;
   border-left:3px solid rgba(174,184,212,.24);
 }
@@ -99,6 +102,8 @@ body.presenter-mode .notes{
   line-height:1.52;
   color:#d8e1f7;
   white-space:pre-line;
+  overflow-wrap:anywhere;
+  word-break:break-word;
 }
 .presenter-note-section[data-note-section="СКАЗАТЬ"]{
   padding:.9rem 1rem;
