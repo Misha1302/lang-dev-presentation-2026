@@ -68,15 +68,30 @@ presenter_targets = list(dict.fromkeys(presenter_targets))
 def inspect_dom(width: int, height: int, target: str, presenter: bool = False) -> str | None:
     mode = "presenter=1&" if presenter else ""
     url = f"http://127.0.0.1:8878/?{mode}visual-check=1{target}"
-    try:
-        result = subprocess.run(
-            common + [f"--window-size={width},{height}", "--dump-dom", url],
-            capture_output=True, text=True, timeout=20,
-        )
-    except subprocess.TimeoutExpired:
-        return "browser timeout"
-    if result.returncode != 0:
-        return f"browser exit {result.returncode}"
+    result: subprocess.CompletedProcess[str] | None = None
+
+    # Headless Chromium can occasionally stall on the first process startup on
+    # a fresh hosted runner. Retry one isolated process failure; DOM/geometry
+    # failures themselves are never retried or hidden.
+    for attempt in range(2):
+        try:
+            result = subprocess.run(
+                common + [f"--window-size={width},{height}", "--dump-dom", url],
+                capture_output=True, text=True, timeout=20,
+            )
+        except subprocess.TimeoutExpired:
+            if attempt == 0:
+                time.sleep(0.5)
+                continue
+            return "browser timeout after retry"
+        if result.returncode != 0:
+            if attempt == 0:
+                time.sleep(0.5)
+                continue
+            return f"browser exit {result.returncode} after retry"
+        break
+
+    assert result is not None
     if 'data-visual-check="ok"' in result.stdout:
         return None
     marker = 'data-visual-errors="'
