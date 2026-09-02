@@ -18,7 +18,6 @@ const tocGrid = document.getElementById('tocGrid');
 const notesBtn = document.getElementById('notesBtn');
 const tocBtn = document.getElementById('tocBtn');
 const appendixBtn = document.getElementById('appendixBtn');
-const NOTE_MARKERS = ['ЗАЧЕМ', 'СКАЗАТЬ', 'ПЕРЕХОД', 'ДЕТАЛЬ', 'НЕ ПЕРЕОБЕЩАТЬ'];
 const PRESENTER_QUERY = 'presenter';
 let showAppendix = false;
 let presenterMode = false;
@@ -27,7 +26,10 @@ let i = 0;
 
 function titleOf(s){
   const h = s.querySelector('h1,h2');
-  return h ? h.textContent.replace(/\s+/g, ' ').trim() : 'Slide';
+  if(!h) return 'Slide';
+  const copy = h.cloneNode(true);
+  copy.querySelectorAll('br').forEach(br => br.replaceWith(' '));
+  return copy.textContent.replace(/\s+/g, ' ').trim();
 }
 function rectsOverlap(a,b){
   return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
