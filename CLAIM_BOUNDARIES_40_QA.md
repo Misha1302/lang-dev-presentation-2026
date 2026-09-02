@@ -2,102 +2,247 @@
 
 Truth snapshot: `Misha1302/UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`.
 
-This file is the rehearsal/Q&A owner. Implementation maturity is owned by [`claims.md`](claims.md); operational demo details are owned by [`DEMO.md`](DEMO.md).
+This is the rehearsal/Q&A owner. Implementation status lives in [`claims.md`](claims.md); executable demo
+details live in [`DEMO.md`](DEMO.md).
 
-## Core wording
+Core wording:
 
-Use:
+> **Extensibility becomes planning when choices stop being independent.**
 
-> **Resolve globally. Justify locally. Execute concretely.**
+> **Declare locally. Resolve globally. Execute concretely.**
 
-> Global planning selects one concrete execution environment; local compiler passes justify rewrites from explicit semantic contracts and from the capabilities that this selected environment actually exposes.
+The answers below intentionally distinguish:
 
-Do **not** turn this into:
+- **CURRENT IMPLEMENTATION** — source/test-backed at the pinned revision;
+- **NEEDS MEASUREMENT** — performance/scaling without presentation-bound raw benchmark evidence;
+- **DESIGN POSITIONING** — when this architecture is or is not appropriate.
 
-- the planner proves semantics;
-- the planner produces all optimizer guarantees;
-- extensibility is free;
-- all abstractions/dispatch disappear;
-- capability availability implies a performance win;
-- valid plan implies sandbox/security;
-- current e-graph module is general equality saturation.
+## 1. Why does a compiler need a pipeline at all?
 
-## 1. Why not just DI or a builder?
+A compiler progressively transforms one representation into another: source text, syntax/semantic forms,
+IRs, machine/runtime artifacts, or direct execution inputs. “Pipeline” is the ownership/order model for those
+transformations; it need not always be a literal linear list.
 
-If the host already knows the exact graph, use them. The planner addresses an earlier ownership problem: independent packages declare dependencies/providers/conflicts/routes, and one whole-language phase resolves those choices before materialization. DI may still build objects afterward.
+## 2. Why do we need extensibility?
 
-## 2. Why not LLVM or MLIR?
+When one infrastructure must support a family of concrete languages, different integrators may want different
+syntax/features, transformations, optimizers, backends, runtime policies, or packages without forking the
+entire toolchain.
 
-They solve different layers. LLVM is compiler infrastructure around established IR/toolchain contracts; MLIR provides extensible multi-level IR and dialect/conversion infrastructure. This talk focuses on whole runnable-language composition in .NET and then on local rewrite evidence. They can be complementary; no superiority claim.
+## 3. When is a handwritten pipeline better?
 
-## 3. Does `LanguagePlan` prove semantic compatibility?
+When one owner knows the stable stages and variability is small. Explicit wiring is simpler, easier to debug,
+and should be preferred over a planner in that case.
 
-No. It proves only what the expressed structural/configuration protocol can check: selected identities, dependencies, conflicts, routes, runtime/backend coverage, and related invariants.
+## 4. What other ways can build a pipeline?
 
-## 4. What if `CallableDescriptor` metadata lies?
+Depending on the decision: handwritten wiring, builder/configuration, DI for object binding/lifetime, a pass
+manager for an already-known pass sequence, dialect/conversion machinery for IR legalization, or a graph/planner
+when independent choices create global constraints.
 
-Then an optimizer may be given false evidence. Current local CSE/folding require trusted descriptor levels in addition to purity/determinism, but that is still a trust/specification boundary. Typed metadata makes assumptions explicit and testable; it does not make them automatically true.
+## 5. When does configuration become planning?
 
-## 5. Why is `pure + deterministic + trusted` interesting?
+Not when there are “many options,” but when options interact: dependencies, conflicts, provider ambiguity,
+ordering constraints, backend reachability, or alternative artifact routes make the correct decision depend
+on the whole selected language.
 
-Because the legality rule is attached to semantic properties rather than hard-coded operation names. The same optimizer mechanism can conservatively preserve unknown/effectful/untrusted calls and reuse a trusted deterministic pure call without language-specific name knowledge.
+## 6. What concrete problem does UniversalToolchain solve in this talk?
 
-## 6. What if the selected backend cannot execute the specialization?
+It lets independently authored packages declare local language/compiler facts while one whole-language phase
+resolves interacting choices into one inspectable `LanguagePlan` that a runtime materializes exactly.
 
-The current Wist path combines selected backend capabilities with plan intrinsic policy before the optimizer sees `Supports(...)`. If support/policy rejects an intrinsic, the optimizer sees it as unavailable. Backend boundaries also validate emitted AIR and fail closed for forbidden intrinsics.
+## 7. Who is the framework author?
 
-## 7. Is capability-gated specialization universal in UniversalToolchain?
+Conceptually, the owner of the composition protocol: typed artifact contracts, IDs, feature/contribution
+descriptors, planning rules, diagnostics and runtime/materialization contracts.
 
-No. The talk claims the exact current Wist typed-intrinsic path. Generalizing it to every optimizer/backend is outside current evidence.
+## 8. Who is the package / extension author?
 
-## 8. Does extensibility hurt performance?
+The author of independently contributed compiler/runtime pieces. They declare local facts and transformations;
+they do **not** own the final whole-language pipeline.
 
-It can. The source-backed architectural claim is only that global composition does not have to be rediscovered on every execution. Planning, materialization, validation, dispatch, allocations, JIT/backend startup and generated-code quality still cost something.
+## 9. Who is the language integrator?
 
-## 9. Have you measured it?
+The person/team choosing one concrete language: desired features, backends, provider preferences, overrides
+and runtime policy. In Wist this choice can come from `.wistdialect`/options; in generic authoring it can come
+from `LanguageDefinitionBuilder`.
 
-Not with a presentation-bound exact-current raw benchmark artifact. Therefore the deck has no numerical performance claim. Planning/runtime creation/first execution/steady state are all `NEEDS MEASUREMENT` for this talk.
+## 10. Can one person be several of these roles?
 
-## 10. Does “concrete execution” mean no dynamic dispatch?
+Yes. These are conceptual authority boundaries, not job titles. One team can author framework, packages and
+language definitions; the model still asks which decisions are local versus whole-language.
 
-No. “Concrete” refers to resolved whole-language choices. Interfaces, objects, indirect calls and validation may remain.
+## 11. What is a feature?
 
-## 11. Does `PlanHash` prove correctness?
+For the talk: **what the language integrator wants to enable**. Current feature descriptors can own
+contributions and express feature dependencies/conflicts/backend support.
 
-No. It is canonical identity of the expressed resolved plan, useful for reproducibility/drift/testing. It is not semantic equivalence, a security attestation, or a performance identity.
+## 12. What is a contribution?
 
-## 12. Is restricted composition a sandbox?
+A concrete package-provided piece participating in compiler/runtime architecture: for example a transformer,
+backend, provider or other registered contribution with slot/capability/order metadata.
 
-No. Policies can restrict selected features/interop/runtime choices, but they do not create process isolation or malicious-code containment.
+## 13. What is a capability?
 
-## 13. Do `IrStageContract`s automatically schedule passes?
+An abstract requirement/ability identified independently of a concrete provider. Contributions may require or
+provide capabilities.
 
-No. Current `SsaOptimizerPipeline` iterates a supplied pass list. Contracts decide whether running the next supplied pass is legal (`RequiresFacts`, `RequiresCapabilities`) and update facts afterward (`Produces`, `Preserves`, `Invalidates`).
+## 14. What is a provider?
 
-## 14. Is `EGraphOptimizerModule` a production e-graph/equality-saturation engine?
+A contribution that satisfies a required capability. If several eligible contributions provide the same
+required capability and policy does not choose one, current planning can fail with `UTL2002`.
 
-No. Current implementation is a bounded straight-line symbolic simplifier/canonicalizer over a restricted arithmetic subset, guarded by intrinsic capabilities. Keep `e-graph` out of the main narrative.
+## 15. What is a route?
 
-## 15. Why a synthetic demo instead of real Wist?
+The resolved ordered artifact path for a selected backend: `LanguageArtifactRoute` records source/target
+contracts and the chosen transformation steps.
 
-Because the demo's job is to isolate the planner/runtime boundary in 90–120 seconds. `Demo.Ambiguity` exposes UTL2002 deterministically, and `Demo.Runtime` exposes plan→route→runtime→execution without language-syntax noise. Wist remains source evidence elsewhere, but the executable slide must match the executable source.
+## 16. What is LanguageDefinition?
 
-## 16. How is this testable?
+The canonical semantic model of **what concrete language is requested**: features, backends, runtime provider,
+entry artifact, overrides, exclusions, policy and related configuration.
 
-Planning can be tested as definition/registry → plan/diagnostics. Runtime can be tested as exact plan → materialization/execution. Compiler legality can be tested with positive and negative semantic descriptors. Capability gating can be tested both at optimizer `Supports(...)` and backend validation.
+## 17. Is `.wistdialect` the planner?
 
-## 17. What happens with unknown semantic information?
+No. It is a Wist configuration frontend. Current Wist code translates dialect/preset/text/file input into a
+`LanguageDefinition`; `LanguageCompiler` remains the planning authority.
 
-Fail conservatively: do not justify the rewrite. Current local CSE requires a descriptor and known instruction/terminator shapes; constant folding requires descriptor + safe semantics + constant operands + successful evaluator.
+## 18. What role does LanguageDefinitionBuilder play?
 
-## 18. Is deterministic selection the same as correct selection?
+It is another authoring frontend for `LanguageDefinition`. It collects the requested configuration. Building
+the model is not the same thing as resolving global feature/contribution/provider/route choices.
 
-No. Reproducibility can be reproducibly wrong. Deterministic planning is a protocol property; semantic correctness still needs specifications/tests/oracles.
+## 19. Why insist on one canonical semantic configuration model?
 
-## 19. When should I not use this architecture?
+So every frontend feeds the same semantic planning authority. Otherwise different DSLs/builders could encode
+different hidden resolution rules and split ownership of global composition.
 
-When one owner can clearly wire the stable pipeline; when variants should be independent implementations; when the composition protocol cannot express the constraints that matter; or when the ownership problem is smaller than the planner infrastructure.
+## 20. What is LanguageCompiler, despite its name?
 
-## 20. One-sentence answer if time is gone
+**CURRENT:** the single public semantic planner for language definitions. `Compile(LanguageDefinition)`
+returns diagnostics or a `LanguagePlan`. It does not compile the user's source program.
 
-> Independent components create global choices, so resolve those once; then let each compiler rewrite proceed only when explicit local semantics and the selected environment justify it.
+## 21. What is LanguagePlan?
+
+The resolved answer: current plan data includes original definition, resolved features/contributions, exact
+runtime provider, backend routes, `PlanHash` and `Summary`.
+
+## 22. What is LanguageRuntime?
+
+A materializer/executor for one immutable plan. `LanguageRuntime.Create` verifies exact provider/backend/route
+binding and creates the runtime session; `Run` executes requests in that selected environment.
+
+## 23. Who chooses the concrete compilation route?
+
+`LanguageArtifactRoutePhase` inside `LanguageCompiler` after feature and contribution resolution.
+
+## 24. Does UniversalToolchain search for a route automatically?
+
+Yes, **within the graph of transformations from already-selected contributions** that support the backend.
+It does not treat every registered/unselected package transformation as active.
+
+## 25. What set of routes does it search?
+
+Conversion edges are selected contributions whose `Transformation` is non-null and not a pass, filtered by
+backend support. Search starts at `LanguageDefinition.EntryArtifact` and targets the selected backend input
+contract (or compatible runtime-provider input when needed).
+
+## 26. How is a route chosen?
+
+Current algorithm accumulates transformation `Cost`, chooses the minimum-cost reachable structural path, and
+uses deterministic contribution-signature ordering for equal-cost alternatives.
+
+## 27. What does route Cost mean?
+
+A **declared planning weight** in the protocol. It lets the planner prefer one structurally valid candidate
+over another according to authored policy.
+
+## 28. What does route Cost not mean?
+
+It is not milliseconds, CPU cycles, throughput, allocation count, generated-code quality or a benchmark-derived
+prediction. “Lower Cost” does not justify “faster runtime.”
+
+## 29. What happens with selected passes?
+
+After the base conversion route is found, current planner inserts selected pass transformations where their
+source/target contract connects to the current artifact. Ordering uses pass `Order` plus `Before`/`After`
+constraints; cycles can fail planning.
+
+## 30. Does structural route compatibility prove semantic equivalence?
+
+No. Matching artifact kind/value-type contracts prove only structural connectivity expressed by the protocol.
+Two structurally compatible routes can still implement different semantics.
+
+## 31. Does deterministic route selection prove correctness?
+
+No. Reproducibility can be reproducibly wrong. Semantic correctness still requires specifications, tests,
+oracles, review and truthful extension contracts.
+
+## 32. Where is the authoring/planning/materialization/build/execution boundary?
+
+Conceptually:
+
+```text
+authoring
+-> LanguageDefinition
+-> LanguageCompiler planning
+-> LanguagePlan
+-> LanguageRuntime.Create materialization
+-> Run / Build source request
+-> execution result or durable program
+```
+
+Planning chooses the language; source build/execution is later work.
+
+## 33. What happens once per language environment?
+
+In current Wist facade, `WistEngine.Create` resolves the `LanguageDefinition`, runs `LanguageCompiler`, obtains
+one `LanguagePlan` and creates one runtime for that engine instance.
+
+## 34. What happens once per compiled program?
+
+`Compile<TDelegate>` performs `Runtime.Build`, materializes a durable program and creates a reusable delegate.
+That is separate from language-environment planning.
+
+## 35. Is Evaluate(code) compile-once/execute-many?
+
+No. It reuses the already-planned environment, but every `Evaluate(code)` still sends the supplied source
+through `Runtime.Run`.
+
+## 36. Does moving planning earlier make extensibility free?
+
+No. It can avoid repeated **global rediscovery** of language composition, but contracts, diagnostics, runtime
+materialization, interfaces, parsing, lowering, optimization, code generation and execution still cost work.
+
+## 37. What are the major costs of extensibility beyond runtime dispatch?
+
+Contracts, versioning, global coordination, planner complexity, diagnostics, larger testing state space,
+observability/debugging, hidden invariants, startup/materialization, and maintenance of extension interactions.
+
+Performance magnitude and break-even remain **NEEDS MEASUREMENT**.
+
+## 38. Why isn't this just DI / a pass manager / MLIR conversion?
+
+Those mechanisms own different decisions. DI is strong when bindings are already known; pass managers execute
+a known ordered pass set; conversion infrastructure handles IR legalization/conversion. Whole-language planning
+is justified only when independently owned language choices create cross-stage decisions no local owner can make.
+
+## 39. What is the strongest argument against this architecture?
+
+You can replace straightforward compiler code with a distributed contract system whose correctness still
+depends on extension authors expressing enough assumptions. The bad outcome is:
+
+```text
+planner complexity + hidden semantic coupling
+```
+
+If the variability is not real, do not build the planner.
+
+## 40. What should the audience remember if there is only ten seconds?
+
+> One fixed compiler? Wire it explicitly.
+>
+> Independent extensions whose choices interact? Let them declare local facts, resolve the cross-extension
+> decisions globally into one inspectable plan, then execute that concrete answer.
+>
+> **Declare locally. Resolve globally. Execute concretely.**

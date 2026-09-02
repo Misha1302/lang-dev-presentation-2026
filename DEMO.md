@@ -1,34 +1,67 @@
-# Demo runbook — planner/runtime boundary
+# Demo runbook — composition changes the concrete route
 
 Truth snapshot: `Misha1302/UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`.
 
 Target: **90–120 seconds**. No live coding. Audience-visible state changes: **3 maximum**.
 
+## Main proof
+
+The visible conference story is compiler-specific:
+
+```text
+base language: demo.core
+    Source --demo.parse(1)--> Syntax --demo.lower.safe(6)--> AIR
+    resolved route Cost = 7
+
+enable one independently authored feature: demo.fast-path
+    Source --demo.parse(1)--> Syntax --demo.lower.fast(1)--> AIR
+    resolved route Cost = 2
+
+same backend
+same source input
+Run("41") -> 42
+```
+
+The new feature contributes an alternative typed `Syntax -> AIR` edge. `LanguageCompiler`
+automatically searches the conversion graph formed by **selected contributions** and chooses the
+deterministic minimum declared planning cost. The route is stored in `LanguagePlan`.
+
+`Cost` is a planner weight. It is **not** measured execution latency.
+
+Both lowering functions in this deliberately synthetic fixture are identity transforms. That makes the
+route change observable without making semantic behavior the point of the demo. The planner does not
+prove that arbitrary alternative routes are semantically equivalent.
+
+## Small secondary proof
+
+`demo/Program.cs` still begins with the previous compact provider-ambiguity case:
+
+```text
+UTL2002
+-> PreferCapabilityProvider(...provider.a...)
+-> successful LanguagePlan
+```
+
+Keep this as a small supporting proof that whole-language policy resolves provider ambiguity. Do **not**
+make it the central architectural example; the route-changing section is the live focus.
+
 ## What the demo proves
 
-`demo/Program.cs` has two source-backed phases.
-
-1. **Negative planning case.** A synthetic consumer requires `demo.capability`; two providers are eligible. `LanguageCompiler.Compile(...)` must return `UTL2002`. Adding `PreferCapabilityProvider(...provider.a...)` resolves exactly that whole-language ambiguity.
-2. **Resolved execution case.** A tiny synthetic language parses `SourceText` to `int`, has one selected backend that returns `value + 1`, and uses a route runtime. The program prints `LanguagePlan` data, calls `LanguageRuntime.Create(...)`, runs `"41"`, and requires output `42`.
-
-This is intentionally **not** the Wist `MinimalArithmetic` path. A synthetic package isolates the planner/runtime architecture and keeps the conference demo deterministic.
-
-The demo proves:
-
-- real planner diagnostics;
-- explicit provider policy;
-- a real immutable `LanguagePlan`;
-- a real route/runtime-provider summary;
-- exact runtime materialization;
-- real execution through the planned environment.
+- independently selected features change the candidate transformation graph;
+- route search happens inside the current whole-language planner;
+- the selected route changes from `demo.lower.safe` to `demo.lower.fast`;
+- the result is visible through `LanguagePlan.Routes`;
+- exact runtime materialization can execute the resolved plan;
+- real execution through the enhanced plan produces `41 -> 42`.
 
 It does **not** prove:
 
-- Wist language semantics;
-- arbitrary extension semantic compatibility;
-- optimizer correctness;
+- semantic equivalence of arbitrary routes;
+- optimizer correctness in Wist;
+- runtime speedup from the lower `Cost`;
+- zero-overhead extensibility;
 - sandboxing;
-- performance or zero overhead.
+- production maturity of an extension ecosystem.
 
 ## Preflight
 
@@ -46,8 +79,9 @@ Expected semantic anchors:
 ```text
 [planning] UTL2002:
 [planning] preferred provider: demo.provider.a
-[plan] runtime: demo.runtime@1
-[plan] route: demo
+[route:base] cost=7 | demo.parse -> demo.lower.safe
+[route:+fast-path] cost=2 | demo.parse -> demo.lower.fast
+[route] Cost is declared planning weight, not measured runtime latency.
 [runtime] input=41 output=42
 ```
 
@@ -61,38 +95,48 @@ After a successful prebuild:
 DEMO_NO_BUILD=1 ./demo/run-demo.sh /path/to/UniversalToolchain
 ```
 
-The script verifies the UniversalToolchain commit before execution and fails closed on source drift. Set `DEMO_ALLOW_SOURCE_DRIFT=1` only for deliberate local investigation, never for the conference evidence path.
+The script verifies the UniversalToolchain commit before execution and fails closed on source drift.
+Set `DEMO_ALLOW_SOURCE_DRIFT=1` only for deliberate local investigation, never for conference evidence.
 
-After prebuild, the conference path is expected to require **no network access**. Keep the checkout, .NET SDK, build outputs and terminal locally available.
-
-Recommended terminal setup: 16–18 pt monospace, ~100–110% zoom, dark/light choice tested on the projector, and enough width that diagnostic lines do not wrap.
+After prebuild, the conference path is expected to require **no network access**. Keep the exact checkout,
+.NET SDK, build outputs and terminal locally available.
 
 ## Live sequence
 
 Show only these three changes:
 
-1. `UTL2002` — ask “Two providers are valid. Who wins?”;
-2. the one explicit provider preference + plan/runtime/route summary;
-3. final `input=41 output=42`.
+1. base plan: `demo.parse -> demo.lower.safe`, Cost `7`;
+2. enable `demo.fast-path`: route becomes `demo.parse -> demo.lower.fast`, Cost `2`;
+3. execute the enhanced plan: `input=41 output=42`.
 
-Do not scroll through project files or live-edit code.
+Say explicitly:
 
-## Reset
+> “The smaller Cost changed the planner's choice. I have not measured it as a faster runtime route.”
 
-The demo is read-only with respect to both repositories; reset is simply rerun the command. No generated source state is required.
+Do not scroll through implementation files or live-edit code. The UTL2002 section is fallback/Q&A evidence,
+not a fourth live beat.
 
 ## Fallback ladder
 
 1. **Cached stdout:** keep `demo-last-good.txt` from the same pinned checkout and last successful preflight.
-2. **Screenshot:** use the `presentation-validation-evidence` CI artifact from the last green presentation commit.
-3. **Recorded fallback:** if venue reliability warrants it, keep a short screen recording of the same exact command/output.
+2. **Screenshot:** use `presentation-validation-evidence` from the last green presentation CI run.
+3. **Recorded fallback:** keep a short recording of the exact same command/output if venue reliability warrants it.
 
-If the live demo fails, say:
+If the live environment fails, say:
 
-> “The live environment failed; I’ll use the last CI-validated output. The claim is the planner/runtime boundary, not terminal theatre.”
+> “The live environment failed; I’ll use the last CI-validated output. The claim is the resolved route change, not terminal theatre.”
 
-Never invent a hash, route cost, successful output, or performance number.
+Never invent a hash, route cost, successful output or performance number.
 
 ## CI contract
 
-Presentation CI runs this canonical script against exact UniversalToolchain `7005371d6c30175dff4b0e9f906a26218b0ee54d` and asserts both the negative and positive anchors. `scripts/check_deck.py` also cross-checks slide text, demo source, runbook and truth pin so the deck cannot silently drift back to a different executable story.
+Presentation CI checks out exact UniversalToolchain
+`7005371d6c30175dff4b0e9f906a26218b0ee54d`, runs the canonical script and asserts:
+
+- `UTL2002` still exists as the small ambiguity proof;
+- base route contains `demo.lower.safe` with Cost `7`;
+- enabling `demo.fast-path` changes the route to `demo.lower.fast` with Cost `2`;
+- runtime still produces `41 -> 42`.
+
+`scripts/check_deck.py` cross-checks slide text, demo source, runbook and truth pin so the visible talk
+cannot silently drift from the executable story.

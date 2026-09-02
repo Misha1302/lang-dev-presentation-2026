@@ -1,123 +1,248 @@
-# Adversarial review — balanced causal narrative
+# Adversarial review — When Extensibility Becomes Planning
 
-Truth snapshot: `UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`. Review date: `2026-09-01`.
+Truth snapshot: `Misha1302/UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`.
 
-## Null-hypothesis verdict
+Presentation baseline attacked: `Misha1302/lang-dev-presentation-2026@59514e86d2708cc7b70d87e3f7b93d872ac78b6c`.
 
-**Baseline:** keep the 16-slide planner/runtime deck.
+Review date: `2026-09-03`.
 
-That baseline already had a strong first ten slides, but after the staging thesis was demonstrated it spent five slides repeating boundaries:
+## Narrative candidates reconsidered
 
-```text
-takeaway
-→ what disappears
-→ performance decomposition
-→ correctness boundary
-→ decision rule
-```
+### A — Problem -> extensibility cost -> planner
 
-The tail was safe but increasingly defensive. It also left a source mismatch: main slide 11 described a real Wist `MinimalArithmetic` demo while `demo/Program.cs` executed synthetic `Demo.Ambiguity` + `Demo.Runtime`.
+Strong causal logic, but too abstract before the audience has a compiler-shaped failure case.
 
-**Verdict:** keep the strongest planner/runtime spine, fix the demo truth, and spend the recovered conceptual budget on exactly two compiler ideas that are connected to the selected environment.
+### B — Build a compiler progressively until manual composition breaks
 
-## One-sentence causal test
+Intuitive, but spends too much conference time constructing an example before reaching the architecture.
 
-The talk can be described without “Part 1 / Part 2”:
+### C — Fixed pipeline -> configurable pipeline -> transformation graph -> planner
 
-> Whole-language planning selects one concrete environment; local compiler passes then use explicit semantic and selected-capability evidence to decide which rewrites are legal before that environment executes.
+Strongest visual progression. It makes route planning compiler-specific instead of looking like generic DI.
 
-If rehearsal cannot preserve this sentence, cut compiler detail rather than adding more mechanisms.
+### D — Extensibility is a coordination problem
 
-## Why the redesign is stronger
+Strongest thesis and most transferable takeaway, but needs C's concrete graph to avoid sounding generic.
 
-- keeps 16 main slides;
-- keeps the source-backed UTL2002 / plan / runtime demonstration;
-- replaces a boundary-heavy tail instead of growing the deck;
-- introduces only **semantic-contract legality** and **capability-gated specialization**;
-- makes the compiler section causal: selected environment → actual capability context → legal specialization;
-- moves performance, IR stage contracts, semantic trust, and maturity details into Q&A appendix;
-- removes the false impression that the planner itself produces all semantic guarantees.
+## Decision
 
-## Hostile pass
+Use **C as the visual spine** and **D as the thesis** under:
 
-### Narrative overload
+> **When Extensibility Becomes Planning**
 
-New main nouns after slide 11: `semantic descriptor` and `capability context`. `SSA`, SCCP, e-graphs and IR facts are not new main-deck topics.
+Memory line:
 
-**Pass condition:** the audience can follow slides 12–16 without knowing SSA theory.
+> **Declare locally. Resolve globally. Execute concretely.**
 
-### Two-talk problem
+## Null hypothesis
 
-Slide 12 explicitly states:
+The null hypothesis is:
 
-```text
-Planning: What exists?
-Compiler pass: What may I change?
-```
+> “A builder, DI container and explicit pass list are enough; a whole-language planner is unnecessary
+> architecture.”
 
-Slide 14 reconnects both sides through `LanguagePlan + selected backend → capability context`.
+The talk only defeats that null hypothesis if it demonstrates a decision that:
 
-**Result:** PASS, provided the speaker does not turn slide 13 into a CSE tutorial.
+1. depends on multiple independently authored choices;
+2. is not owned by one local extension;
+3. is compiler-specific rather than merely object construction;
+4. produces a concrete, inspectable result used by runtime.
 
-### Compiler vanity
+The transformation-route example now satisfies all four better than the previous central UTL2002 example.
 
-CSE and constant folding appear only as consequences of the same semantic safety predicate. The point is not “the project has optimizations”; the point is “legality consumes explicit properties.”
+## Hostile review
 
-**Result:** PASS.
+### 1. “The planner is not needed; just wire the pipeline.”
 
-### Demo theatre
+**Attack:** if one owner knows all stages, the planner adds indirection and failure modes.
 
-The visible slide now matches the exact executable path: synthetic ambiguity → explicit preference → plan → runtime → `41 → 42`. The synthetic package is labeled, and the slide no longer claims Wist semantics.
+**Finding:** valid.
 
-**Result:** PASS after CI exercises `demo/run-demo.sh`.
+**Correction in deck:** slide 2 opens with the handwritten baseline and slide 14 repeats the decision rule.
+The talk no longer treats direct wiring as primitive architecture that needs replacement.
 
-### Implementation maturity
+**Status:** PASS.
 
-- semantic-gated CSE/folding: implemented;
-- Wist plan/backend capability gating + backend validation: implemented;
-- IR fact/capability checks: implemented, appendix only;
-- e-graph: bounded symbolic simplifier, appendix/Q&A only;
-- performance: needs measurement.
+### 2. “A builder is sufficient.”
 
-**Result:** PASS.
+**Attack:** `LanguageDefinitionBuilder` already describes the language. Why compile configuration again?
 
-### Timing
+**Finding:** a builder can construct the requested semantic model, but it does not by itself own dependency
+closure, provider ambiguity, cross-contribution ordering or artifact-route search.
 
-Canonical authored budget: 21:05 inside a 25:00 content slot. Demo is 2:00, interactions are short prediction/reveals, leaving 3:55 hard buffer before Q&A.
+**Correction in deck:** slide 5 now makes `.wistdialect` and C# builder explicit frontends into the same
+`LanguageDefinition`, followed by one planning authority.
 
-**Result:** PASS if rehearsal stays under 22:00.
+**Status:** PASS.
 
-### Audience prerequisites
+### 3. “DI is sufficient.”
 
-No SSA lesson is required. Slide 13 uses three-address-like notation only. `pure`, `deterministic`, `trusted`, and `capability` are explained by consequence.
+**Attack:** capabilities/providers sound exactly like dependency injection.
 
-**Result:** PASS.
+**Finding:** provider ambiguity alone was too DI-shaped for the main example.
 
-### Memorability
+**Correction in deck:** provider ambiguity is demoted to secondary demo evidence. Slides 6–7 and the primary
+demo use typed artifact transformation routes, which are compiler composition decisions. Appendix retains
+the DI boundary.
 
-One phrase:
+**Status:** PASS.
 
-> Resolve globally. Justify locally. Execute concretely.
+### 4. “The route graph is unnecessarily clever.”
 
-One picture: global plan on the left, local rewrite evidence on the right.
+**Attack:** alternatives can be expressed with conditionals or a manually ordered list.
 
-One example: two `foo(x)` calls.
+**Finding:** true when one integration owner controls the alternatives. The graph earns its cost only when
+extensions independently contribute edges and the final backend path depends on the selected language.
 
-**Result:** PASS.
+**Correction in deck:** slide 6 begins from the fixed line and introduces one alternative edge only after
+independent ownership exists. Slide 14 explicitly says to choose a smaller mechanism otherwise.
 
-## Main attack surfaces for Q&A
+**Status:** PASS.
 
-1. Why not DI/builder?
-2. Why not LLVM/MLIR?
-3. Does `LanguagePlan` prove semantic compatibility?
-4. What if semantic metadata lies?
-5. What if selected backend cannot consume optimized IR?
-6. Does extensibility hurt performance?
-7. How is the planner/runtime boundary testable?
-8. What is experimental vs implemented?
-9. Is restricted composition a sandbox?
-10. Is the “e-graph” actually an e-graph/equality-saturation framework?
-11. Do IR contracts schedule passes?
-12. Why use a synthetic demo rather than Wist?
+### 5. “`LanguageCompiler` is a confusing name.”
 
-Canonical answers live in `CLAIM_BOUNDARIES_40_QA.md` and exact maturity statuses live in `claims.md`.
+**Attack:** audience will assume it compiles source programs.
+
+**Finding:** material confusion risk.
+
+**Correction in deck:** slide 8 now states in the title that `LanguageCompiler` compiles a
+`LanguageDefinition` into a `LanguagePlan`, **not source code**. Notes repeat the current source comment:
+single public semantic planner for language definitions.
+
+**Status:** PASS.
+
+### 6. “The performance thesis is unproved.”
+
+**Attack:** moving planning earlier might still be slower overall; route Cost could mislead people into
+thinking it predicts speed.
+
+**Finding:** valid.
+
+**Correction in deck:** slide 7 says Cost is a declared planning weight, slide 10 repeats that lower demo
+Cost is not measured speed, and slide 13 keeps all performance impact under `NEEDS MEASUREMENT`.
+No numerical benchmark claim exists.
+
+**Status:** PASS.
+
+### 7. “Route Cost is misleading.”
+
+**Attack:** “minimum cost route” sounds like runtime optimization.
+
+**Finding:** high risk.
+
+**Correction in deck:** every main location using route Cost qualifies it as planner policy. The demo says
+“Lower Cost means planner preference here — not measured speed.” `claims.md` and Q&A own the same boundary.
+
+**Status:** PASS.
+
+### 8. “The example still is not compiler-specific.”
+
+**Attack:** UTL2002 plus provider preference could be shown with any plugin container.
+
+**Finding:** true of the previous main demo.
+
+**Correction in deck:** the executable proof now changes `Syntax -> AIR` route selection when an extension
+feature contributes an alternative transformation edge. UTL2002 remains only secondary evidence.
+
+**Status:** PASS.
+
+### 9. “The talk still requires prior UniversalToolchain knowledge.”
+
+**Attack:** terms such as feature, contribution, capability, provider, route and LanguagePlan can become an API tour.
+
+**Finding:** partially valid in the previous slide 5.
+
+**Correction in deck:** terms are introduced by ownership and cause:
+- feature = what the language integrator wants enabled;
+- contribution = concrete package piece;
+- capability = abstract requirement;
+- provider = contribution satisfying it;
+- route = resolved ordered artifact path;
+- LanguageDefinition = requested concrete language;
+- LanguagePlan = resolved answer;
+- runtime = materializer/executor.
+
+Slide 5 also shows the canonical configuration flow instead of a glossary dump.
+
+**Status:** PASS.
+
+### 10. “The narrative is two talks again.”
+
+**Attack:** planner architecture plus CSE/SSA/intrinsics becomes two unrelated presentations.
+
+**Finding:** previous repository documents still contained stale “Resolve globally. Justify locally” framing,
+even though the main 15-slide deck had already removed most of that material.
+
+**Correction in deck/docs:** main narrative remains planning-only. CSE, semantic descriptors, IR-stage
+contracts and e-graph material remain appendix/Q&A. `CLAIM_BOUNDARIES_40_QA.md` and this review are rewritten
+around the planning thesis instead of the old two-talk narrative.
+
+**Status:** PASS.
+
+## Additional hostile checks
+
+### Hidden semantic coupling
+
+A structurally compatible edge can still be semantically wrong.
+
+**Mitigation:** slide 7 visibly separates structural guarantee from semantic non-guarantees. No claim that
+planner proves route equivalence.
+
+### Distributed contract-system failure mode
+
+A planner can make the system harder to understand if contracts fail to encode the assumptions that matter.
+
+**Mitigation:** slide 14 states this as the main counterargument, not a footnote.
+
+### Lifecycle ambiguity
+
+“Planning once” can accidentally imply “source compiled once.”
+
+**Mitigation:** slide 9 separates planning/materialization/source build/execution; slides 11–12 separately
+show environment reuse and compiled-program reuse.
+
+### Configuration authority split
+
+A textual DSL could accidentally look like a second planner or textual order could look executable.
+
+**Mitigation:** slide 5 shows `.wistdialect` and C# builder converging on one `LanguageDefinition` and one
+`LanguageCompiler`.
+
+### Observability
+
+A global planner that cannot explain its result would be difficult to debug.
+
+**Mitigation:** main slide 8 exposes `Features`, `Contributions`, `RuntimeProvider`, `Routes`, `PlanHash`,
+and `Summary`; demo prints exact route choices. No invented ExplainPlan subsystem is claimed.
+
+## 5-second test for every main slide
+
+1. **Title:** extensibility can become planning.
+2. **Baseline:** fixed pipeline -> wire it explicitly.
+3. **Motivation:** one infrastructure can serve a family of languages.
+4. **Threshold:** coupling, not option count, creates planning.
+5. **Ownership:** local facts, one global planner, one semantic config model.
+6. **Compiler failure case:** transformations form a graph.
+7. **Selection:** planner searches selected typed edges by declared cost.
+8. **Answer:** LanguageDefinition -> LanguagePlan; LanguageCompiler is not source compilation.
+9. **Lifecycle:** planning/materialization happen before source build/execution.
+10. **Proof:** enabling an extension changes the resolved route.
+11. **Boundary A/B:** environment reuse is not program reuse.
+12. **Evaluate:** source request still does work; Compile creates durable program reuse.
+13. **Price:** extensibility costs contracts, coordination, testing and runtime work.
+14. **Counterargument:** use the smallest mechanism; planner can be the bigger problem.
+15. **Rule:** Declare locally. Resolve globally. Execute concretely.
+
+## Remaining evidence debt
+
+The architecture claim is source-backed. The following remain **NEEDS MEASUREMENT**:
+
+- planning latency / allocations;
+- runtime materialization cost;
+- first execution;
+- steady-state overhead;
+- route-graph scaling;
+- diagnostics/observability cost;
+- amortization break-even.
+
+These are not blockers for the architectural talk as long as no speed claim is made.

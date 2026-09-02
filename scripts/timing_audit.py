@@ -3,18 +3,18 @@
 SLIDE_SECONDS = [
     45,  # 1 title / question / anchor
     75,  # 2 handwritten baseline
-    75,  # 3 language family
+    75,  # 3 language family / why extensibility
     80,  # 4 coupling threshold
-    75,  # 5 integrator surface + local facts
-    85,  # 6 pipeline becomes a graph
-    100, # 7 route selection + three truth boundaries
-    75,  # 8 immutable LanguagePlan
-    75,  # 9 runtime materializes exact plan
-    110, # 10 current source-backed demo
+    75,  # 5 ownership + canonical configuration model
+    85,  # 6 pipeline becomes a transformation graph
+    100, # 7 automatic route search + truth boundaries
+    75,  # 8 LanguageCompiler naming + immutable LanguagePlan
+    75,  # 9 authoring/planning/materialization/source-build lifecycle
+    110, # 10 source-backed route-changing demo
     85,  # 11 two once boundaries
     80,  # 12 Evaluate vs Compile boundary
-    85,  # 13 cost / measurement boundary
-    95,  # 14 when a planner earns its cost
+    85,  # 13 full extensibility cost / measurement boundary
+    95,  # 14 strongest counterargument / when not to use planner
     60,  # 15 final anchor
 ]
 HARD_CONTENT_LIMIT = 25 * 60
@@ -31,8 +31,10 @@ assert DEMO_SECONDS <= 120, f"demo budget too large: {DEMO_SECONDS}s"
 assert INTERACTION_SECONDS <= 60, f"interaction budget too large: {INTERACTION_SECONDS}s"
 assert buffer >= 3 * 60, f"hard-stop buffer too small: {buffer}s"
 
+
 def mmss(seconds: int) -> str:
     return f"{seconds // 60:02d}:{seconds % 60:02d}"
+
 
 print(f"talk target: {mmss(total)}")
 print(f"demo inside talk: {mmss(DEMO_SECONDS)}")
