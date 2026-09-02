@@ -56,11 +56,11 @@ function parseNoteSections(note){
   if(!text) return [];
   const pattern = /(ЗАЧЕМ|СКАЗАТЬ|ПЕРЕХОД|ДЕТАЛЬ|НЕ ПЕРЕОБЕЩАТЬ):\s*/g;
   const matches = [...text.matchAll(pattern)];
-  if(!matches.length) return [{label:'NOTES', body:text}];
+  if(!matches.length) return [{label:'ЗАМЕТКИ', body:text}];
   const sections = [];
   if(matches[0].index > 0){
     const preface = text.slice(0, matches[0].index).trim();
-    if(preface) sections.push({label:'NOTES', body:preface});
+    if(preface) sections.push({label:'ЗАМЕТКИ', body:preface});
   }
   matches.forEach((match, index) => {
     const start = match.index + match[0].length;
@@ -86,7 +86,7 @@ function ensurePresenterPanel(){
   body.id = 'presenterNoteSections';
   notes.append(header, body);
   notes.dataset.presenterReady = 'true';
-  notes.setAttribute('aria-label', 'Speaker notes for current slide');
+  notes.setAttribute('aria-label', 'Заметки докладчика для текущего слайда');
 }
 function renderPresenterNotes(){
   ensurePresenterPanel();
@@ -95,8 +95,8 @@ function renderPresenterNotes(){
   const slideCount = document.getElementById('presenterSlideCount');
   const title = document.getElementById('presenterSlideTitle');
   const body = document.getElementById('presenterNoteSections');
-  const suffix = showAppendix ? ' · APPENDIX' : '';
-  slideCount.textContent = `SLIDE ${i + 1} / ${slides.length}${suffix}`;
+  const suffix = showAppendix ? ' · ПРИЛОЖЕНИЕ' : '';
+  slideCount.textContent = `СЛАЙД ${i + 1} / ${slides.length}${suffix}`;
   title.textContent = titleOf(slide);
   body.replaceChildren();
   const canonicalNote = slide.dataset.notes || window.SPEAKER_NOTES?.[slide.dataset.noteKey] || '';
@@ -148,7 +148,7 @@ function setPresenterMode(enabled, {syncUrl = true} = {}){
   document.body.classList.toggle('presenter-mode', presenterMode);
   notes.classList.toggle('show', presenterMode);
   notesBtn.setAttribute('aria-pressed', String(presenterMode));
-  notesBtn.textContent = presenterMode ? 'Audience' : 'Notes';
+  notesBtn.textContent = presenterMode ? 'Зал' : 'Notes';
   if(syncUrl) syncPresenterUrl();
   updatePresenterLayout();
   renderPresenterNotes();
@@ -244,7 +244,7 @@ function go(n, replaceHash=false){
 
 document.getElementById('prev').onclick=()=>go(i-1);
 document.getElementById('next').onclick=()=>go(i+1);
-notesBtn.setAttribute('aria-label', 'Toggle presenter mode');
+notesBtn.setAttribute('aria-label', 'Переключить режим докладчика');
 notesBtn.setAttribute('aria-pressed', 'false');
 notesBtn.onclick=togglePresenterMode;
 tocBtn.setAttribute('aria-label', 'Toggle table of contents');
