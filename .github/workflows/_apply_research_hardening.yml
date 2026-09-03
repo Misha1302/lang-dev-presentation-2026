@@ -1,0 +1,31 @@
+name: One-shot presentation research hardening
+
+on:
+  push:
+    branches: [ai/presentation-hardening-2026-09-03]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ai/presentation-hardening-2026-09-03
+          fetch-depth: 0
+      - name: Apply source-backed hardening
+        run: python3 scripts/_apply_research_hardening.py
+      - name: Remove one-shot bootstrap files
+        run: |
+          rm scripts/_apply_research_hardening.py
+          rm .github/workflows/_apply_research_hardening.yml
+      - name: Commit hardened tree to staging branch
+        run: |
+          git config user.name "CompilationLab presentation audit"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "harden LangDev narrative against current planner boundaries"
+          git push origin HEAD:ai/presentation-hardening-2026-09-03
