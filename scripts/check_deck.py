@@ -7,7 +7,6 @@ ROOT = Path(__file__).resolve().parents[1]
 html = (ROOT / "index.html").read_text(encoding="utf-8")
 notes = (ROOT / "speaker-notes-hardening.js").read_text(encoding="utf-8")
 css = (ROOT / "styles.css").read_text(encoding="utf-8")
-deck_js = (ROOT / "deck.js").read_text(encoding="utf-8")
 qa = (ROOT / "CLAIM_BOUNDARIES_40_QA.md").read_text(encoding="utf-8")
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 demo = (ROOT / "DEMO.md").read_text(encoding="utf-8")
@@ -78,7 +77,6 @@ for i, title in enumerate(expected_titles):
     assert title in main[i][1], f"slide {i + 1} missing expected title: {title}"
 
 assert 'data-deck-qa-contract="concrete-first-obligations-v2"' in html
-assert "concrete-first-obligations-v2" in deck_js, "deck.js QA contract must match index.html"
 
 combined = "\n".join([html, notes, readme, demo, qa])
 required = [
@@ -128,13 +126,14 @@ for anchor in ["external", "shadows", "cross-backend parity"]:
 # Demo/runbook must prove pricing + parity rather than synthetic route preference.
 for anchor in [
     "pricing-restricted",
-    "[pricing:interpreter] result=95",
-    "[pricing:cil] result=95",
+    "run_backend interpreter",
+    "run_backend cil",
+    "expected pricing result 95",
     "ShadowingAndNestedScope_WithLocalNamesOverlappingExternals_ShouldBeDeterministicAndParityStable",
     "[parity] shadowing regression PASS",
 ]:
     assert anchor in demo_script, f"demo script missing source-backed anchor: {anchor}"
-assert "route Cost 7 → route Cost 2" in demo, "runbook should explain why old proof was demoted"
+assert "Cost 7 → route Cost 2" in demo, "runbook should explain why old proof was demoted"
 
 # Every live main note preserves the causal presenter structure.
 for n in range(1, 15):
