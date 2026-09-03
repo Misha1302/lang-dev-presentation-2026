@@ -1,30 +1,108 @@
 Object.assign(window.SPEAKER_NOTES, {
-  "m1": "ЗАЧЕМ: сразу дать один вопрос и одну переносимую mental model, чтобы доклад не превратился в обзор классов UniversalToolchain.\n\nСКАЗАТЬ: вопрос доклада — когда расширяемость языка перестаёт быть просто конфигурацией и становится задачей планирования? Пока выборы независимы, достаточно обычной настройки. Но когда независимо создаваемые части начинают зависеть друг от друга, конфликтовать, задавать порядок, конкурировать за capability или предлагать разные пути к backend, локальных решений уже недостаточно. Тогда мы сначала разрешаем взаимодействующие выборы глобально, фиксируем один конкретный LanguagePlan, а затем исполняем именно его. Формула на весь доклад: Declare locally. Resolve globally. Execute concretely.\n\nПЕРЕХОД: прежде чем оправдывать planner, покажем честный baseline, где он совершенно не нужен.\n\nНЕ ПЕРЕОБЕЩАТЬ: UniversalToolchain — case study и один design point. Доклад не утверждает, что любой расширяемый компилятор обязан иметь такой planner.",
-  "m2": "ЗАЧЕМ: убрать архитектурный strawman и признать, что простая ручная цепочка часто является лучшим решением.\n\nСКАЗАТЬ: компилятор вообще использует pipeline потому, что исходная программа постепенно проходит через представления и преобразования: parsing, semantic work, lowering, optimization, code generation или interpretation. Если один владелец знает точный parser, lowering, optimizer и backend, самый понятный способ — связать их явно. Builder может сделать запись удобнее, DI может создать объекты, pass manager может выполнить известную последовательность. Здесь нет отдельной глобальной задачи выбора: владелец уже знает конкретный pipeline.\n\nПЕРЕХОД: необходимость extensibility появляется, когда инфраструктура должна обслуживать не один фиксированный язык, а семейство конкретных языков.\n\nНЕ ПЕРЕОБЕЩАТЬ: planner не ценность сам по себе. Если ручное связывание остаётся ясным и устойчивым, усложнять архитектуру не надо.",
-  "m3": "ЗАЧЕМ: объяснить, зачем вообще нужна extensibility, до появления терминов UniversalToolchain.\n\nСКАЗАТЬ: один набор инфраструктуры может поддерживать несколько concrete languages: разный syntax surface, разные преобразования, оптимизаторы, backend и runtime policy. Это полезно, когда команды хотят переиспользовать основу, но собирать разные языки или dialects без форка всего toolchain. Важна не просто модульность. Модульность делит систему на части; extensibility позволяет независимо добавлять варианты. Как только варианты затрагивают разные стадии compiler pipeline, возникает вопрос, кто отвечает за их совместную композицию.\n\nПЕРЕХОД: много options ещё не означает planning. Порог появляется тогда, когда эти options перестают быть независимыми.\n\nНЕ ПЕРЕОБЕЩАТЬ: language family здесь практический архитектурный термин про reuse и variability, а не утверждение о формальной семантической совместимости всех вариантов.",
-  "m4": "ЗАЧЕМ: дать точный критерий перехода от configuration к planning.\n\nСКАЗАТЬ: десять независимых flags всё ещё могут быть просто configuration. Planning начинается из-за отношений между решениями. Feature может требовать другую feature. Contributions могут конфликтовать. Два providers могут удовлетворять одной capability. Преобразования могут иметь ordering constraints. Backend может требовать artifact, до которого надо построить достижимый route. В этот момент правильный ответ зависит от whole selected language, а не от одного локального package. Это и есть главный causal threshold доклада: choices stop being independent.\n\nПЕРЕХОД: теперь надо развести ownership — кто авторит локальные факты, кто выбирает язык, и кто имеет право принять глобальное решение.\n\nНЕ ПЕРЕОБЕЩАТЬ: planner разрешает только то, что выражено контрактами и policy. Он не угадывает скрытые assumptions и не превращает неполную спецификацию в корректную.",
-  "m5": "ЗАЧЕМ: сделать ownership model и configuration boundary понятными до route graph.\n\nСКАЗАТЬ: conceptual roles здесь важнее конкретных классов. Framework author задаёт protocol: explicit artifact contracts, feature/contribution/capability model и правила planning. Package или extension author публикует локальные pieces. Contribution — конкретный кусок compiler/runtime architecture. Capability — абстрактное требование, которое может иметь одного или несколько providers. Language integrator говорит, какой concrete language ему нужен: feature — то, что он хочет включить, плюс backend и policy. Planner видит весь выбранный язык и принимает глобальные решения. Runtime только материализует результат. Один человек может выполнять несколько ролей, но authority boundary остаётся.\n\nСКАЗАТЬ: `.wistdialect` не является planner. Это один frontend. C# `LanguageDefinitionBuilder` — другой frontend. Оба сходятся в canonical semantic model `LanguageDefinition`, после чего единственный `LanguageCompiler` строит `LanguagePlan`. Поэтому textual order в dialect file не является runtime pipeline order.\n\nПЕРЕХОД: compiler-specific причина для global planner появляется, когда contributions публикуют альтернативные преобразования artifact'ов.\n\nНЕ ПЕРЕОБЕЩАТЬ: local package author не выбирает весь pipeline и не имеет права считать, что соседние extensions устроены именно так, как он ожидает.",
-  "m6": "ЗАЧЕМ: показать failure case, который уже нельзя спутать с обычным DI provider resolution.\n\nСКАЗАТЬ: фиксированный компилятор обычно рисуется линией: Source → Syntax → Semantic → Bytecode → AIR → Backend. Но independently authored extensions могут добавлять artifact-contract transformation edges. Например, один package уже даёт Semantic → Bytecode → AIR, другой добавляет прямой Semantic → AIR. Теперь pipeline существует не как заранее записанная последовательность, а как graph кандидатов. Каждое ребро знает только source contract, target contract и declared planning cost. Ни одно ребро само не знает, должно ли оно войти в итоговый compiler route.\n\nПЕРЕХОД: кто же выбирает путь? В UniversalToolchain это делает route phase внутри whole-language planner.\n\nНЕ ПЕРЕОБЕЩАТЬ: два structural paths не становятся семантически эквивалентными только потому, что их declared artifact contracts соединяются. Correctness альтернативных edges остаётся обязанностью контрактов, tests и авторов.",
-  "m7": "ЗАЧЕМ: без двусмысленности ответить на вопросы «сам ли UT ищет route?» и «что значит Cost?».\n\nСКАЗАТЬ: да, текущая implementation автоматически ищет route, но не по всем imaginable transformations во вселенной. Сначала feature/contribution resolution выбирает contributions для конкретного LanguageDefinition. Затем для каждого выбранного backend route phase берёт conversion edges среди этих selected contributions, ограничивает их supported backends, ищет artifact-contract-compatible путь от entry artifact к backend input и выбирает minimum sum of declared Cost. При равной стоимости tie-break deterministic по contribution signature. После base route selected same-contract passes вставляются там, где их source/target contract совместим с текущим artifact, с учётом Before/After ordering. Важная current boundary: conversion skeleton выбирается ДО вставки passes. Если выбранный pass помещается только на более дорогом conversion skeleton, текущая phase может завершиться UTL2204 и не возвращаться к route search. Поэтому это staged deterministic algorithm, а не global constraint optimizer.\n\nСКАЗАТЬ: Cost — protocol planning weight; current implementation хранит его как `int` и суммирует по route edges. Это не profiler result, не milliseconds и не prediction of generated-code quality. Поэтому слово minimum означает только минимум по этой локальной planning metric; не надо превращать Cost в центральный objective архитектуры.\n\nПЕРЕХОД: после этих решений planner не держит их скрытыми — он возвращает конкретный data object.\n\nНЕ ПЕРЕОБЕЩАТЬ: не говорить «семантически лучший pipeline», «самый быстрый route», «global optimum» или «correct route» без отдельного evidence. `ContractsConnect` сравнивает Kind + stable ValueTypeIdentity; default identity выводится из CLR type, но custom identity может быть задан явно, поэтому это не runtime proof совпадения CLR types.",
-  "m8": "ЗАЧЕМ: снять naming confusion вокруг `LanguageCompiler` и сделать результат planning наблюдаемым.\n\nСКАЗАТЬ: несмотря на имя, этот object не компилирует user's source program. Current source прямо называет его single public semantic planner for language definitions. Его вход — `LanguageDefinition`; результат — либо diagnostics, либо immutable `LanguagePlan`. План хранит resolved Features, Contributions, exact RuntimeProvider, backend Routes, PlanHash и Summary. Это concrete answer на вопрос «какой именно язык мы собрали?». Решение можно inspect, compare, log и test до выполнения source request.\n\nСКАЗАТЬ: `PlanHash` — canonical identity выраженного resolved plan. Он полезен для drift и reproducibility, но не является сертификатом semantic correctness или security.\n\nПЕРЕХОД: когда global answer уже зафиксирован как data, можно чётко провести temporal boundary между planning и обработкой конкретной программы.\n\nНЕ ПЕРЕОБЕЩАТЬ: immutable LanguagePlan не означает, что все runtime objects immutable или что runtime ничего не проверяет при materialization. И не обещать, что любой invalid composition всегда превращается в обычный `LanguageBuildResult` diagnostic: часть plan invariants, включая backend/runtime input mismatch, проверяет `LanguagePlanVerifier`, который бросает `LanguagePlanVerificationException`.",
-  "m9": "ЗАЧЕМ: показать всю lifecycle boundary, а не смешивать planning с source compilation.\n\nСКАЗАТЬ: Authoring создаёт packages и LanguageDefinition. Planning разрешает whole-language choices и выдаёт LanguagePlan. Materialization через `LanguageRuntime.Create` проверяет exact provider, backend coverage, route presence, policy и создаёт runtime session. Только после этого появляется конкретный source request: `Run` или `Build` проводит artifact по уже выбранному route. Затем либо возвращается execution result, либо materialized durable program исполняется отдельно. Значит runtime не решает язык заново; но реальная parsing/lowering/optimization работа для source всё ещё существует.\n\nПЕРЕХОД: это легко доказать executable demo, если изменение language composition действительно меняет stored route.\n\nНЕ ПЕРЕОБЕЩАТЬ: no second whole-language planner не означает no validation, no interfaces, no allocations или no compilation work.",
-  "m10": "ЗАЧЕМ: дать compiler-specific executable proof вместо прежнего центрального примера с двумя capability providers.\n\nСКАЗАТЬ: synthetic package намеренно маленький. Base feature даёт parse Source→Syntax и safe lowering Syntax→AIR с Cost 6; вместе parse Cost 1 route имеет total Cost 7. Дополнительная `demo.fast-path` feature публикует ещё одно Syntax→AIR edge с Cost 1. Когда integrator включает эту feature, тот же `LanguageCompiler` видит новый selected contribution graph и выбирает другой concrete route: `demo.parse → demo.lower.fast`, total Cost 2. Runtime материализуется из нового plan и `Run(\"41\")` даёт 42. Provider ambiguity UTL2002 остаётся в demo source как маленький дополнительный proof planner diagnostics, но не является главным architectural example.\n\nСКАЗАТЬ: обе lowering функции в synthetic demo намеренно identity, чтобы route change не маскировался другой семантикой. Planner сам semantic equivalence не доказал; мы просто написали две функции с одинаковым поведением для этого test fixture.\n\nПЕРЕХОД: теперь можно аккуратно сказать «planning happens once», но у слова once здесь два разных смысла.\n\nНЕ ПЕРЕОБЕЩАТЬ: меньший route Cost не означает faster runtime. Demo не benchmark и не доказывает произвольную semantic interchangeability edges.",
-  "m11": "ЗАЧЕМ: разделить две разные amortization boundaries, которые легко спутать.\n\nСКАЗАТЬ: первая boundary — language environment. `WistEngine.Create` превращает selected dialect/options в LanguageDefinition, запускает LanguageCompiler, получает LanguagePlan и создаёт LanguageRuntime. Этот plan/runtime затем reuse'ятся для Evaluate, Validate и Compile на том же engine. Вторая boundary — compiled program. `Compile<TDelegate>` запускает `Runtime.Build`, materializes durable program и создаёт reusable delegate. Это уже reuse конкретной программы, а не только environment.\n\nСКАЗАТЬ: отсюда важная API boundary: `Evaluate(code)` reuse'ит уже выбранный environment, но каждый source request всё равно идёт через `Runtime.Run`. Для reuse конкретной построенной программы public boundary — `Compile<TDelegate>`: `Runtime.Build` создаёт durable program и reusable delegate.\n\nПЕРЕХОД: теперь можно обсуждать стоимость extensibility без магического «zero cost».\n\nНЕ ПЕРЕОБЕЩАТЬ: environment lifetime не обязательно равен process lifetime; current WistEngine также intentionally rejects overlapping public operations, поэтому не делать здесь thread-safety claim. Без benchmark artifact нельзя делать сравнительный вывод, насколько Evaluate или Compile быстрее handwritten implementation.",
-  "m12": "ЗАЧЕМ: показать полную цену extensibility, а не свести её к runtime dispatch.\n\nСКАЗАТЬ: цена начинается до hot path. Нужны explicit artifact contracts и versioning; extension authors должны выразить assumptions. Нужна global coordination: planner rules, conflicts, diagnostics. Растёт engineering surface: combination testing, observability, debugging, startup/materialization. И после всего этого реальная работа компилятора никуда не исчезает: parsing, lowering, optimizations, code generation и execution. Что planning потенциально убирает из repeated path — повторное глобальное rediscovery выбранного language configuration. Что именно это даёт по latency, allocations и break-even — отдельный empirical вопрос.\n\nПЕРЕХОД: если цена настолько реальна, главный adversarial question — когда planner сам становится худшей архитектурой.\n\nНЕ ПЕРЕОБЕЩАТЬ: performance impact на этом deck остаётся NEEDS MEASUREMENT. Route Cost нельзя использовать как proxy измеренной скорости.",
-  "m13": "ЗАЧЕМ: дать сильнейший контраргумент прямо в main talk и определить область применимости architecture.\n\nСКАЗАТЬ: худший исход — заменить понятный compiler code распределённой contract system, а скрытые semantic assumptions всё равно оставить невыраженными. Тогда мы получим и planner complexity, и hidden semantic coupling. Поэтому выбираем smallest mechanism that owns the real decision. Stable pipeline — handwritten wiring. Независимые options — builder/config. Object lifetime/substitution — DI. Уже известный ordered optimizer pipeline — pass manager. Прежде всего IR legalization — conversion machinery вроде MLIR. Whole-language planner оправдан, когда independently owned choices взаимодействуют across stages и ни один local owner не может честно выбрать весь executable route.\n\nПЕРЕХОД: финал — не список API nouns, а одно правило выбора архитектуры.\n\nНЕ ПЕРЕОБЕЩАТЬ: не заявлять novelty или superiority над LLVM, MLIR, DI, MPS, Racket или builders. UT — один design point.",
-  "m14": "ЗАЧЕМ: оставить аудитории одну фразу и один decision rule, которые работают без знания UniversalToolchain.\n\nСКАЗАТЬ: One fixed compiler? Wire it explicitly. Independent extensions? Пусть они declare local contracts. Если cross-extension choices начинают зависеть друг от друга, resolve them globally into one inspectable plan. Runtime materializes exactly that plan instead of rediscovering language composition. Но стоимость не исчезает: она переезжает в contracts, planning, diagnostics, debugging и testing. Поэтому используйте такой architecture только если variability действительно существует. Главная формула: Extensibility becomes planning when choices stop being independent. Declare locally. Resolve globally. Execute concretely.\n\nПЕРЕХОД: Q&A. Appendix содержит exact evidence map, prior-art boundaries, security, performance measurement и compiler-optimization material, сознательно убранный из main causal chain.\n\nНЕ ПЕРЕОБЕЩАТЬ: не возвращать CSE, SSA, intrinsics или e-graphs в устный финал — это снова создаст вторую презентацию."
+  m1: `ЗАЧЕМ: сразу заменить старую память «route search» на новую центральную формулу.
+
+СКАЗАТЬ: доклад не про то, что UniversalToolchain умеет искать дешёвый путь. Он про более общую границу: когда расширяемость языка создаёт обязанность построить корректный concrete compiler из независимых pieces. Главный тезис: feasibility before preference. Сначала hard obligations, потом выбор между уже допустимыми реализациями.
+
+ПЕРЕХОД: начинаем с baseline, где planner не нужен.
+
+НЕ ПЕРЕОБЕЩАТЬ: UT — case study, не эталон всей архитектуры.` ,
+  m2: `ЗАЧЕМ: убрать strawman и показать уважение к explicit pipeline.
+
+СКАЗАТЬ: если один owner знает parser, lowering, optimizer и backend, лучший design — явная цепочка. Builder или DI могут помочь собрать объекты, pass manager может выполнить известную последовательность. Отдельный planner здесь только добавит complexity.
+
+ПЕРЕХОД: проблема возникает, когда появляется не один compiler, а семейство вариантов.
+
+НЕ ПЕРЕОБЕЩАТЬ: не утверждать, что декларативность всегда лучше ручного wiring.` ,
+  m3: `ЗАЧЕМ: объяснить, зачем нужна extensibility, без API-tour vocabulary.
+
+СКАЗАТЬ: независимые авторы могут добавлять syntax, lowering, optimizers, backends and policies. Важно не количество plugins, а то, что их требования пересекают compiler stages и ownership boundaries.
+
+ПЕРЕХОД: но даже это ещё не автоматически planner.
+
+НЕ ПЕРЕОБЕЩАТЬ: language family здесь practical architecture term, не доказательство совместимости всех языков.` ,
+  m4: `ЗАЧЕМ: дать точный threshold.
+
+СКАЗАТЬ: choices interacting is too broad. DI, builder, pass manager or legalization may already own the local decision. Planner начинается только когда independently owned choices create whole-compiler hard constraints that no local mechanism can guarantee.
+
+ПЕРЕХОД: поэтому нужно развести ownership: кто задаёт semantics и кто выбирает implementation.
+
+НЕ ПЕРЕОБЕЩАТЬ: planner не угадывает скрытые invariants.` ,
+  m5: `ЗАЧЕМ: исправить опасную фразу «planner chooses the language».
+
+СКАЗАТЬ: language author или integrator определяет semantics, target и policy. Из этого возникают obligations. Extension implementations declare what they require and satisfy. Planner выбирает implementation, satisfying those obligations. Runtime materializes one frozen answer.
+
+ПЕРЕХОД: теперь покажем, почему structural reachability недостаточна.
+
+НЕ ПЕРЕОБЕЩАТЬ: planner owns global implementation resolution, not language meaning.` ,
+  m6: `ЗАЧЕМ: разрушить mental model structural path equals feasible compiler.
+
+СКАЗАТЬ: same nominal AIR type не доказывает, что IR typed, lowered or target legal. Shortcut may connect Semantic IR to AIR and reach CIL structurally, but it can still violate backend obligations.
+
+ПЕРЕХОД: значит architecture должна ставить admissibility before ranking.
+
+НЕ ПЕРЕОБЕЩАТЬ: не предлагать full dependent type system; нужны только composition-relevant properties.` ,
+  m7: `ЗАЧЕМ: главный architecture slide.
+
+СКАЗАТЬ: language selection derives hard obligations. Candidate implementations publish requires, ensures and conflicts. Feasibility rejects plans that fail hard constraints. Preference applies only after that. Cost, provider preference and deterministic tie-break are preference, not correctness.
+
+ПЕРЕХОД: результат global reasoning должен стать concrete data.
+
+НЕ ПЕРЕОБЕЩАТЬ: не говорить SAT/SMT, theorem prover or global optimizer.` ,
+  m8: `ЗАЧЕМ: сохранить сильную идею inspectable LanguagePlan без API tour.
+
+СКАЗАТЬ: concrete plan records selected implementations, ordering, backend, provenance and diagnostics. Current UT has LanguagePlan as data before source execution. This is good. But the target model is stronger about what makes a plan admissible.
+
+ПЕРЕХОД: когда plan materialized, можно показать freeze boundary.
+
+НЕ ПЕРЕОБЕЩАТЬ: PlanHash is not semantic proof or security attestation.` ,
+  m9: `ЗАЧЕМ: сохранить lifecycle story and remove semantic ownership bug.
+
+СКАЗАТЬ: during composition, architecture is still open. Planning produces a feasible concrete plan. Materialization binds exact runtime components. Run or Build then follows that plan; runtime does not redesign the whole language.
+
+ПЕРЕХОД: central case study shows why type-compatible shortcut is rejected.
+
+НЕ ПЕРЕОБЕЩАТЬ: no second whole-language planner does not mean no validation or no compile work.` ,
+  m10: `ЗАЧЕМ: заменить misleading Cost 7 to Cost 2 demo.
+
+СКАЗАТЬ: backend requires AIR plus NoHighLevelOps and CilLegal. Shortcut reaches AIR, so route-first thinking would call it candidate. But it fails hard obligation; reject it before preference. LegalizeForCIL establishes required properties; only then, if two legalizers are feasible, preference may choose.
+
+ПЕРЕХОД: now we can honestly explain current UT as prototype with limits.
+
+НЕ ПЕРЕОБЕЩАТЬ: do not claim current UT already has this whole-language property model.` ,
+  m11: `ЗАЧЕМ: explicitly separate current implementation, limitation and proposed model.
+
+СКАЗАТЬ: current UT proves staging: LanguageCompiler, LanguagePlan, deterministic structural route, selected passes, exact runtime materialization. Current limitation: route layer uses nominal artifact contracts and does not generally express semantic obligations like target legality. Proposed model: hard obligations then feasibility then preference.
+
+ПЕРЕХОД: this honesty leads to the price of extensibility.
+
+НЕ ПЕРЕОБЕЩАТЬ: do not sell UT as finished reference architecture.` ,
+  m12: `ЗАЧЕМ: сохранить честность про costs and evidence debt.
+
+СКАЗАТЬ: contracts, diagnostics, tests and startup/materialization are real costs. The important criterion: if invariant affects composition correctness, hiding it defeats the planner's purpose. Performance impact needs measurement.
+
+ПЕРЕХОД: strongest counterargument decides when not to use this architecture.
+
+НЕ ПЕРЕОБЕЩАТЬ: no numerical speed claim, no hot path claim without data.` ,
+  m13: `ЗАЧЕМ: make the talk defensible against LLVM/MLIR/DI questions.
+
+СКАЗАТЬ: explicit pipeline, builder, DI, pass manager and MLIR-style legalization are better when they already own the decision. Whole-language planner earns its cost only for expressed cross-owner hard constraints.
+
+ПЕРЕХОД: final rule compresses the boundary.
+
+НЕ ПЕРЕОБЕЩАТЬ: not a replacement for MLIR or LLVM.` ,
+  m14: `ЗАЧЕМ: leave one precise memory.
+
+СКАЗАТЬ: resolve globally only what correctness cannot own locally. Hard obligations cannot be traded away. Preference is allowed only among feasible plans. Final memory: Declare requirements locally. Resolve feasibility globally. Execute one concrete plan.
+
+ПЕРЕХОД: Q&A can go to current UT limitations and prior-art boundary.
+
+НЕ ПЕРЕОБЕЩАТЬ: do not broaden planner into universal architecture.` ,
+  a1: `Technical appendix: current UT structural route and proposed obligation-first planner boundary.`,
+  a2: `Technical appendix: mandatory vs optional is not source-target equality.`,
+  a3: `Technical appendix: selected contribution is not necessarily executed.`,
+  a4: `Technical appendix: nominal artifact identity is not enough semantic state.`,
+  a5: `Technical appendix: IR stage contracts already demonstrate requires/produces/preserves/invalidates locally.`,
+  a6: `Technical appendix: deterministic tie-break supports reproducibility, not semantic equivalence.`,
+  a7: `Technical appendix: planning and runtime performance claims need measurements.`,
+  a8: `Technical appendix: strongest objection and narrow justification for planner.`
 });
-
-function formatSpeakerNote(note) {
-  return String(note || '')
-    .replace(/\s+(?=(?:ЗАЧЕМ|СКАЗАТЬ|ПЕРЕХОД|ДЕТАЛЬ|НЕ ПЕРЕОБЕЩАТЬ):)/g, '\n\n')
-    .trim();
-}
-
-for (const key of Object.keys(window.SPEAKER_NOTES)) {
-  window.SPEAKER_NOTES[key] = formatSpeakerNote(window.SPEAKER_NOTES[key]);
-}
-
-for (const slide of document.querySelectorAll('.slide[data-note-key]')) {
-  slide.dataset.notes = window.SPEAKER_NOTES[slide.dataset.noteKey] || '';
-}

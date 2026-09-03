@@ -1,4 +1,4 @@
-const DECK_QA_CONTRACT = 'planning-core-v3';
+const DECK_QA_CONTRACT = 'obligations-core-v1';
 document.documentElement.dataset.deckQaContract = DECK_QA_CONTRACT;
 
 const presenterStyles = document.createElement('link');
