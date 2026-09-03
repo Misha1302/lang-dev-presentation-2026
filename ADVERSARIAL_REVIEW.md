@@ -58,7 +58,7 @@ The transformation-route example now satisfies all four better than the previous
 
 **Finding:** valid.
 
-**Correction in deck:** slide 2 opens with the handwritten baseline and slide 14 repeats the decision rule.
+**Correction in deck:** slide 2 opens with the handwritten baseline and slide 13 repeats the decision rule.
 The talk no longer treats direct wiring as primitive architecture that needs replacement.
 
 **Status:** PASS.
@@ -82,7 +82,7 @@ closure, provider ambiguity, cross-contribution ordering or artifact-route searc
 **Finding:** provider ambiguity alone was too DI-shaped for the main example.
 
 **Correction in deck:** provider ambiguity is demoted to secondary demo evidence. Slides 6–7 and the primary
-demo use typed artifact transformation routes, which are compiler composition decisions. Appendix retains
+demo use artifact-contract transformation routes, which are compiler composition decisions. Appendix retains
 the DI boundary.
 
 **Status:** PASS.
@@ -95,7 +95,7 @@ the DI boundary.
 extensions independently contribute edges and the final backend path depends on the selected language.
 
 **Correction in deck:** slide 6 begins from the fixed line and introduces one alternative edge only after
-independent ownership exists. Slide 14 explicitly says to choose a smaller mechanism otherwise.
+independent ownership exists. Slide 13 explicitly says to choose a smaller mechanism otherwise.
 
 **Status:** PASS.
 
@@ -119,7 +119,7 @@ thinking it predicts speed.
 **Finding:** valid.
 
 **Correction in deck:** slide 7 says Cost is a declared planning weight, slide 10 repeats that lower demo
-Cost is not measured speed, and slide 13 keeps all performance impact under `NEEDS MEASUREMENT`.
+Cost is not measured speed, and slide 12 keeps all performance impact under `NEEDS MEASUREMENT`.
 No numerical benchmark claim exists.
 
 **Status:** PASS.
@@ -171,7 +171,7 @@ Slide 5 also shows the canonical configuration flow instead of a glossary dump.
 **Attack:** planner architecture plus CSE/SSA/intrinsics becomes two unrelated presentations.
 
 **Finding:** previous repository documents still contained stale “Resolve globally. Justify locally” framing,
-even though the main 15-slide deck had already removed most of that material.
+even though the main 14-slide deck had already removed most of that material.
 
 **Correction in deck/docs:** main narrative remains planning-only. CSE, semantic descriptors, IR-stage
 contracts and e-graph material remain appendix/Q&A. `CLAIM_BOUNDARIES_40_QA.md` and this review are rewritten
@@ -188,6 +188,12 @@ A structurally compatible edge can still be semantically wrong.
 **Mitigation:** slide 7 visibly separates structural guarantee from semantic non-guarantees. No claim that
 planner proves route equivalence.
 
+### Staged route feasibility
+
+The current route phase is not a global conversion+pass optimizer: it chooses a minimum-cost conversion skeleton first and inserts selected passes afterwards. A pass that fits only a more expensive skeleton can therefore cause `UTL2204` rather than route backtracking.
+
+**Mitigation:** slide 7 exposes the staged order, appendix A5 names the limitation, and the talk never claims SAT/SMT-style or globally optimal planning.
+
 ### Distributed contract-system failure mode
 
 A planner can make the system harder to understand if contracts fail to encode the assumptions that matter.
@@ -198,8 +204,7 @@ A planner can make the system harder to understand if contracts fail to encode t
 
 “Planning once” can accidentally imply “source compiled once.”
 
-**Mitigation:** slide 9 separates planning/materialization/source build/execution; slides 11–12 separately
-show environment reuse and compiled-program reuse.
+**Mitigation:** slide 9 separates planning/materialization/source build/execution; slide 11 shows both environment reuse and compiled-program reuse, including the `Evaluate` boundary, without a separate API-tour slide.
 
 ### Configuration authority split
 
@@ -223,15 +228,14 @@ and `Summary`; demo prints exact route choices. No invented ExplainPlan subsyste
 4. **Threshold:** coupling, not option count, creates planning.
 5. **Ownership:** local facts, one global planner, one semantic config model.
 6. **Compiler failure case:** transformations form a graph.
-7. **Selection:** planner searches selected typed edges by declared cost.
+7. **Selection:** route search is automatic but staged and contract-based, not a global semantic optimizer.
 8. **Answer:** LanguageDefinition -> LanguagePlan; LanguageCompiler is not source compilation.
 9. **Lifecycle:** planning/materialization happen before source build/execution.
 10. **Proof:** enabling an extension changes the resolved route.
-11. **Boundary A/B:** environment reuse is not program reuse.
-12. **Evaluate:** source request still does work; Compile creates durable program reuse.
-13. **Price:** extensibility costs contracts, coordination, testing and runtime work.
-14. **Counterargument:** use the smallest mechanism; planner can be the bigger problem.
-15. **Rule:** Declare locally. Resolve globally. Execute concretely.
+11. **Reuse boundaries:** environment reuse is not program reuse; Evaluate is not compile-once/execute-many.
+12. **Price:** extensibility costs contracts, coordination, testing and runtime work.
+13. **Counterargument:** use the smallest mechanism; planner can be the bigger problem.
+14. **Rule:** Declare locally. Resolve globally. Execute concretely.
 
 ## Remaining evidence debt
 

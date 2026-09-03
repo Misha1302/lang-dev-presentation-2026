@@ -16,6 +16,7 @@ demo_doc = (root / "DEMO.md").read_text(encoding="utf-8")
 claims = (root / "claims.md").read_text(encoding="utf-8")
 readme = (root / "README.md").read_text(encoding="utf-8")
 adversarial = (root / "ADVERSARIAL_REVIEW.md").read_text(encoding="utf-8")
+audit = (root / "REDESIGN_AUDIT_2026-09-03.md").read_text(encoding="utf-8")
 qa = (root / "CLAIM_BOUNDARIES_40_QA.md").read_text(encoding="utf-8")
 
 m1 = re.search(r"window\.SPEAKER_NOTES=(\{.*?\});\n", js1, re.S)
@@ -64,7 +65,7 @@ parser = SlideParser()
 parser.feed(html)
 main = [slide for slide in parser.slides if slide[0].get("data-kind") != "appendix"]
 appendix = [slide for slide in parser.slides if slide[0].get("data-kind") == "appendix"]
-assert len(main) == 15, f"expected 15 main slides, got {len(main)}"
+assert len(main) == 14, f"expected 14 main slides, got {len(main)}"
 assert len(appendix) == 10, f"expected 10 appendix slides, got {len(appendix)}"
 
 all_keys = []
@@ -77,7 +78,7 @@ for n, (attrs, _) in enumerate(parser.slides, 1):
     assert len(notes_by_key[key]) > 120, f"speaker note {key} looks truncated"
 
 assert [slide[0].get("data-note-key") for slide in main] == [
-    f"m{i}" for i in range(1, 16)
+    f"m{i}" for i in range(1, 15)
 ]
 assert [slide[0].get("data-note-key") for slide in appendix] == [
     f"a{i}" for i in range(1, 11)
@@ -100,7 +101,7 @@ assert words >= 1500, f"live speaker cues look truncated: {words} words"
 full = re.sub(
     r"\s+",
     " ",
-    " ".join([html, js2, js3, claims, readme, adversarial, qa]),
+    " ".join([html, js2, js3, claims, readme, adversarial, audit, qa]),
 )
 
 required = [
@@ -114,7 +115,10 @@ required = [
     "LanguageDefinition",
     "One canonical semantic configuration model. One planning authority.",
     "Local transformations turn one pipeline into a",
-    "automatic route search over the already-selected contribution graph",
+    "automatic route search over already-selected conversion edges",
+    "artifact-contract-compatible conversion graph",
+    "global optimum across conversions + passes",
+    "conversion skeleton first",
     "Cost is a planning weight, not measured runtime latency",
     "not source code",
     "AUTHORING",
