@@ -43,6 +43,14 @@ jobs:
           grep -Fq "[pricing:cil] result=95" demo-source-output.txt
           grep -Fq "[parity] external bindings + local shadowing" demo-source-output.txt
           grep -Fq "[parity] shadowing regression PASS" demo-source-output.txt
+      - name: Re-run conference demo without build or restore
+        run: |
+          DEMO_NO_BUILD=1 ./demo/run-demo.sh "$GITHUB_WORKSPACE/_deps/UniversalToolchain" | tee demo-stage-output.txt
+          grep -Fq "[language] pricing-restricted dialect" demo-stage-output.txt
+          grep -Fq "[pricing:interpreter] result=95" demo-stage-output.txt
+          grep -Fq "[pricing:cil] result=95" demo-stage-output.txt
+          grep -Fq "[parity] external bindings + local shadowing" demo-stage-output.txt
+          grep -Fq "[parity] shadowing regression PASS" demo-stage-output.txt
       - name: Render-check all slides at conference viewports
         run: python3 scripts/check_render.py
       - name: Re-open deployed GitHub Pages in Chromium
@@ -59,4 +67,5 @@ jobs:
             render-artifacts/*.png
             production-artifacts/*.png
             demo-source-output.txt
+            demo-stage-output.txt
           if-no-files-found: ignore
