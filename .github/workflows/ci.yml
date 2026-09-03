@@ -35,15 +35,14 @@ jobs:
           repository: Misha1302/UniversalToolchain
           ref: 7005371d6c30175dff4b0e9f906a26218b0ee54d
           path: _deps/UniversalToolchain
-      - name: Run canonical source-backed planner/runtime demo
+      - name: Run canonical pricing and cross-backend parity demo
         run: |
           ./demo/run-demo.sh "$GITHUB_WORKSPACE/_deps/UniversalToolchain" | tee demo-source-output.txt
-          grep -Fq "[planning] UTL2002:" demo-source-output.txt
-          grep -Fq "[planning] preferred provider: demo.provider.a" demo-source-output.txt
-          grep -Fq "[route:base] cost=7 | demo.parse -> demo.lower.safe" demo-source-output.txt
-          grep -Fq "[route:+fast-path] cost=2 | demo.parse -> demo.lower.fast" demo-source-output.txt
-          grep -Fq "[route] Cost is declared planning weight, not measured runtime latency." demo-source-output.txt
-          grep -Fq "[runtime] input=41 output=42" demo-source-output.txt
+          grep -Fq "[language] pricing-restricted dialect" demo-source-output.txt
+          grep -Fq "[pricing:interpreter] result=95" demo-source-output.txt
+          grep -Fq "[pricing:cil] result=95" demo-source-output.txt
+          grep -Fq "[parity] external bindings + local shadowing" demo-source-output.txt
+          grep -Fq "[parity] shadowing regression PASS" demo-source-output.txt
       - name: Render-check all slides at conference viewports
         run: python3 scripts/check_render.py
       - name: Re-open deployed GitHub Pages in Chromium
