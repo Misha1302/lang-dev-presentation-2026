@@ -119,7 +119,7 @@ required = [
     "artifact-contract-compatible conversion graph",
     "global optimum across conversions + passes",
     "conversion skeleton first",
-    "Cost is a planning weight, not measured runtime latency",
+    "Current order: conversion skeleton first → selected passes second. Cost ≠ runtime latency.",
     "not source code",
     "AUTHORING",
     "MATERIALIZATION",
