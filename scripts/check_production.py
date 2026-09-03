@@ -17,8 +17,8 @@ if ARTIFACTS.exists():
 ARTIFACTS.mkdir()
 
 PRODUCTION = "https://misha1302.github.io/lang-dev-presentation-2026/"
-MARKER = "obligations-core-v1"
-THESIS = "Declare requirements locally. Resolve feasibility globally. Execute one concrete plan."
+MARKER = "semantic-composition-v1"
+THESIS = "Make representations concrete"
 sha = os.environ.get("GITHUB_SHA", "unknown")
 
 browser = next((name for name in [
@@ -37,7 +37,7 @@ while time.time() < deadline:
             body = response.read().decode("utf-8")
         if MARKER in body:
             break
-        last_error = "obligations-core release marker not present yet"
+        last_error = "semantic-composition release marker not present yet"
     except Exception as exc:
         last_error = str(exc)
     time.sleep(5)
@@ -70,13 +70,13 @@ else:
             detail = nav_result.stdout[start:end]
         failures.append(f"production navigation: {detail}")
     if THESIS not in nav_result.stdout:
-        failures.append("production thesis: obligations-core anchor missing from live DOM")
-    if 'data-deck-qa-contract="obligations-core-v1"' not in nav_result.stdout:
-        failures.append("production marker: DOM contract is not obligations-core-v1")
+        failures.append("production thesis: semantic-composition anchor missing from live DOM")
+    if 'data-deck-qa-contract="semantic-composition-v1"' not in nav_result.stdout:
+        failures.append("production marker: DOM contract is not semantic-composition-v1")
 
 representative = [
-    "#1", "#4", "#5", "#6", "#7", "#8", "#9", "#10", "#11", "#12", "#13", "#14",
-    "#a1", "#a5", "#a7", "#a8",
+    "#1", "#3", "#5", "#7", "#10", "#13", "#16", "#19", "#21", "#23", "#27",
+    "#a1", "#a3", "#a4", "#a5",
 ]
 for target in representative:
     url = f"{PRODUCTION}?visual-check=1&qa={quote(sha)}{target}"
