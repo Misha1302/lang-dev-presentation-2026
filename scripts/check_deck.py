@@ -9,6 +9,10 @@ notes = (ROOT / "speaker-notes-hardening.js").read_text(encoding="utf-8")
 css = (ROOT / "styles.css").read_text(encoding="utf-8")
 deck_js = (ROOT / "deck.js").read_text(encoding="utf-8")
 qa = (ROOT / "CLAIM_BOUNDARIES_40_QA.md").read_text(encoding="utf-8")
+readme = (ROOT / "README.md").read_text(encoding="utf-8")
+demo = (ROOT / "DEMO.md").read_text(encoding="utf-8")
+demo_script = (ROOT / "demo" / "run-demo.sh").read_text(encoding="utf-8")
+
 
 class SlideParser(HTMLParser):
     def __init__(self):
@@ -43,80 +47,102 @@ class SlideParser(HTMLParser):
         if self._in:
             self._buf.append(data)
 
+
 parser = SlideParser()
 parser.feed(html)
 main = [s for s in parser.slides if s[0].get("data-kind") != "appendix"]
 appendix = [s for s in parser.slides if s[0].get("data-kind") == "appendix"]
+
 assert len(main) == 14, f"expected 14 main slides, got {len(main)}"
 assert len(appendix) == 8, f"expected 8 appendix slides, got {len(appendix)}"
 assert [s[0].get("data-note-key") for s in main] == [f"m{i}" for i in range(1, 15)]
 assert [s[0].get("data-note-key") for s in appendix] == [f"a{i}" for i in range(1, 9)]
 
 expected_titles = [
-    "When Extensibility Becomes Planning",
+    "Build the Language, Then Make the Abstractions Disappear",
     "If one owner knows the compiler, wire it explicitly",
-    "Independent extensions create requirements across compiler stages",
-    "Planning begins when no local owner can guarantee a valid whole compiler",
-    "Language authors define requirements; implementations declare what they satisfy",
-    "A reachable pipeline is not necessarily an admissible compiler",
+    "Start with a restricted pricing language",
+    "The extensions disappear into one execution pipeline",
+    "One language must not silently become two",
+    "Who owns the fact that the whole compiler still implements one language?",
+    "UniversalToolchain already separates composition from execution",
+    "Structural routing can make a preference decision before semantic feasibility is known",
     "Feasibility before preference",
-    "Planning materializes one inspectable concrete compiler plan",
+    "Keep current evidence separate from the stronger target model",
     "Open during composition; concrete during execution",
-    "A type-compatible shortcut can still be illegal",
-    "UniversalToolchain proves the staging — and exposes the current limits",
-    "Extensibility still has a price",
+    "Making composition disappear before execution does not make extensibility free",
     "Sometimes the planner is the bigger problem",
     "Resolve globally only what correctness cannot own locally",
 ]
 for i, title in enumerate(expected_titles):
     assert title in main[i][1], f"slide {i + 1} missing expected title: {title}"
 
-assert 'data-deck-qa-contract="obligations-core-v1"' in html
-assert "obligations-core-v1" in deck_js
+assert 'data-deck-qa-contract="concrete-first-obligations-v2"' in html
+assert "concrete-first-obligations-v2" in deck_js, "deck.js QA contract must match index.html"
 
+combined = "\n".join([html, notes, readme, demo, qa])
 required = [
-    "Declare requirements locally. Resolve feasibility globally. Execute one concrete plan.",
-    "Hard obligations define admissibility. Preference only chooses among admissible compiler plans.",
-    "Planner owns global implementation resolution — not the meaning of the language.",
-    "Artifact identity and semantic state are orthogonal dimensions.",
-    "Green means feasible — not cheaper.",
+    "pricing-restricted",
+    "Bytecode",
+    "AIR",
+    "InterpreterBindingsParityTests",
+    "external bindings",
+    "local shadowing",
     "CURRENT UT",
-    "CURRENT LIMITATION",
-    "PROPOSED GENERAL MODEL",
-    "UT is a useful prototype of staged composition, not the reference architecture.",
-    "Performance impact: NEEDS MEASUREMENT.",
-    "whole-language planner → cross-owner hard constraints",
+    "PROPOSED MODEL",
+    "FindBestRoute",
+    "InsertPasses",
+    "UTL2204",
+    "Feasibility before preference",
+    "Resolve globally only what correctness cannot own locally",
     "7005371d6c30175dff4b0e9f906a26218b0ee54d",
 ]
-combined = html + "\n" + notes + "\n" + qa
 missing = [item for item in required if item not in combined]
-assert not missing, f"missing architecture/narrative anchors: {missing}"
+assert not missing, f"missing narrative/evidence anchors: {missing}"
 
+# The main deck must not teach the old synthetic route-cost demo as the proof.
+main_text = "\n".join(text for _, text in main)
 for forbidden in [
-    "Planning chooses the language",
-    "Changing language composition changes the resolved route",
     "route Cost = 2",
     "route Cost = 7",
-    "Lower Cost means planner preference",
-    "Extensibility becomes planning when choices stop being independent.",
+    "demo.lower.fast",
+    "demo.lower.safe",
+    "Changing language composition changes the resolved route",
 ]:
-    assert forbidden not in combined, f"stale mental model remains: {forbidden}"
+    assert forbidden not in main_text, f"stale central proof remains: {forbidden}"
 
-# The central case-study slide must not visually/textually teach Cost ranking.
-assert "Cost" not in main[9][1], "slide 10 must not use Cost as its proof"
-for anchor in ["NoHighLevelOps", "CilLegal", "reject candidate", "rank only after feasible"]:
-    assert anchor in main[9][1], f"slide 10 missing legalization anchor: {anchor}"
+# Current/proposed boundaries must be explicit before the general model can be mistaken for current UT.
+assert "CURRENT UT" in main[7][1], "slide 8 must label current UT limitation"
+assert "PROPOSED MODEL" in main[8][1], "slide 9 must label proposed general model"
+assert "CURRENT LanguagePlan" in main[9][1]
+assert "PROPOSED planner evidence" in main[9][1]
 
-for label in ["CURRENT UT", "CURRENT LIMITATION", "PROPOSED GENERAL MODEL"]:
-    assert label in main[10][1], f"slide 11 missing boundary label: {label}"
+# Practical abstract-alignment anchors must appear before the architecture generalization.
+for anchor in ["pricing-restricted", "interpreter", "cil"]:
+    assert anchor in main[2][1], f"slide 3 missing concrete language anchor: {anchor}"
+for anchor in ["BYTECODE", "AIR", "INTERPRETER / CIL"]:
+    assert anchor in main[3][1], f"slide 4 missing Wist pipeline anchor: {anchor}"
+for anchor in ["external", "shadows", "cross-backend parity"]:
+    assert anchor in main[4][1], f"slide 5 missing parity anchor: {anchor}"
 
-# Every live main note must preserve the causal presenter structure.
+# Demo/runbook must prove pricing + parity rather than synthetic route preference.
+for anchor in [
+    "pricing-restricted",
+    "[pricing:interpreter] result=95",
+    "[pricing:cil] result=95",
+    "ShadowingAndNestedScope_WithLocalNamesOverlappingExternals_ShouldBeDeterministicAndParityStable",
+    "[parity] shadowing regression PASS",
+]:
+    assert anchor in demo_script, f"demo script missing source-backed anchor: {anchor}"
+assert "route Cost 7 → route Cost 2" in demo, "runbook should explain why old proof was demoted"
+
+# Every live main note preserves the causal presenter structure.
 for n in range(1, 15):
     assert re.search(rf"\bm{n}\s*:\s*`", notes), f"speaker note m{n} missing"
 for marker in ["ЗАЧЕМ:", "СКАЗАТЬ:", "ПЕРЕХОД:", "НЕ ПЕРЕОБЕЩАТЬ:"]:
     assert notes.count(marker) >= 14, f"main notes missing enough {marker} sections"
 
-for primitive in [".broken", ".good", ".architecture", ".casegrid", ".decisionrule"]:
+for primitive in [".broken", ".good", ".timeline", ".comparecards", ".decisionrule"]:
     assert primitive in css, f"missing visual primitive: {primitive}"
 
 assert qa.count("\n## ") == 40, f"expected 40 hostile Q&A items, got {qa.count(chr(10) + '## ')}"
@@ -129,6 +155,6 @@ for q in [
     assert q in qa, f"hostile Q&A missing: {q}"
 
 print(
-    "Deck contract PASS: 14 main + 8 appendix; obligation-first narrative; "
-    "legalization case; CURRENT/LIMITATION/PROPOSED boundary; 40 hostile Q&A"
+    "Deck contract PASS: 14 main + 8 appendix; concrete pricing/Wist/parity proof precedes "
+    "current-UT limitation and proposed obligation-first architecture"
 )
