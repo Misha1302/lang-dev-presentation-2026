@@ -26,6 +26,10 @@ else
   fi
 fi
 
+# UniversalToolchain/NuGet.config declares a repository-local packages feed.
+# The upstream CI provisions the directory even when the feed is empty.
+mkdir -p "$ROOT/UniversalToolchain/packages"
+
 WISTC="$ROOT/UniversalToolchain/Wistc/Wistc.csproj"
 DIALECT="$ROOT/UniversalToolchain/Dialects/examples/wist/pricing-restricted/dialect.wistdialect"
 PROGRAM="$ROOT/UniversalToolchain/Dialects/examples/wist/pricing-restricted/program.wist"
