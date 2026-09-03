@@ -3,9 +3,8 @@ set -euo pipefail
 
 EXPECTED_UT_SHA="7005371d6c30175dff4b0e9f906a26218b0ee54d"
 ROOT="${1:-${UNIVERSAL_TOOLCHAIN_ROOT:-}}"
-PROJECT="$(cd "$(dirname "$0")" && pwd)/UniversalToolchainDemo.csproj"
 
-if [[ -z "$ROOT" || ! -d "$ROOT/UniversalToolchain/UniversalToolchain.LanguageSdk" ]]; then
+if [[ -z "$ROOT" || ! -d "$ROOT/UniversalToolchain/Wistc" ]]; then
   echo "ERROR: pass the UniversalToolchain checkout root as argv[1] or UNIVERSAL_TOOLCHAIN_ROOT." >&2
   exit 2
 fi
@@ -27,9 +26,30 @@ else
   fi
 fi
 
-ARGS=(run --project "$PROJECT" -p:UniversalToolchainRoot="$ROOT")
-if [[ "${DEMO_NO_BUILD:-0}" == "1" ]]; then
-  ARGS=(run --no-build --no-restore --project "$PROJECT" -p:UniversalToolchainRoot="$ROOT")
-fi
+WISTC="$ROOT/UniversalToolchain/Wistc/Wistc.csproj"
+DIALECT="$ROOT/UniversalToolchain/Dialects/examples/wist/pricing-restricted/dialect.wistdialect"
+PROGRAM="$ROOT/UniversalToolchain/Dialects/examples/wist/pricing-restricted/program.wist"
+TESTS="$ROOT/UniversalToolchain/Tests/Tests.csproj"
+TEST_FILTER='FullyQualifiedName~Tests.Backends.InterpreterBindingsParityTests.ShadowingAndNestedScope_WithLocalNamesOverlappingExternals_ShouldBeDeterministicAndParityStable'
 
-dotnet "${ARGS[@]}"
+printf '%s\n' '[language] pricing-restricted dialect'
+dotnet run --project "$WISTC" -- dialect-inspect --file "$DIALECT"
+
+run_backend() {
+  local backend="$1"
+  local output
+  output="$(dotnet run --project "$WISTC" -- run --dialect-file "$DIALECT" --file "$PROGRAM" --backend "$backend")"
+  printf '%s\n' "$output"
+  if ! grep -Eq '(^|[^0-9])95([.]0+)?([^0-9]|$)' <<<"$output"; then
+    echo "ERROR: backend '$backend' did not expose expected pricing result 95." >&2
+    exit 4
+  fi
+  printf '[pricing:%s] result=95\n' "$backend"
+}
+
+run_backend interpreter
+run_backend cil
+
+printf '%s\n' '[parity] external bindings + local shadowing'
+dotnet test "$TESTS" --filter "$TEST_FILTER" --no-restore --verbosity minimal
+printf '%s\n' '[parity] shadowing regression PASS'
