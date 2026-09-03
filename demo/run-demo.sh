@@ -51,5 +51,5 @@ run_backend interpreter
 run_backend cil
 
 printf '%s\n' '[parity] external bindings + local shadowing'
-dotnet test "$TESTS" --filter "$TEST_FILTER" --no-restore --verbosity minimal
+dotnet test "$TESTS" --filter "$TEST_FILTER" --verbosity minimal
 printf '%s\n' '[parity] shadowing regression PASS'
