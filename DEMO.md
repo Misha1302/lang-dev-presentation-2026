@@ -79,7 +79,7 @@ when an independently authored feature added another conversion edge. That is va
 
 ## Preflight
 
-Use the exact pinned UniversalToolchain checkout:
+Use the exact pinned UniversalToolchain checkout and run one full build/restore-backed pass:
 
 ```bash
 git -C /path/to/UniversalToolchain checkout 7005371d6c30175dff4b0e9f906a26218b0ee54d
@@ -88,7 +88,17 @@ git -C /path/to/UniversalToolchain checkout 7005371d6c30175dff4b0e9f906a26218b0e
 
 The script verifies the UniversalToolchain commit before execution and fails closed on source drift. Set `DEMO_ALLOW_SOURCE_DRIFT=1` only for deliberate local investigation, never for conference evidence.
 
-After a successful preflight, keep the checkout and .NET build outputs locally available. The conference path should not depend on network access.
+After a successful preflight, keep the checkout and .NET build outputs locally available.
+
+## Conference command — no build / no restore
+
+For the actual stage run, use the already-built outputs:
+
+```bash
+DEMO_NO_BUILD=1 ./demo/run-demo.sh /path/to/UniversalToolchain
+```
+
+In this mode every `dotnet run` / targeted `dotnet test` invocation uses `--no-build --no-restore`. That keeps the live proof independent of package feeds and network availability after the preflight has succeeded.
 
 ## Live sequence
 
