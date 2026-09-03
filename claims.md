@@ -28,7 +28,7 @@ Claims are classified as **CURRENT IMPLEMENTATION**, **PROPOSED / INTENDED DESIG
 
 Truth boundaries:
 
-- structural/type compatibility **does not imply** semantic equivalence;
+- structural/artifact-contract compatibility **does not imply** semantic equivalence;
 - deterministic selection **does not imply** semantic correctness;
 - route `Cost` is a planning weight **not** measured execution latency;
 - the planner does not search unselected packages/features as if every registered transformation were active.
@@ -99,6 +99,21 @@ and bounded symbolic simplification. They remain supporting evidence, not a seco
 
 PlanFuzz-related projects also exist in current UniversalToolchain; do not describe PlanFuzz as nonexistent.
 Its scope is auxiliary testing evidence, not a main-talk guarantee.
+
+## CURRENT IMPLEMENTATION — bounded planner mechanics
+
+The research findings that matter for talk truthfulness are re-checked against the pinned source:
+
+| Finding | Status | Current truth |
+| --- | --- | --- |
+| F-01 · route/pass feasibility | `CONFIRMED_CURRENT_IMPLEMENTATION` | `FindBestRoute(...)` chooses the minimum declared-cost conversion skeleton first; `InsertPasses(...)` runs afterwards. An unplaceable selected pass produces `UTL2204`; the phase does not retry a more expensive pass-feasible conversion skeleton. |
+| F-02 · `ReplaceSlot` vs dependency closure | `CONFIRMED_CURRENT_IMPLEMENTATION` | contribution/capability dependency traversal happens before `ApplySlotPolicies(...)`; current composition is staged, not a provenance-aware global solve. |
+| F-03 · mandatory contract-changing semantics | `CONFIRMED_CURRENT_IMPLEMENTATION` model boundary | contract-changing transformations are candidate conversions; the explicit mandatory mechanism in this route phase is selected same-contract passes. There is no separate “mandatory contract-changing transformation” planner primitive. |
+| F-04 · artifact identity vs CLR type | `CONFIRMED_CURRENT_IMPLEMENTATION` model boundary | connectivity compares artifact `Kind` + stable `ValueTypeIdentity`. Default `LanguageArtifactKind<T>` derives that identity from `T`, but an explicit identity can be supplied; the string identity is not itself a runtime CLR-type proof. |
+| F-05 · backend/runtime input mismatch | `CONFIRMED_CURRENT_IMPLEMENTATION` error-surface boundary | `LanguagePlanVerifier` checks a backend input against the runtime-provider input and can throw `LanguagePlanVerificationException`; not every invalid composition is normalized into a `LanguageBuildResult` diagnostic. |
+| F-06 · route cost model | `CONFIRMED_CURRENT_IMPLEMENTATION` heuristic | edge and route cost use `int`; candidate sums are ordinary integer addition and equal sums use contribution-signature tie breaking. This is planner policy, not a benchmark metric or general optimization objective. |
+
+A future planner that jointly searches conversion feasibility, mandatory transformations and broader constraints is `FUTURE_DESIGN`, not a current guarantee. No such future solver is required for the thesis of this talk.
 
 ## NEEDS MEASUREMENT
 

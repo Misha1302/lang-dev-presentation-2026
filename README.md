@@ -56,19 +56,16 @@ implementation -> tests -> executable behavior -> architecture docs -> README/co
 
 ## Chosen narrative
 
-Four candidate framings were reconsidered:
+Four materially different framings were re-evaluated against the current implementation:
 
-- problem -> extensibility cost -> planner;
-- progressively build a compiler until manual composition breaks;
-- fixed pipeline -> configurable pipeline -> transformation graph -> planner;
-- extensibility is a coordination problem.
+| Narrative | Strength | Failure mode | Decision |
+| --- | --- | --- | --- |
+| **Extensibility without runtime chaos** | memorable staging / hot-path question | easily turns a design principle into an unmeasured performance claim | reject as the spine |
+| **From fixed pipelines to composable languages** | compiler-native and visual | can become a taxonomy of pipeline mechanisms | keep as visual progression |
+| **Local declarations -> one executable plan** | closest to the actual ownership model | introduces `LanguagePlan` too early and feels framework-first | use as the mental model after motivation |
+| **When choices stop being independent, extensibility becomes planning** | gives a precise causal threshold and a strong handwritten baseline | needs a concrete compiler-shaped graph to avoid sounding generic | **chosen thesis** |
 
-The final deck is a hybrid of the strongest two:
-
-> **Fixed pipeline -> choices -> transformation graph -> global planning**, framed by
-> **extensibility is a coordination problem**.
-
-UniversalToolchain remains the case study, not the premise of the talk.
+The final story therefore uses the fixed-pipeline -> choices -> transformation-graph progression as its visual spine, while the transferable thesis is **choices stop being independent -> global planning becomes a real responsibility**. UniversalToolchain remains the case study, not the premise.
 
 ## Main narrative
 
@@ -96,8 +93,7 @@ LanguageRuntime materializes exactly that plan
 source requests follow the selected route
 ```
 
-The main deck remains **15 slides**. CSE, semantic descriptors, SSA contracts, e-graph details and related
-compiler mechanisms stay in appendix/Q&A rather than becoming a second narrative.
+The main deck is now **14 slides**. The former standalone `Evaluate(code)` API-boundary slide was merged into the two-reuse-boundaries slide: the distinction is still explicit, but no longer costs a separate mental model. CSE, semantic descriptors, SSA contracts, e-graph details and related compiler mechanisms stay in appendix/Q&A rather than becoming a second narrative.
 
 ## Ownership model
 
@@ -127,7 +123,7 @@ C# builder ───┴→ LanguageDefinition → LanguageCompiler → LanguageP
 Current `LanguageArtifactRoutePhase`:
 
 1. starts from transformations belonging to selected contributions for a backend;
-2. searches the type-compatible conversion graph;
+2. searches the artifact-contract-compatible conversion graph;
 3. chooses minimum sum of declared transformation `Cost`;
 4. resolves equal-cost alternatives deterministically;
 5. inserts selected passes where their artifact contracts fit;
@@ -139,6 +135,8 @@ Truth boundaries:
 - structural/type compatibility **≠** semantic equivalence;
 - route `Cost` **≠** runtime latency;
 - `PlanHash` **≠** correctness/security proof.
+
+Current route planning is deliberately narrower than a general constraint optimizer: it first chooses the minimum declared-cost conversion skeleton and only then inserts selected same-contract passes. If a selected pass cannot be placed, current planning reports `UTL2204`; it does not backtrack to a more expensive conversion skeleton that might make that pass feasible. Route compatibility is based on explicit artifact contract identity, not a proof of arbitrary semantic or CLR-type equivalence.
 
 ## Demo
 
@@ -209,14 +207,13 @@ artifact is bound into this deck.
 
 `scripts/timing_audit.py` targets:
 
-- main talk: about **20:00**;
+- main talk: about **19:05**;
 - source-backed demo: **1:50** inside that budget;
 - interaction allowance: **0:20** inside that budget;
-- at least **3:00** buffer before the 25:00 content hard stop;
+- about **5:55** buffer before the 25:00 content hard stop;
 - Q&A: **5:00** separate window.
 
-If behind schedule, shorten examples on slides 3, 5 and 14. Do not cut the graph/route proof (6–7),
-plan/runtime boundary (8–9), route-changing demo (10), staging boundaries (11–12), or final anchor (15).
+For a ~20% shorter slot, skip the detailed reuse-boundary slide 11 and the standalone cost slide 12 (their essential caveats are already present in slides 9 and 13), and run the demo in its ~65 s fallback form. Keep the graph/route proof (6–7), plan/runtime boundary (8–9), route-changing demo (10) and final anchor (14).
 
 ## Run the deck locally
 

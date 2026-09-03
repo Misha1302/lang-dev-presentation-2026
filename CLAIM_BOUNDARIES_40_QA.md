@@ -53,7 +53,7 @@ resolves interacting choices into one inspectable `LanguagePlan` that a runtime 
 
 ## 7. Who is the framework author?
 
-Conceptually, the owner of the composition protocol: typed artifact contracts, IDs, feature/contribution
+Conceptually, the owner of the composition protocol: explicit artifact contracts, IDs, feature/contribution
 descriptors, planning rules, diagnostics and runtime/materialization contracts.
 
 ## 8. Who is the package / extension author?
@@ -120,7 +120,7 @@ different hidden resolution rules and split ownership of global composition.
 ## 20. What is LanguageCompiler, despite its name?
 
 **CURRENT:** the single public semantic planner for language definitions. `Compile(LanguageDefinition)`
-returns diagnostics or a `LanguagePlan`. It does not compile the user's source program.
+returns diagnostics or a `LanguagePlan`. It does not compile the user's source program. Most planning failures are diagnostics, but not every invalid composition is normalized that way: `LanguagePlanVerifier` can throw `LanguagePlanVerificationException` for violated plan invariants such as a backend/runtime input-contract mismatch.
 
 ## 21. What is LanguagePlan?
 
@@ -149,13 +149,11 @@ contract (or compatible runtime-provider input when needed).
 
 ## 26. How is a route chosen?
 
-Current algorithm accumulates transformation `Cost`, chooses the minimum-cost reachable structural path, and
-uses deterministic contribution-signature ordering for equal-cost alternatives.
+Current algorithm accumulates transformation `Cost`, chooses the minimum-cost reachable artifact-contract-compatible **conversion skeleton**, and uses deterministic contribution-signature ordering for equal-cost alternatives. It then inserts selected passes; this is staged selection, not one global optimization over conversion and pass feasibility.
 
 ## 27. What does route Cost mean?
 
-A **declared planning weight** in the protocol. It lets the planner prefer one structurally valid candidate
-over another according to authored policy.
+A **declared integer planning weight** in the protocol. It lets the planner prefer one contract-compatible conversion candidate over another according to authored policy. Current code uses `int` costs and ordinary addition; treat this as a local heuristic/protocol value, not a durable general objective function.
 
 ## 28. What does route Cost not mean?
 
@@ -164,14 +162,11 @@ prediction. “Lower Cost” does not justify “faster runtime.”
 
 ## 29. What happens with selected passes?
 
-After the base conversion route is found, current planner inserts selected pass transformations where their
-source/target contract connects to the current artifact. Ordering uses pass `Order` plus `Before`/`After`
-constraints; cycles can fail planning.
+After the base conversion route is found, current planner inserts selected same-contract pass transformations where their source/target contract connects to the current artifact. Ordering uses pass `Order` plus `Before`/`After` constraints; cycles can fail planning. If a selected pass cannot be placed, current code reports `UTL2204`; it does **not** retry a more expensive conversion skeleton that might make the pass feasible.
 
 ## 30. Does structural route compatibility prove semantic equivalence?
 
-No. Matching artifact kind/value-type contracts prove only structural connectivity expressed by the protocol.
-Two structurally compatible routes can still implement different semantics.
+No. Current connectivity compares artifact `Kind` plus stable `ValueTypeIdentity`. Default `LanguageArtifactKind<T>` identities are derived from `T`, but authors can provide an explicit contract identity, so connectivity is a protocol-level identity check rather than a runtime proof that arbitrary CLR types or semantics are equivalent. Two connected routes can still implement different semantics.
 
 ## 31. Does deterministic route selection prove correctness?
 

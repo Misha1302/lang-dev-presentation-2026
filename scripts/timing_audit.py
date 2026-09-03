@@ -7,15 +7,14 @@ SLIDE_SECONDS = [
     80,  # 4 coupling threshold
     75,  # 5 ownership + canonical configuration model
     85,  # 6 pipeline becomes a transformation graph
-    100, # 7 automatic route search + truth boundaries
+    110, # 7 automatic route search + staged-algorithm truth boundaries
     75,  # 8 LanguageCompiler naming + immutable LanguagePlan
     75,  # 9 authoring/planning/materialization/source-build lifecycle
     110, # 10 source-backed route-changing demo
-    85,  # 11 two once boundaries
-    80,  # 12 Evaluate vs Compile boundary
-    85,  # 13 full extensibility cost / measurement boundary
-    95,  # 14 strongest counterargument / when not to use planner
-    60,  # 15 final anchor
+    100, # 11 environment reuse vs compiled-program reuse + Evaluate boundary
+    85,  # 12 full extensibility cost / measurement boundary
+    95,  # 13 strongest counterargument / when not to use planner
+    60,  # 14 final anchor
 ]
 HARD_CONTENT_LIMIT = 25 * 60
 OFFICIAL_QA = 5 * 60
@@ -25,11 +24,11 @@ INTERACTION_SECONDS = 20
 total = sum(SLIDE_SECONDS)
 buffer = HARD_CONTENT_LIMIT - total
 
-assert len(SLIDE_SECONDS) == 15
-assert 19 * 60 <= total <= 21 * 60, f"talk target drift: {total}s"
+assert len(SLIDE_SECONDS) == 14
+assert 18 * 60 <= total <= 20 * 60, f"talk target drift: {total}s"
 assert DEMO_SECONDS <= 120, f"demo budget too large: {DEMO_SECONDS}s"
 assert INTERACTION_SECONDS <= 60, f"interaction budget too large: {INTERACTION_SECONDS}s"
-assert buffer >= 3 * 60, f"hard-stop buffer too small: {buffer}s"
+assert buffer >= 5 * 60, f"hard-stop buffer too small: {buffer}s"
 
 
 def mmss(seconds: int) -> str:
