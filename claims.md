@@ -2,40 +2,76 @@
 
 Truth snapshot: `Misha1302/UniversalToolchain@7005371d6c30175dff4b0e9f906a26218b0ee54d`.
 
-Claims are classified as **CURRENT IMPLEMENTATION**, **PROPOSED / INTENDED DESIGN**, or
-**NEEDS MEASUREMENT**. The main deck uses only current claims unless a boundary is explicitly labeled.
+Claims are classified as **CURRENT IMPLEMENTATION**, **PROPOSED / INTENDED DESIGN**, or **NEEDS MEASUREMENT**.
 
-## CURRENT IMPLEMENTATION — whole-language planning
+The main deck deliberately starts with current executable/compiler evidence, then separates the stronger proposed architecture.
 
-- `LanguageCompiler` is the single public semantic planner for `LanguageDefinition` on this path.
-  Despite the name, it does **not** compile a user's source program.
-- `LanguageDefinitionBuilder` is a C# authoring frontend for the canonical semantic configuration model.
-- Wist `.wistdialect` parsing/translation is another frontend that produces `LanguageDefinition`; it is not
-  a second planner.
-- `LanguageCompiler.Compile(...)` performs toolchain API validation, feature resolution, contribution/provider
-  resolution and backend artifact-route planning, returning diagnostics or an immutable `LanguagePlan`.
-- Provider ambiguity can fail as `UTL2002`; `PreferCapabilityProvider(...)` makes integrator policy explicit.
+## CURRENT IMPLEMENTATION — restricted pricing language
 
-## CURRENT IMPLEMENTATION — route planning
+The pinned repository contains the shipped Wist dialect:
 
-- Route planning works over transformations from **already selected contributions** for the selected backend.
-- Non-pass transformations form the candidate conversion graph.
-- `LanguageArtifactRoutePhase.FindBestRoute(...)` chooses minimum sum of declared transformation `Cost`.
-- Equal-cost choices are deterministic through contribution-signature ordering.
-- Selected passes are inserted where their artifact contracts fit; `Before` / `After` constraints order
-  passes sharing a compatible contract.
-- The resulting ordered `LanguageArtifactRoute` is stored in `LanguagePlan.Routes`.
+```text
+UniversalToolchain/Dialects/examples/wist/pricing-restricted
+```
 
-Truth boundaries:
+Its documented composition:
 
-- structural/artifact-contract compatibility **does not imply** semantic equivalence;
-- deterministic selection **does not imply** semantic correctness;
-- route `Cost` is a planning weight **not** measured execution latency;
-- the planner does not search unselected packages/features as if every registered transformation were active.
+- enables `Identifier`, `NativeTypes`, `Scopes`, `Variables`, `Whitespaces`;
+- supports `interpreter` and `cil` backends;
+- intentionally excludes unrelated conditions/loops/labels/C# interop capabilities;
+- evaluates the shipped program `100.0 * 0.9 + 5.0` as `95`;
+- is a composition-constrained runtime surface, **not** a hardened sandbox guarantee.
 
-## CURRENT IMPLEMENTATION — concrete decision record
+## CURRENT IMPLEMENTATION — Wist compiler path
 
-`LanguagePlan` contains:
+The current Wist architecture has a compiler-specific path conceptually described as:
+
+```text
+source text
+→ lexer / parser AST
+→ module-oriented Bytecode
+→ BytecodeToAbstractIrConverterImpl
+→ AIR
+→ backend-neutral optimization / specialization
+→ interpreter or CIL backend
+```
+
+Important boundary:
+
+- Bytecode and AIR are current Wist implementation artifacts;
+- the generic UniversalToolchain language-authoring SDK does not require every language to use Wist Bytecode/AIR.
+
+## CURRENT IMPLEMENTATION — cross-backend semantic parity
+
+`UniversalToolchain/Tests/Backends/InterpreterBindingsParityTests.cs` currently exercises both the CIL and interpreter execution paths for:
+
+- external named bindings;
+- local variables combined with external arithmetic;
+- reordered declared bindings;
+- nested scopes;
+- local names overlapping external `price` / `fee` names;
+- deterministic shadowing behavior;
+- stable local storage keys;
+- fail-closed unknown-identifier behavior.
+
+The main deck uses this as the concrete correctness boundary:
+
+> a backend being reachable is not enough; both execution implementations must still implement the same language semantics for the covered cases.
+
+The tests prove only the covered cases, not universal semantic equivalence.
+
+## CURRENT IMPLEMENTATION — whole-language staging
+
+- `LanguageDefinitionBuilder` and Wist configuration frontends produce the requested language definition.
+- `LanguageCompiler.Compile(...)` performs whole-language resolution and returns diagnostics or `LanguagePlan`.
+- `LanguageRuntime.Create(...)` materializes exact providers/backends/routes from the already-resolved plan.
+- `Run` / `Build` process source after that whole-language resolution boundary.
+
+This staging is a current strength that the proposed architecture keeps.
+
+## CURRENT IMPLEMENTATION — LanguagePlan data
+
+Current `LanguagePlan` contains:
 
 - original `Definition`;
 - resolved `Features`;
@@ -45,113 +81,133 @@ Truth boundaries:
 - `PlanHash`;
 - `Summary`.
 
-`PlanHash` is canonical identity of the expressed resolved plan. It is **not** a semantic proof,
-security attestation, program identity, or performance certificate.
+The deck does **not** claim that current `LanguagePlan` stores:
 
-## CURRENT IMPLEMENTATION — runtime ownership
+- explicit semantic hard obligations;
+- general requires/ensures effects for whole-language feasibility;
+- rejected-candidate explanations;
+- general selection provenance such as “why this implementation was chosen”.
 
-- `LanguageRuntime.Create` verifies the plan and exact runtime-provider/backend/route binding before creating
-  a runtime session.
-- `LanguageRuntime.Run` executes a request through that already-selected environment.
-- Runtime creation does not call a second whole-language feature/provider/route planner.
-- Therefore global composition can be resolved before repeated source requests.
+Planning diagnostics live in the build/planning result; they are not fields of the successful current `LanguagePlan` object.
 
-This does **not** mean no runtime validation, no interfaces, no allocations, no parsing/lowering, or zero overhead.
+`PlanHash` identifies the expressed resolved plan. It is not semantic proof, security attestation or a performance certificate.
 
-## CURRENT IMPLEMENTATION — two reuse boundaries
+## CURRENT IMPLEMENTATION — route planning
 
-- `WistEngine.Create` resolves one language environment:
-  `LanguageDefinition -> LanguageCompiler -> LanguagePlan -> LanguageRuntime`.
-- `Evaluate(code)` reuses that environment but still sends a source request through `Runtime.Run`.
-- `Compile<TDelegate>` is a separate compiled-program boundary:
-  `Runtime.Build -> durable program -> reusable delegate`.
+Current `LanguageArtifactRoutePhase`:
 
-Environment reuse **does not equal** compiled-program reuse.
+1. derives contract-changing conversion edges from already-selected contributions for the selected backend;
+2. calls `FindBestRoute(...)` over that conversion graph;
+3. minimizes ordinary integer sum of declared transformation `Cost`;
+4. uses deterministic contribution-signature ordering for equal-cost alternatives;
+5. then calls `InsertPasses(...)` for selected same-contract passes;
+6. reports `UTL2204` if a selected pass cannot be placed;
+7. does not backtrack to a different conversion skeleton that could make that pass placeable.
 
-## CURRENT IMPLEMENTATION — source-backed conference demo
+Consequences:
 
-`demo/Program.cs` now contains a compiler-specific route-changing proof:
+- structural artifact-contract reachability **does not imply** semantic admissibility;
+- deterministic selection **does not imply** semantic correctness;
+- route `Cost` is preference/planning policy **not** execution latency;
+- current routing is staged conversion-first/pass-second, not one global feasibility solve;
+- the route layer does not generally model semantic state such as target legality or SSA properties.
 
-```text
-demo.core
--> route: demo.parse -> demo.lower.safe
--> Cost 7
-
-+ demo.fast-path
--> route: demo.parse -> demo.lower.fast
--> Cost 2
-
-LanguageRuntime.Create(enhancedPlan, ...)
--> input=41 output=42
-```
-
-The same source also retains a small `UTL2002 -> PreferCapabilityProvider` proof, but provider ambiguity is
-not the main architectural example.
-
-The two lowering functions are intentionally equivalent identity transforms in the synthetic fixture.
-That equivalence comes from the fixture implementation, **not** from the route planner.
-
-## CURRENT BUT APPENDIX / Q&A ONLY
-
-The repository also contains current compiler mechanisms that are intentionally outside the main narrative,
-including descriptor-gated optimization helpers, Wist intrinsic capability policy, IR-stage contract checks,
-and bounded symbolic simplification. They remain supporting evidence, not a second talk.
-
-PlanFuzz-related projects also exist in current UniversalToolchain; do not describe PlanFuzz as nonexistent.
-Its scope is auxiliary testing evidence, not a main-talk guarantee.
-
-## CURRENT IMPLEMENTATION — bounded planner mechanics
-
-The research findings that matter for talk truthfulness are re-checked against the pinned source:
+## CURRENT IMPLEMENTATION — other confirmed planner boundaries
 
 | Finding | Status | Current truth |
 | --- | --- | --- |
-| F-01 · route/pass feasibility | `CONFIRMED_CURRENT_IMPLEMENTATION` | `FindBestRoute(...)` chooses the minimum declared-cost conversion skeleton first; `InsertPasses(...)` runs afterwards. An unplaceable selected pass produces `UTL2204`; the phase does not retry a more expensive pass-feasible conversion skeleton. |
-| F-02 · `ReplaceSlot` vs dependency closure | `CONFIRMED_CURRENT_IMPLEMENTATION` | contribution/capability dependency traversal happens before `ApplySlotPolicies(...)`; current composition is staged, not a provenance-aware global solve. |
-| F-03 · mandatory contract-changing semantics | `CONFIRMED_CURRENT_IMPLEMENTATION` model boundary | contract-changing transformations are candidate conversions; the explicit mandatory mechanism in this route phase is selected same-contract passes. There is no separate “mandatory contract-changing transformation” planner primitive. |
-| F-04 · artifact identity vs CLR type | `CONFIRMED_CURRENT_IMPLEMENTATION` model boundary | connectivity compares artifact `Kind` + stable `ValueTypeIdentity`. Default `LanguageArtifactKind<T>` derives that identity from `T`, but an explicit identity can be supplied; the string identity is not itself a runtime CLR-type proof. |
-| F-05 · backend/runtime input mismatch | `CONFIRMED_CURRENT_IMPLEMENTATION` error-surface boundary | `LanguagePlanVerifier` checks a backend input against the runtime-provider input and can throw `LanguagePlanVerificationException`; not every invalid composition is normalized into a `LanguageBuildResult` diagnostic. |
-| F-06 · route cost model | `CONFIRMED_CURRENT_IMPLEMENTATION` heuristic | edge and route cost use `int`; candidate sums are ordinary integer addition and equal sums use contribution-signature tie breaking. This is planner policy, not a benchmark metric or general optimization objective. |
+| F-01 · route/pass feasibility | `CONFIRMED_CURRENT_IMPLEMENTATION` | minimum-cost conversion skeleton is chosen before selected passes are inserted; no pass-feasibility backtracking after `UTL2204` |
+| F-02 · dependency/slot staging | `CONFIRMED_CURRENT_IMPLEMENTATION` | contribution/capability dependency traversal precedes slot policy replacement; composition is staged, not provenance-aware global solving |
+| F-03 · mandatory contract-changing semantics | `CONFIRMED_MODEL_BOUNDARY` | route phase has candidate contract-changing conversions and selected same-contract passes, but no separate generic mandatory contract-changing transformation primitive |
+| F-04 · artifact identity | `CONFIRMED_MODEL_BOUNDARY` | connectivity compares artifact Kind + stable ValueTypeIdentity; this is protocol identity, not arbitrary semantic or CLR-type proof |
+| F-05 · verifier error surface | `CONFIRMED_CURRENT_IMPLEMENTATION` | `LanguagePlanVerifier` can throw for invariant violations; not every invalid composition is normalized into a planning diagnostic |
+| F-06 · Cost | `CONFIRMED_CURRENT_IMPLEMENTATION` | cost uses `int` and ordinary addition; it is a local planner heuristic/policy value, not a benchmark objective |
 
-A future planner that jointly searches conversion feasibility, mandatory transformations and broader constraints is `FUTURE_DESIGN`, not a current guarantee. No such future solver is required for the thesis of this talk.
+## CURRENT IMPLEMENTATION — source-backed conference demo
 
-## NEEDS MEASUREMENT
+The canonical presentation demo now uses current UniversalToolchain directly:
 
-No exact-current raw benchmark-result artifact is bound into this presentation. Therefore all numerical
-performance claims remain evidence debt:
+1. inspect `pricing-restricted`;
+2. execute the shipped pricing program through `interpreter`;
+3. execute the same program through `cil`;
+4. assert both expose result `95`;
+5. run the targeted `ShadowingAndNestedScope_WithLocalNamesOverlappingExternals_ShouldBeDeterministicAndParityStable` test.
 
-- planning latency and allocations;
-- runtime creation / materialization cost;
-- first-execution / cold-start cost;
-- steady-state overhead versus handwritten equivalents;
-- cost of diagnostics/observability;
-- scaling with numbers of features/contributions/routes;
-- JIT/AOT specialization effects;
-- workload-specific amortization and break-even.
+This is stronger conference evidence than the former synthetic route-cost fixture because it demonstrates a real language surface and a real semantic parity boundary.
+
+The historical/synthetic `Cost 7 → Cost 2` fixture remains useful evidence about current route preference, but it is no longer the main talk proof.
+
+## NEEDS MEASUREMENT — performance
+
+The repository contains `UniversalToolchain.Benchmarks`, including separate benchmark suites for:
+
+- already-prepared hot-path formula invocation;
+- public convenience `Evaluate` overhead;
+- engine creation / formula compilation.
+
+The benchmark README explicitly separates these workloads and requires raw BenchmarkDotNet artifacts with source/environment identity before publishing numerical claims.
+
+No exact raw result artifact is bound into this presentation revision. Therefore the on-stage deck makes no numerical claim for:
+
+- CIL versus C# speed;
+- allocation counts;
+- planner latency;
+- materialization cost;
+- steady-state extensibility overhead;
+- graph scaling;
+- amortization break-even.
 
 Allowed wording:
 
-> Planning moves some coordination work earlier. It does not make extensibility free.
+> Composition can be resolved before repeated execution. That changes the lifecycle; it does not make extensibility free.
 
-## PROPOSED / NOT CLAIMED AS CURRENT GUARANTEE
+## PROPOSED / INTENDED DESIGN
 
-The deck does not claim:
+The proposed general model is deliberately stronger than current UT:
 
-- automatic semantic compatibility proof for alternative routes;
-- execution-time optimality from planning `Cost`;
-- a general solver for hidden semantic assumptions;
-- automatic pass scheduling from all compiler contracts;
-- general equality saturation;
-- sandboxing arbitrary in-process extensions;
-- zero-cost extensibility;
-- universal superiority over handwritten pipelines, DI, pass managers, LLVM, MLIR, Racket or MPS.
+```text
+requested language semantics / target / policy
+→ explicit hard obligations
+→ candidate implementation requires / ensures / conflicts
+→ feasible compiler plans
+→ preference only among feasible plans
+→ one inspectable concrete plan
+```
+
+Examples of hard obligations may include:
+
+- required language semantics;
+- backend legality;
+- required validation/instrumentation under explicit policy;
+- composition-relevant IR properties;
+- required providers;
+- conflicts that make a language combination inadmissible.
+
+Most optimizations remain optional preference unless an explicit language/build/backend policy makes one mandatory.
+
+The proposed model does not require SAT/SMT branding, proof-carrying compilation or a theorem prover.
+
+## APPLICABILITY BOUNDARY
+
+Prefer the smallest mechanism that already owns the decision:
+
+- fixed explicit compiler pipeline for one known sequence;
+- builder for configuration;
+- DI for provider/object wiring;
+- pass manager for a known pass set and invalidation model;
+- MLIR-style legalization for local IR legality;
+- whole-language planning only for expressed hard constraints crossing independently owned language/compiler components.
+
+The planner is a bad architecture when hidden semantic assumptions still decide correctness.
 
 ## Core wording
 
-> **Extensibility becomes planning when choices stop being independent.**
+> **Feasibility before preference.**
 
-> **Declare locally. Resolve globally. Execute concretely.**
+> **Resolve globally only what correctness cannot own locally.**
+
+> **Declare requirements locally. Resolve feasibility globally. Execute one concrete plan.**
 
 Anti-takeaway:
 
-> If one owner already knows the stable pipeline, wire it by hand.
+> If one owner already knows the stable compiler, wire it explicitly.
