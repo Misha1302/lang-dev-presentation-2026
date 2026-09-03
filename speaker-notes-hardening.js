@@ -1,108 +1,34 @@
-Object.assign(window.SPEAKER_NOTES, {
-  m1: `ЗАЧЕМ: сразу совместить официальный LangDev title с новым архитектурным тезисом.
-
-СКАЗАТЬ: доклад начинается с конкретной extensible .NET language, а не с planner abstraction. Но главный transferable вывод будет архитектурным: когда корректность whole compiler пересекает ownership boundaries, сначала нужно определить feasible implementations, и только потом применять preference. Feasibility before preference.
-
-ПЕРЕХОД: сначала покажем baseline, где planner вообще не нужен.
-
-НЕ ПЕРЕОБЕЩАТЬ: UniversalToolchain — current case study, а не reference architecture.` ,
-  m2: `ЗАЧЕМ: убрать strawman против обычного compiler pipeline.
-
-СКАЗАТЬ: если parser, lowering, passes и backend знает один owner, явная цепочка обычно лучше. Builder, DI или pass manager могут помогать локально. Whole-language planner здесь только увеличивает complexity.
-
-ПЕРЕХОД: теперь возьмём реальный язык, для которого extensibility уже полезна.
-
-НЕ ПЕРЕОБЕЩАТЬ: declarative composition не является самоцелью.` ,
-  m3: `ЗАЧЕМ: выполнить practical promise accepted abstract до введения терминов planner architecture.
-
-СКАЗАТЬ: pricing-restricted — реальный shipped Wist dialect. Он оставляет variables, scopes и native numeric types, исключает ненужные capabilities и поддерживает interpreter и CIL. Пример 100 * 0.9 + 5 даёт 95. Это не sandbox claim; это composition-constrained language surface.
-
-ПЕРЕХОД: посмотрим, куда исчезают выбранные modules после composition.
-
-НЕ ПЕРЕОБЕЩАТЬ: restricted dialect не означает hardened sandbox.` ,
-  m4: `ЗАЧЕМ: вернуть promised Bytecode → AIR → CIL story и показать compiler-native context.
-
-СКАЗАТЬ: Wist frontend modules emit Bytecode; Bytecode-to-AIR lowering creates backend-neutral AIR; further lowering/specialization feeds interpreter or CIL. Extension machinery не должна оставаться набором dynamic choices на каждом execution step — в итоге нужен concrete pipeline.
-
-ПЕРЕХОД: но два backends создают более серьёзную обязанность, чем reachability.
-
-НЕ ПЕРЕОБЕЩАТЬ: generic UniversalToolchain SDK не требует Bytecode или AIR; это current Wist pipeline.` ,
-  m5: `ЗАЧЕМ: дать реальный correctness failure class раньше архитектурной абстракции.
-
-СКАЗАТЬ: external bindings и local shadowing — ровно тот случай, где один language может незаметно стать двумя. Local price должен shadow external price одинаково в interpreter и CIL. Current parity tests защищают shadowing, nested scopes, reordered bindings и local/external arithmetic.
-
-ПЕРЕХОД: теперь задаём главный ownership question — кто отвечает за эту parity целиком?
-
-НЕ ПЕРЕОБЕЩАТЬ: тесты доказывают покрытые cases, а не semantic equivalence всех программ.` ,
-  m6: `ЗАЧЕМ: вывести необходимость planning из конкретной compiler correctness проблемы.
-
-СКАЗАТЬ: frontend owns binding declarations, lowering owns representation/storage operations, backend owns execution. Ни один local owner не может сам гарантировать whole-language parity. Planner нужен только если такие hard cross-owner obligations можно выразить и проверить на уровне composition.
-
-ПЕРЕХОД: current UT уже содержит полезную staging boundary.
-
-НЕ ПЕРЕОБЕЩАТЬ: planner не угадывает hidden invariants; неизвестное требование остаётся неизвестным.` ,
-  m7: `ЗАЧЕМ: отделить сильную current implementation idea от proposed model.
-
-СКАЗАТЬ: current UT already has LanguageDefinition, LanguageCompiler, immutable LanguagePlan and exact LanguageRuntime materialization. Это хорошая staging architecture: global composition происходит до source execution, а runtime следует сохранённому route/provider answer.
-
-ПЕРЕХОД: но current route planner знает меньше о correctness, чем эта story требует.
-
-НЕ ПЕРЕОБЕЩАТЬ: current LanguageCompiler performs structural whole-language resolution, not general semantic proof.` ,
-  m8: `ЗАЧЕМ: показать подтверждённый implementation defect в mental model route-first planning.
-
-СКАЗАТЬ: current LanguageArtifactRoutePhase first calls FindBestRoute over conversion edges using sum of int Cost, then inserts selected same-contract passes. If a pass cannot be placed, UTL2204 is reported; planner does not backtrack to a different conversion skeleton. Поэтому Cost and reachability are preference/structure, not feasibility evidence.
-
-ПЕРЕХОД: отсюда возникает более общий architecture rule.
-
-НЕ ПЕРЕОБЕЩАТЬ: не утверждать, что current UT уже реализует obligation-first search.` ,
-  m9: `ЗАЧЕМ: дать главный architecture slide только после concrete evidence.
-
-СКАЗАТЬ: requested language derives hard obligations. Candidate implementations declare what they require and ensure. First reject candidates that cannot satisfy obligations. Only among feasible plans may policy compare cost, providers or deterministic tie-breaks. This is the whole point: feasibility before preference.
-
-ПЕРЕХОД: теперь чётко разведём текущий LanguagePlan и то, что stronger planner должен был бы объяснять.
-
-НЕ ПЕРЕОБЕЩАТЬ: это general proposed model, не описание current UT API.` ,
-  m10: `ЗАЧЕМ: устранить прежнюю ошибку, где proposed provenance/diagnostics визуально выглядели current LanguagePlan fields.
-
-СКАЗАТЬ: current plan реально содержит Definition, Features, Contributions, RuntimeProvider, Routes, PlanHash и Summary. Stronger target model дополнительно должен сделать obligations/effects and selection reasons inspectable. Diagnostics о failure принадлежат planning result, а не current LanguagePlan object.
-
-ПЕРЕХОД: независимо от силы planner, global reasoning должен закончиться freeze boundary.
-
-НЕ ПЕРЕОБЕЩАТЬ: PlanHash не является semantic proof или security attestation.` ,
-  m11: `ЗАЧЕМ: связать accepted title “make abstractions disappear” с реальной lifecycle boundary.
-
-СКАЗАТЬ: during authoring architecture is open; LanguageCompiler resolves whole-language choices; runtime materializes exact components; Run/Build processes source using that frozen environment. “Disappear” means no second whole-language composition decision during repeated execution — не отсутствие compiler work or validation.
-
-ПЕРЕХОД: staging itself does not prove zero overhead.
-
-НЕ ПЕРЕОБЕЩАТЬ: не обещать zero-cost extensibility.` ,
-  m12: `ЗАЧЕМ: честно закрыть accepted abstract performance angle без неподкреплённого marketing claim.
-
-СКАЗАТЬ: repository has a dedicated BenchmarkDotNet hot-path suite that measures prepared artifacts separately from parsing/compilation. Но presentation не публикует число без exact raw artifact bound to this revision. Extensibility still costs contracts, diagnostics, tests, startup/materialization and all normal compiler work.
-
-ПЕРЕХОД: strongest counterargument определяет, где planner вообще применять нельзя.
-
-НЕ ПЕРЕОБЕЩАТЬ: не повторять “within 10%” или “0 B” на сцене без raw current evidence artifact.` ,
-  m13: `ЗАЧЕМ: защитить applicability boundary против LLVM/MLIR/DI вопросов.
-
-СКАЗАТЬ: local IR legality belongs to MLIR-style legalization; known pass order belongs to pass manager; provider wiring belongs to DI. Whole-language planner оправдан только для expressed hard constraints across independently owned language/compiler components.
-
-ПЕРЕХОД: финал сжимает весь talk в одну decision rule.
-
-НЕ ПЕРЕОБЕЩАТЬ: planner не заменяет LLVM, MLIR, DI или handwritten compiler pipeline.` ,
-  m14: `ЗАЧЕМ: оставить один переносимый вывод.
-
-СКАЗАТЬ: resolve globally only what correctness cannot own locally. Fixed compiler — wire explicitly. Hard cross-owner obligation — make it part of feasibility. Several feasible implementations — only then apply preference. Execution — follow one frozen concrete plan.
-
-ПЕРЕХОД: Q&A can go into current UT limitations, parity tests, route Cost or prior-art boundary.
-
-НЕ ПЕРЕОБЕЩАТЬ: не расширять thesis до universal architecture.` ,
-  a1: `Technical appendix: current UT structural route and proposed obligation-first planner boundary.`,
-  a2: `Technical appendix: mandatory vs optional is not source-target equality.`,
-  a3: `Technical appendix: selected contribution is not necessarily executed.`,
-  a4: `Technical appendix: nominal artifact identity is not enough semantic state.`,
-  a5: `Technical appendix: IR stage contracts already demonstrate requires/produces/preserves/invalidates locally.`,
-  a6: `Technical appendix: deterministic tie-break supports reproducibility, not semantic equivalence.`,
-  a7: `Technical appendix: planning and runtime performance claims need bound measurements.`,
-  a8: `Technical appendix: strongest objection and narrow justification for planner.`
-});
+window.SPEAKER_NOTES = {
+  "m1": "ЗАЧЕМ: Сразу сменить ось доклада. СКАЗАТЬ: Расширяемая система должна уметь композиционно объединять не только код, но и знания, гарантии и требования к representation. ПЕРЕХОД: Начнем с самого простого случая, где никакой новой архитектуры не нужно.",
+  "m2": "ЗАЧЕМ: Зафиксировать сильнейший baseline. СКАЗАТЬ: Если один владелец знает весь компилятор, явный pipeline лучше любой магии. ПЕРЕХОД: Проблема появляется только когда система становится open-world и знания распределяются между независимыми компонентами.",
+  "m3": "ЗАЧЕМ: Показать integration explosion. СКАЗАТЬ: Анализы, оптимизации, IDE и backend-части не просто преобразуют программу — каждый компонент знает что-то свое. Если каждый consumer знает каждого producer, получаем N×M интеграцию.",
+  "m4": "ЗАЧЕМ: Сформулировать проверяемый критерий. СКАЗАТЬ: Новый producer должен приносить пользу старому consumer без pairwise integration. Это наш главный тест композиции.",
+  "m5": "ЗАЧЕМ: Дать главный demo story. СКАЗАТЬ: RangeAnalysis и ShapeAnalysis могут совместно закрыть SafeIndex. Ни один producer не писался специально под BoundsLowering. ПЕРЕХОД: Но для этого raw Fact<T> недостаточно.",
+  "m6": "ЗАЧЕМ: Ввести Judgement через failure. СКАЗАТЬ: Значение факта без контекста, revision, validity и evidence быстро становится ложью после трансформаций. Поэтому нужен contextual judgement, а не просто shared dictionary.",
+  "m7": "ЗАЧЕМ: Разрушить наивную ontology. СКАЗАТЬ: Writable кажется хорошим interface, пока не появляются volatile, atomicity, ordering, visibility, barriers. Иерархия начинает кодировать cross-product независимых смысловых измерений.",
+  "m8": "ЗАЧЕМ: Показать stable core. СКАЗАТЬ: Anchor должен нести identity, а не всю семантику. Value, Place, Operation, Region, Type, Symbol — маленькое ядро; свойства расширяются отдельно.",
+  "m9": "ЗАЧЕМ: Сделать решение конкретным. СКАЗАТЬ: Вместо IVolatileAtomicWritable спрашиваем свойства операции Write(place,value): можно ли писать, какие effects, atomicity, ordering и visibility.",
+  "m10": "ЗАЧЕМ: Связать знания с planning. СКАЗАТЬ: Judgements сами по себе не цель. Из них возникают obligations, затем requirements к representation, затем lowering/legalization и backend constraints.",
+  "m11": "ЗАЧЕМ: Развести две оси. СКАЗАТЬ: Lowering делает representation более конкретным. Semantic refinement меняет точность знания. Эти процессы не обязаны идти в одну сторону.",
+  "m12": "ЗАЧЕМ: Подвести к cross-level problem. СКАЗАТЬ: После нескольких lowering стадий исходного Write node уже может не существовать. Но backend, verifier или IDE все еще могут нуждаться в смысле операции.",
+  "m13": "ЗАЧЕМ: Ввести upward semantic projection. СКАЗАТЬ: Нам не нужно реконструировать старый IR. Нужно, чтобы нижний уровень мог ответить на нужный higher-level semantic query.",
+  "m14": "ЗАЧЕМ: Уточнить реализацию projection. СКАЗАТЬ: Иногда достаточно provenance, иногда explicit interface, иногда re-analysis. Практически это hybrid с revision и evidence.",
+  "m15": "ЗАЧЕМ: Не превратить идею в mega-solver. СКАЗАТЬ: Общий контракт не означает один алгоритм. Fixed points, abstract domains, graph search, legalization и validation имеют разную математическую структуру.",
+  "m16": "ЗАЧЕМ: Вернуть planner на правильное место. СКАЗАТЬ: Сначала correctness obligations отсекают недопустимые варианты. Только потом cost или policy выбирают среди feasible. LanguagePlan — staged snapshot результата.",
+  "m17": "ЗАЧЕМ: Честно привязать к UT. СКАЗАТЬ: В UT уже есть полезная стадийность: composition до runtime и frozen answer после planning. Это сохраняем.",
+  "m18": "ЗАЧЕМ: Не переобещать про текущую реализацию. СКАЗАТЬ: Нынешняя structural route layer еще не является semantic contract layer. Reachability и cost не доказывают preservation, trust или cross-level semantics.",
+  "m19": "ЗАЧЕМ: Показать lineage. СКАЗАТЬ: По отдельности эти идеи давно существуют. Abstract interpretation, MLIR, LLVM, Cascades, Cargo/Bazel и PCC дают разные куски.",
+  "m20": "ЗАЧЕМ: Корректно сформулировать contribution. СКАЗАТЬ: Наш вопрос не кто первым придумал facts. Вопрос — можно ли связать эти куски одним open-world contract между независимо написанными compiler/tooling components.",
+  "m21": "ЗАЧЕМ: Дать falsifiable experiment. СКАЗАТЬ: Добавляем новый producer, consumers не меняем. Если precision улучшается, soundness сохраняется и объяснение остается понятным — composition работает.",
+  "m22": "ЗАЧЕМ: Определить измеримость. СКАЗАТЬ: Смотрим не только LOC. Нужны integration edges, precision, invalidation cost, projection overhead и explainability.",
+  "m23": "ЗАЧЕМ: Представить strongest alternative. СКАЗАТЬ: Возможно, набор локальных механизмов проще и лучше. Pass manager, MLIR interfaces, per-domain analyses и explicit adapters — реальная альтернатива.",
+  "m24": "ЗАЧЕМ: Дать практический decision rule. СКАЗАТЬ: Shared substrate оправдан только там, где реально сокращает pairwise coupling и не размывает domain semantics.",
+  "m25": "ЗАЧЕМ: Показать переносимость. СКАЗАТЬ: Та же проблема встречается в static analysis, IDE services, runtimes и accelerator ecosystems — везде, где knowledge и representation принадлежат разным компонентам.",
+  "m26": "ЗАЧЕМ: Сжать идею. СКАЗАТЬ: Делайте representation конкретнее, но не заставляйте смысл исчезать. Knowledge → obligations → safe lowering → queryable semantics.",
+  "m27": "ЗАЧЕМ: Закрыть экспериментом. СКАЗАТЬ: Add a producer, change no consumers. Если система становится лучше и остается sound/explainable — это реальная композиция. Если нет, оставляем engineering framework и отказываемся от большой теории.",
+  "a1": "СКАЗАТЬ: Anchor — identity, Judgement — contextual claim, Obligation — correctness goal.",
+  "a2": "СКАЗАТЬ: Evidence может быть trusted provider, certificate или re-analysis; provenance само по себе не всегда proof.",
+  "a3": "СКАЗАТЬ: Любая трансформация должна иметь invalidation story. Stale semantic state — один из главных рисков.",
+  "a4": "СКАЗАТЬ: Split, merge, deletion и fusion показывают, почему universal inverse lowering невозможен.",
+  "a5": "СКАЗАТЬ: Главные открытые вопросы — anchors, versioning, mapping, trust, adapters, projection cost и planner boundaries."
+};
