@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 # Authored rehearsal budget. Seconds include explanation, pauses and demo work.
 SLIDE_SECONDS = [
-    45,  # 1 title / question / anchor
-    75,  # 2 handwritten baseline
-    75,  # 3 language family / why extensibility
-    80,  # 4 coupling threshold
-    75,  # 5 ownership + canonical configuration model
-    85,  # 6 pipeline becomes a transformation graph
-    110, # 7 automatic route search + staged-algorithm truth boundaries
-    75,  # 8 LanguageCompiler naming + immutable LanguagePlan
-    75,  # 9 authoring/planning/materialization/source-build lifecycle
-    110, # 10 source-backed route-changing demo
-    100, # 11 environment reuse vs compiled-program reuse + Evaluate boundary
-    85,  # 12 full extensibility cost / measurement boundary
-    95,  # 13 strongest counterargument / when not to use planner
-    60,  # 14 final anchor
+    45,   # 1 official title + architecture memory
+    70,   # 2 explicit handwritten baseline
+    75,   # 3 concrete pricing-restricted language
+    80,   # 4 Wist source -> Bytecode -> AIR -> interpreter/CIL
+    120,  # 5 parity boundary + source-backed demo beat
+    80,   # 6 cross-owner correctness threshold
+    80,   # 7 current UT staging
+    110,  # 8 current conversion-first/pass-second planner limitation
+    90,   # 9 proposed feasibility-before-preference model
+    80,   # 10 current LanguagePlan vs proposed planner evidence
+    75,   # 11 freeze boundary / make abstractions disappear
+    80,   # 12 cost + performance evidence boundary
+    90,   # 13 strongest counterargument / prior-art boundary
+    55,   # 14 final decision rule
 ]
 HARD_CONTENT_LIMIT = 25 * 60
 OFFICIAL_QA = 5 * 60
-DEMO_SECONDS = SLIDE_SECONDS[9]
+DEMO_SECONDS = 110
 INTERACTION_SECONDS = 20
 
 total = sum(SLIDE_SECONDS)

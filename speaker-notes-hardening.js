@@ -1,108 +1,108 @@
 Object.assign(window.SPEAKER_NOTES, {
-  m1: `ЗАЧЕМ: сразу заменить старую память «route search» на новую центральную формулу.
+  m1: `ЗАЧЕМ: сразу совместить официальный LangDev title с новым архитектурным тезисом.
 
-СКАЗАТЬ: доклад не про то, что UniversalToolchain умеет искать дешёвый путь. Он про более общую границу: когда расширяемость языка создаёт обязанность построить корректный concrete compiler из независимых pieces. Главный тезис: feasibility before preference. Сначала hard obligations, потом выбор между уже допустимыми реализациями.
+СКАЗАТЬ: доклад начинается с конкретной extensible .NET language, а не с planner abstraction. Но главный transferable вывод будет архитектурным: когда корректность whole compiler пересекает ownership boundaries, сначала нужно определить feasible implementations, и только потом применять preference. Feasibility before preference.
 
-ПЕРЕХОД: начинаем с baseline, где planner не нужен.
+ПЕРЕХОД: сначала покажем baseline, где planner вообще не нужен.
 
-НЕ ПЕРЕОБЕЩАТЬ: UT — case study, не эталон всей архитектуры.` ,
-  m2: `ЗАЧЕМ: убрать strawman и показать уважение к explicit pipeline.
+НЕ ПЕРЕОБЕЩАТЬ: UniversalToolchain — current case study, а не reference architecture.` ,
+  m2: `ЗАЧЕМ: убрать strawman против обычного compiler pipeline.
 
-СКАЗАТЬ: если один owner знает parser, lowering, optimizer и backend, лучший design — явная цепочка. Builder или DI могут помочь собрать объекты, pass manager может выполнить известную последовательность. Отдельный planner здесь только добавит complexity.
+СКАЗАТЬ: если parser, lowering, passes и backend знает один owner, явная цепочка обычно лучше. Builder, DI или pass manager могут помогать локально. Whole-language planner здесь только увеличивает complexity.
 
-ПЕРЕХОД: проблема возникает, когда появляется не один compiler, а семейство вариантов.
+ПЕРЕХОД: теперь возьмём реальный язык, для которого extensibility уже полезна.
 
-НЕ ПЕРЕОБЕЩАТЬ: не утверждать, что декларативность всегда лучше ручного wiring.` ,
-  m3: `ЗАЧЕМ: объяснить, зачем нужна extensibility, без API-tour vocabulary.
+НЕ ПЕРЕОБЕЩАТЬ: declarative composition не является самоцелью.` ,
+  m3: `ЗАЧЕМ: выполнить practical promise accepted abstract до введения терминов planner architecture.
 
-СКАЗАТЬ: независимые авторы могут добавлять syntax, lowering, optimizers, backends and policies. Важно не количество plugins, а то, что их требования пересекают compiler stages и ownership boundaries.
+СКАЗАТЬ: pricing-restricted — реальный shipped Wist dialect. Он оставляет variables, scopes и native numeric types, исключает ненужные capabilities и поддерживает interpreter и CIL. Пример 100 * 0.9 + 5 даёт 95. Это не sandbox claim; это composition-constrained language surface.
 
-ПЕРЕХОД: но даже это ещё не автоматически planner.
+ПЕРЕХОД: посмотрим, куда исчезают выбранные modules после composition.
 
-НЕ ПЕРЕОБЕЩАТЬ: language family здесь practical architecture term, не доказательство совместимости всех языков.` ,
-  m4: `ЗАЧЕМ: дать точный threshold.
+НЕ ПЕРЕОБЕЩАТЬ: restricted dialect не означает hardened sandbox.` ,
+  m4: `ЗАЧЕМ: вернуть promised Bytecode → AIR → CIL story и показать compiler-native context.
 
-СКАЗАТЬ: choices interacting is too broad. DI, builder, pass manager or legalization may already own the local decision. Planner начинается только когда independently owned choices create whole-compiler hard constraints that no local mechanism can guarantee.
+СКАЗАТЬ: Wist frontend modules emit Bytecode; Bytecode-to-AIR lowering creates backend-neutral AIR; further lowering/specialization feeds interpreter or CIL. Extension machinery не должна оставаться набором dynamic choices на каждом execution step — в итоге нужен concrete pipeline.
 
-ПЕРЕХОД: поэтому нужно развести ownership: кто задаёт semantics и кто выбирает implementation.
+ПЕРЕХОД: но два backends создают более серьёзную обязанность, чем reachability.
 
-НЕ ПЕРЕОБЕЩАТЬ: planner не угадывает скрытые invariants.` ,
-  m5: `ЗАЧЕМ: исправить опасную фразу «planner chooses the language».
+НЕ ПЕРЕОБЕЩАТЬ: generic UniversalToolchain SDK не требует Bytecode или AIR; это current Wist pipeline.` ,
+  m5: `ЗАЧЕМ: дать реальный correctness failure class раньше архитектурной абстракции.
 
-СКАЗАТЬ: language author или integrator определяет semantics, target и policy. Из этого возникают obligations. Extension implementations declare what they require and satisfy. Planner выбирает implementation, satisfying those obligations. Runtime materializes one frozen answer.
+СКАЗАТЬ: external bindings и local shadowing — ровно тот случай, где один language может незаметно стать двумя. Local price должен shadow external price одинаково в interpreter и CIL. Current parity tests защищают shadowing, nested scopes, reordered bindings и local/external arithmetic.
 
-ПЕРЕХОД: теперь покажем, почему structural reachability недостаточна.
+ПЕРЕХОД: теперь задаём главный ownership question — кто отвечает за эту parity целиком?
 
-НЕ ПЕРЕОБЕЩАТЬ: planner owns global implementation resolution, not language meaning.` ,
-  m6: `ЗАЧЕМ: разрушить mental model structural path equals feasible compiler.
+НЕ ПЕРЕОБЕЩАТЬ: тесты доказывают покрытые cases, а не semantic equivalence всех программ.` ,
+  m6: `ЗАЧЕМ: вывести необходимость planning из конкретной compiler correctness проблемы.
 
-СКАЗАТЬ: same nominal AIR type не доказывает, что IR typed, lowered or target legal. Shortcut may connect Semantic IR to AIR and reach CIL structurally, but it can still violate backend obligations.
+СКАЗАТЬ: frontend owns binding declarations, lowering owns representation/storage operations, backend owns execution. Ни один local owner не может сам гарантировать whole-language parity. Planner нужен только если такие hard cross-owner obligations можно выразить и проверить на уровне composition.
 
-ПЕРЕХОД: значит architecture должна ставить admissibility before ranking.
+ПЕРЕХОД: current UT уже содержит полезную staging boundary.
 
-НЕ ПЕРЕОБЕЩАТЬ: не предлагать full dependent type system; нужны только composition-relevant properties.` ,
-  m7: `ЗАЧЕМ: главный architecture slide.
+НЕ ПЕРЕОБЕЩАТЬ: planner не угадывает hidden invariants; неизвестное требование остаётся неизвестным.` ,
+  m7: `ЗАЧЕМ: отделить сильную current implementation idea от proposed model.
 
-СКАЗАТЬ: language selection derives hard obligations. Candidate implementations publish requires, ensures and conflicts. Feasibility rejects plans that fail hard constraints. Preference applies only after that. Cost, provider preference and deterministic tie-break are preference, not correctness.
+СКАЗАТЬ: current UT already has LanguageDefinition, LanguageCompiler, immutable LanguagePlan and exact LanguageRuntime materialization. Это хорошая staging architecture: global composition происходит до source execution, а runtime следует сохранённому route/provider answer.
 
-ПЕРЕХОД: результат global reasoning должен стать concrete data.
+ПЕРЕХОД: но current route planner знает меньше о correctness, чем эта story требует.
 
-НЕ ПЕРЕОБЕЩАТЬ: не говорить SAT/SMT, theorem prover or global optimizer.` ,
-  m8: `ЗАЧЕМ: сохранить сильную идею inspectable LanguagePlan без API tour.
+НЕ ПЕРЕОБЕЩАТЬ: current LanguageCompiler performs structural whole-language resolution, not general semantic proof.` ,
+  m8: `ЗАЧЕМ: показать подтверждённый implementation defect в mental model route-first planning.
 
-СКАЗАТЬ: concrete plan records selected implementations, ordering, backend, provenance and diagnostics. Current UT has LanguagePlan as data before source execution. This is good. But the target model is stronger about what makes a plan admissible.
+СКАЗАТЬ: current LanguageArtifactRoutePhase first calls FindBestRoute over conversion edges using sum of int Cost, then inserts selected same-contract passes. If a pass cannot be placed, UTL2204 is reported; planner does not backtrack to a different conversion skeleton. Поэтому Cost and reachability are preference/structure, not feasibility evidence.
 
-ПЕРЕХОД: когда plan materialized, можно показать freeze boundary.
+ПЕРЕХОД: отсюда возникает более общий architecture rule.
 
-НЕ ПЕРЕОБЕЩАТЬ: PlanHash is not semantic proof or security attestation.` ,
-  m9: `ЗАЧЕМ: сохранить lifecycle story and remove semantic ownership bug.
+НЕ ПЕРЕОБЕЩАТЬ: не утверждать, что current UT уже реализует obligation-first search.` ,
+  m9: `ЗАЧЕМ: дать главный architecture slide только после concrete evidence.
 
-СКАЗАТЬ: during composition, architecture is still open. Planning produces a feasible concrete plan. Materialization binds exact runtime components. Run or Build then follows that plan; runtime does not redesign the whole language.
+СКАЗАТЬ: requested language derives hard obligations. Candidate implementations declare what they require and ensure. First reject candidates that cannot satisfy obligations. Only among feasible plans may policy compare cost, providers or deterministic tie-breaks. This is the whole point: feasibility before preference.
 
-ПЕРЕХОД: central case study shows why type-compatible shortcut is rejected.
+ПЕРЕХОД: теперь чётко разведём текущий LanguagePlan и то, что stronger planner должен был бы объяснять.
 
-НЕ ПЕРЕОБЕЩАТЬ: no second whole-language planner does not mean no validation or no compile work.` ,
-  m10: `ЗАЧЕМ: заменить misleading Cost 7 to Cost 2 demo.
+НЕ ПЕРЕОБЕЩАТЬ: это general proposed model, не описание current UT API.` ,
+  m10: `ЗАЧЕМ: устранить прежнюю ошибку, где proposed provenance/diagnostics визуально выглядели current LanguagePlan fields.
 
-СКАЗАТЬ: backend requires AIR plus NoHighLevelOps and CilLegal. Shortcut reaches AIR, so route-first thinking would call it candidate. But it fails hard obligation; reject it before preference. LegalizeForCIL establishes required properties; only then, if two legalizers are feasible, preference may choose.
+СКАЗАТЬ: current plan реально содержит Definition, Features, Contributions, RuntimeProvider, Routes, PlanHash и Summary. Stronger target model дополнительно должен сделать obligations/effects and selection reasons inspectable. Diagnostics о failure принадлежат planning result, а не current LanguagePlan object.
 
-ПЕРЕХОД: now we can honestly explain current UT as prototype with limits.
+ПЕРЕХОД: независимо от силы planner, global reasoning должен закончиться freeze boundary.
 
-НЕ ПЕРЕОБЕЩАТЬ: do not claim current UT already has this whole-language property model.` ,
-  m11: `ЗАЧЕМ: explicitly separate current implementation, limitation and proposed model.
+НЕ ПЕРЕОБЕЩАТЬ: PlanHash не является semantic proof или security attestation.` ,
+  m11: `ЗАЧЕМ: связать accepted title “make abstractions disappear” с реальной lifecycle boundary.
 
-СКАЗАТЬ: current UT proves staging: LanguageCompiler, LanguagePlan, deterministic structural route, selected passes, exact runtime materialization. Current limitation: route layer uses nominal artifact contracts and does not generally express semantic obligations like target legality. Proposed model: hard obligations then feasibility then preference.
+СКАЗАТЬ: during authoring architecture is open; LanguageCompiler resolves whole-language choices; runtime materializes exact components; Run/Build processes source using that frozen environment. “Disappear” means no second whole-language composition decision during repeated execution — не отсутствие compiler work or validation.
 
-ПЕРЕХОД: this honesty leads to the price of extensibility.
+ПЕРЕХОД: staging itself does not prove zero overhead.
 
-НЕ ПЕРЕОБЕЩАТЬ: do not sell UT as finished reference architecture.` ,
-  m12: `ЗАЧЕМ: сохранить честность про costs and evidence debt.
+НЕ ПЕРЕОБЕЩАТЬ: не обещать zero-cost extensibility.` ,
+  m12: `ЗАЧЕМ: честно закрыть accepted abstract performance angle без неподкреплённого marketing claim.
 
-СКАЗАТЬ: contracts, diagnostics, tests and startup/materialization are real costs. The important criterion: if invariant affects composition correctness, hiding it defeats the planner's purpose. Performance impact needs measurement.
+СКАЗАТЬ: repository has a dedicated BenchmarkDotNet hot-path suite that measures prepared artifacts separately from parsing/compilation. Но presentation не публикует число без exact raw artifact bound to this revision. Extensibility still costs contracts, diagnostics, tests, startup/materialization and all normal compiler work.
 
-ПЕРЕХОД: strongest counterargument decides when not to use this architecture.
+ПЕРЕХОД: strongest counterargument определяет, где planner вообще применять нельзя.
 
-НЕ ПЕРЕОБЕЩАТЬ: no numerical speed claim, no hot path claim without data.` ,
-  m13: `ЗАЧЕМ: make the talk defensible against LLVM/MLIR/DI questions.
+НЕ ПЕРЕОБЕЩАТЬ: не повторять “within 10%” или “0 B” на сцене без raw current evidence artifact.` ,
+  m13: `ЗАЧЕМ: защитить applicability boundary против LLVM/MLIR/DI вопросов.
 
-СКАЗАТЬ: explicit pipeline, builder, DI, pass manager and MLIR-style legalization are better when they already own the decision. Whole-language planner earns its cost only for expressed cross-owner hard constraints.
+СКАЗАТЬ: local IR legality belongs to MLIR-style legalization; known pass order belongs to pass manager; provider wiring belongs to DI. Whole-language planner оправдан только для expressed hard constraints across independently owned language/compiler components.
 
-ПЕРЕХОД: final rule compresses the boundary.
+ПЕРЕХОД: финал сжимает весь talk в одну decision rule.
 
-НЕ ПЕРЕОБЕЩАТЬ: not a replacement for MLIR or LLVM.` ,
-  m14: `ЗАЧЕМ: leave one precise memory.
+НЕ ПЕРЕОБЕЩАТЬ: planner не заменяет LLVM, MLIR, DI или handwritten compiler pipeline.` ,
+  m14: `ЗАЧЕМ: оставить один переносимый вывод.
 
-СКАЗАТЬ: resolve globally only what correctness cannot own locally. Hard obligations cannot be traded away. Preference is allowed only among feasible plans. Final memory: Declare requirements locally. Resolve feasibility globally. Execute one concrete plan.
+СКАЗАТЬ: resolve globally only what correctness cannot own locally. Fixed compiler — wire explicitly. Hard cross-owner obligation — make it part of feasibility. Several feasible implementations — only then apply preference. Execution — follow one frozen concrete plan.
 
-ПЕРЕХОД: Q&A can go to current UT limitations and prior-art boundary.
+ПЕРЕХОД: Q&A can go into current UT limitations, parity tests, route Cost or prior-art boundary.
 
-НЕ ПЕРЕОБЕЩАТЬ: do not broaden planner into universal architecture.` ,
+НЕ ПЕРЕОБЕЩАТЬ: не расширять thesis до universal architecture.` ,
   a1: `Technical appendix: current UT structural route and proposed obligation-first planner boundary.`,
   a2: `Technical appendix: mandatory vs optional is not source-target equality.`,
   a3: `Technical appendix: selected contribution is not necessarily executed.`,
   a4: `Technical appendix: nominal artifact identity is not enough semantic state.`,
   a5: `Technical appendix: IR stage contracts already demonstrate requires/produces/preserves/invalidates locally.`,
   a6: `Technical appendix: deterministic tie-break supports reproducibility, not semantic equivalence.`,
-  a7: `Technical appendix: planning and runtime performance claims need measurements.`,
+  a7: `Technical appendix: planning and runtime performance claims need bound measurements.`,
   a8: `Technical appendix: strongest objection and narrow justification for planner.`
 });
