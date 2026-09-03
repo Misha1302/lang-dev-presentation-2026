@@ -36,13 +36,20 @@ PROGRAM="$ROOT/UniversalToolchain/Dialects/examples/wist/pricing-restricted/prog
 TESTS="$ROOT/UniversalToolchain/Tests/Tests.csproj"
 TEST_FILTER='FullyQualifiedName~Tests.Backends.InterpreterBindingsParityTests.ShadowingAndNestedScope_WithLocalNamesOverlappingExternals_ShouldBeDeterministicAndParityStable'
 
+DOTNET_RUN=(run --project "$WISTC")
+DOTNET_TEST=(test "$TESTS" --filter "$TEST_FILTER" --verbosity minimal)
+if [[ "${DEMO_NO_BUILD:-0}" == "1" ]]; then
+  DOTNET_RUN=(run --no-build --no-restore --project "$WISTC")
+  DOTNET_TEST=(test "$TESTS" --no-build --no-restore --filter "$TEST_FILTER" --verbosity minimal)
+fi
+
 printf '%s\n' '[language] pricing-restricted dialect'
-dotnet run --project "$WISTC" -- dialect-inspect --file "$DIALECT"
+dotnet "${DOTNET_RUN[@]}" -- dialect-inspect --file "$DIALECT"
 
 run_backend() {
   local backend="$1"
   local output
-  output="$(dotnet run --project "$WISTC" -- run --dialect-file "$DIALECT" --file "$PROGRAM" --backend "$backend")"
+  output="$(dotnet "${DOTNET_RUN[@]}" -- run --dialect-file "$DIALECT" --file "$PROGRAM" --backend "$backend")"
   printf '%s\n' "$output"
   if ! grep -Eq '(^|[^0-9])95([.]0+)?([^0-9]|$)' <<<"$output"; then
     echo "ERROR: backend '$backend' did not expose expected pricing result 95." >&2
@@ -55,5 +62,5 @@ run_backend interpreter
 run_backend cil
 
 printf '%s\n' '[parity] external bindings + local shadowing'
-dotnet test "$TESTS" --filter "$TEST_FILTER" --verbosity minimal
+dotnet "${DOTNET_TEST[@]}"
 printf '%s\n' '[parity] shadowing regression PASS'
