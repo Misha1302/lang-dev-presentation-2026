@@ -9,8 +9,7 @@ research=(ROOT/'speaker-notes-research.js').read_text(encoding='utf-8')
 m=re.search(r'Object\.assign\(window\.SPEAKER_NOTES,\s*(\{.*\})\);\s*$',research,re.S)
 assert m
 notes.update(json.loads(m.group(1)))
-main=[notes[f'm{i}'] for i in range(1,66)]
-# Approximate spoken time from note word count, bounded only to catch empty/pathological notes.
+main=[notes[f'm{i}'] for i in range(1,68)]
 secs=[]
 for note in main:
     words=len(re.findall(r'[\wА-Яа-яЁё-]+',note))

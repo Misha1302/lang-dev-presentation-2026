@@ -20,6 +20,18 @@ monolithic evolution pressure
 → whole-IR / global optimization remains possible
 ```
 
+Before the deeper research layer, the deck now earns the title with two repository-backed current-implementation witnesses:
+
+```text
+exact AIR pattern + static slot/type + backend capability
+→ 3 generic representation steps
+→ 1 typed intrinsic
+
+shared upstream binding semantics
+→ Interpreter / CIL routes
+→ relational parity regression
+```
+
 Only then does the talk enter the deeper research layer:
 
 ```text
@@ -48,11 +60,11 @@ The deck explicitly distinguishes:
 
 Current UniversalToolchain implementation evidence is sourced from `master@1078ddb5b9fd83b569a8ef0e590c4bec9594e1c5` where cited on slides. The conference executable demo remains fail-closed on the separately pinned snapshot `7005371d6c30175dff4b0e9f906a26218b0ee54d` used by `demo/run-demo.sh` and CI.
 
-Important planner correction: the old failure mode “choose the cheapest conversion skeleton before mandatory pass placement” is presented as an **already repaired implementation lesson**, not as a current bug. Current UT's adopted structural planner contract applies hard feasibility/mandatory constraints before `Cost`/`Order` preference. General semantic obligations, evidence/validity and cross-level meaning remain broader design/research work.
+Important planner correction: the old failure mode “choose the cheapest conversion skeleton before mandatory pass placement” is presented as an **already repaired implementation lesson**, not as a current bug. Current UT's planner applies declared artifact-contract/route feasibility and mandatory constraints before `Cost`/`Order` preference. It does **not** prove semantic equivalence of independently authored artifact contracts merely because declared identities match. General semantic obligations, evidence/validity and cross-level meaning remain broader design/research work.
 
 ## Deck size
 
-The intellectual deck contains **65 main slides + 6 appendix slides**. There is intentionally no upper slide-count or timing gate in this pass; shortening is a later editorial task after the causal structure is stable.
+The intellectual deck contains **67 main slides + 6 appendix slides**. There is intentionally no upper slide-count or timing gate in this pass; shortening is a later editorial task after the causal structure is stable.
 
 ## Runtime assets
 
