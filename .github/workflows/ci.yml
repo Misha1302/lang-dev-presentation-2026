@@ -19,17 +19,15 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Validate authored HTML, live notes, narrative and demo/source contract
+      - name: Validate authored deck, notes and causal narrative
         run: python3 scripts/check_deck.py
-      - name: Check JavaScript syntax for deck and live speaker notes
+      - name: Check JavaScript syntax for runtime and split deck assets
         run: |
           node --check deck.js
-          node --check speaker-notes-1.js
-          node --check speaker-notes-2.js
-          node --check speaker-notes-hardening.js
-      - name: Audit authored conference timing budget
+          for file in deck-act-*.js speaker-notes-*.js; do node --check "$file"; done
+      - name: Audit intellectual-deck timing without an upper cap
         run: python3 scripts/timing_audit.py
-      - name: Checkout exact UniversalToolchain truth snapshot
+      - name: Checkout exact UniversalToolchain demo snapshot
         uses: actions/checkout@v4
         with:
           repository: Misha1302/UniversalToolchain
@@ -51,7 +49,7 @@ jobs:
           grep -Fq "[pricing:cil] result=95" demo-stage-output.txt
           grep -Fq "[parity] external bindings + local shadowing" demo-stage-output.txt
           grep -Fq "[parity] shadowing regression PASS" demo-stage-output.txt
-      - name: Render-check all slides at conference viewports
+      - name: Render-check every slide at conference and stress viewports
         run: python3 scripts/check_render.py
       - name: Re-open deployed GitHub Pages in Chromium
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

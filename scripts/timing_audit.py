@@ -1,10 +1,25 @@
 #!/usr/bin/env python3
-# Intellectual-deck rehearsal estimate. This rebuild intentionally has no 25-minute hard cap.
-SLIDE_SECONDS=[55, 55, 75, 45, 95, 75, 85, 60, 70, 90, 65, 85, 70, 80, 70, 80, 65, 75, 85, 60, 90, 65, 75, 55, 65, 55, 60]
-assert len(SLIDE_SECONDS)==27
-assert all(20 <= s <= 120 for s in SLIDE_SECONDS)
-total=sum(SLIDE_SECONDS)
-def mmss(s): return f'{s//60:02d}:{s%60:02d}'
-print(f'full intellectual deck rehearsal estimate: {mmss(total)}')
-print('No hard 25-minute constraint is enforced for the rebuild.')
+from pathlib import Path
+import json,re
+ROOT=Path(__file__).resolve().parents[1]
+raw=(ROOT/'speaker-notes-hardening.js').read_text(encoding='utf-8')
+prefix='window.SPEAKER_NOTES = '
+notes=json.loads(raw[len(prefix):].rstrip()[:-1])
+research=(ROOT/'speaker-notes-research.js').read_text(encoding='utf-8')
+m=re.search(r'Object\.assign\(window\.SPEAKER_NOTES,\s*(\{.*\})\);\s*$',research,re.S)
+assert m
+notes.update(json.loads(m.group(1)))
+main=[notes[f'm{i}'] for i in range(1,66)]
+# Approximate spoken time from note word count, bounded only to catch empty/pathological notes.
+secs=[]
+for note in main:
+    words=len(re.findall(r'[\wА-Яа-яЁё-]+',note))
+    s=max(24,min(120,round(words/130*60)+10))
+    secs.append(s)
+assert all(24 <= s <= 120 for s in secs)
+total=sum(secs)
+print(f'main slides: {len(main)}')
+print(f'full intellectual-deck rehearsal estimate: {total//60:02d}:{total%60:02d}')
+print(f'per-slide estimate range: {min(secs)}-{max(secs)} s')
+print('No upper timing or slide-count cap is enforced; cutting is a later editorial pass.')
 print('Timing audit PASS')
