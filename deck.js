@@ -1,5 +1,7 @@
 const DECK_QA_CONTRACT = 'semantic-composition-v1';
 document.documentElement.dataset.deckQaContract = DECK_QA_CONTRACT;
+const VISUAL_CHECK_MODE = new URLSearchParams(location.search).get('visual-check') === '1';
+if(VISUAL_CHECK_MODE) document.documentElement.classList.add('visual-check-mode');
 
 const presenterStyles = document.createElement('link');
 presenterStyles.rel = 'stylesheet';
