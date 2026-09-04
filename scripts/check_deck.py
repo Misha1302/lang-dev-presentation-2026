@@ -27,20 +27,22 @@ class P(HTMLParser):
         if self.cur is not None:self.buf.append(data)
 p=P(); p.feed(fragments)
 main=[s for s in p.slides if s[0].get('data-kind')!='appendix']; appendix=[s for s in p.slides if s[0].get('data-kind')=='appendix']
-assert len(main)==65, f'expected 65 main slides, got {len(main)}'
+assert len(main)==67, f'expected 67 main slides, got {len(main)}'
 assert len(appendix)==6, f'expected 6 appendix slides, got {len(appendix)}'
-assert [x[0].get('data-note-key') for x in main]==[f'm{i}' for i in range(1,66)]
+assert [x[0].get('data-note-key') for x in main]==[f'm{i}' for i in range(1,68)]
 assert [x[0].get('data-note-key') for x in appendix]==[f'a{i}' for i in range(1,7)]
 assert 'data-deck-qa-contract="semantic-composition-v1"' in index
 for name in [f'deck-act-{i}.js' for i in range(1,10)]+['speaker-notes-hardening.js','speaker-notes-research.js','deck.js','styles.css','foundation.css','presenter.css']:
     assert (ROOT/name).exists(), f'missing runtime asset {name}'
 text='\n'.join(x[1] for x in main)
-foundation=['A small language rarely stays small','What if language features were reusable components','same bricks can produce different language profiles','Here “dialect” means language profile / configuration','The DSL declares WHAT language / policy we want','First, the generic compiler picture','Wist has a concrete multi-stage pipeline','A list of stages stops being enough','Definition → Compiler → Plan → Runtime','Extensibility can exist mostly during authoring and planning','Module boundaries should not become permanent optimization boundaries','FEASIBILITY FIRST. PREFERENCE SECOND.','Deep abstractions for authoring → one concrete compiler for optimization']
+full_text='\n'.join(x[1] for x in p.slides)
+foundation=['A small language rarely stays small','What if language features were reusable components','The same ecosystem can produce different language profiles','Here “dialect” means language profile / configuration','The DSL declares WHAT language / policy we want','One useful compiler mental model','Wist has a concrete multi-stage pipeline','A list of stages stops being enough','Definition → Compiler → Plan → Runtime','Extensibility can exist mostly during authoring and planning','Module boundaries should not become permanent optimization boundaries','FEASIBILITY FIRST. PREFERENCE SECOND.','Deep abstractions for authoring → a resolved compiler that can still optimize globally']
+current_bridge=['Here one representation abstraction actually disappears','Backends may differ in representation — not in binding meaning']
 research=['Producer × consumer wiring does not scale','Change zero existing consumers','Stable semantic contracts','contextual Judgement','OBLIGATIONS','Lowering is not semantic refinement','upward semantic projection','Add a producer. Change zero consumers. Measure what actually improves.']
-for anchor in foundation+research:
+for anchor in foundation+current_bridge+research:
     assert anchor in text, f'missing narrative anchor: {anchor}'
-pos={a:text.index(a) for a in foundation+research}
-assert pos['Deep abstractions for authoring → one concrete compiler for optimization'] < pos['Producer × consumer wiring does not scale']
+pos={a:text.index(a) for a in foundation+current_bridge+research}
+assert pos['Deep abstractions for authoring → a resolved compiler that can still optimize globally'] < pos['Here one representation abstraction actually disappears'] < pos['Backends may differ in representation — not in binding meaning'] < pos['Producer × consumer wiring does not scale']
 assert pos['Producer × consumer wiring does not scale'] < pos['contextual Judgement'] < pos['OBLIGATIONS'] < pos['upward semantic projection']
 assert 'Not MLIR dialect' in text and text.index('Not MLIR dialect') < text.index('MLIR already makes extensibility')
 assert 'CURRENT UT' in text and 'RESEARCH HYPOTHESIS' in text and 'DESIGN SKETCH' in text and 'ANALOGY' in text
@@ -54,7 +56,25 @@ raw_research=(ROOT/'speaker-notes-research.js').read_text(encoding='utf-8')
 m=re.search(r'Object\.assign\(window\.SPEAKER_NOTES,\s*(\{.*\})\);\s*$',raw_research,re.S)
 assert m
 notes.update(json.loads(m.group(1)))
-for key in [f'm{i}' for i in range(1,66)]+[f'a{i}' for i in range(1,7)]:
+for key in [f'm{i}' for i in range(1,68)]+[f'a{i}' for i in range(1,7)]:
     assert key in notes and 'СКАЗАТЬ:' in notes[key], f'missing usable note {key}'
-assert len(notes)==71
-print('Deck contract PASS: 65 main + 6 appendix; foundation precedes Judgement/Obligations; current/proposed/prior-art boundaries present')
+assert len(notes)==73
+# Semantic regression boundaries from CONTENT_SEMANTIC_AUDIT_2026-09-04.md.
+assert 'Extensibility includes subtraction and policy' not in text
+assert 'explicit constraints and policy' in text and 'not base-profile subtraction or inheritance' in text
+assert 'preplanned route for each enabled backend' in text
+assert 'declared contract / route feasibility' in text
+assert 'matching contract identities do not prove semantic equivalence' in text
+assert 'Wist module, Feature, Contribution' in text
+assert 'profile requests four Wist module aliases' in text
+assert 'LoadEnvironment()' in text and 'LoadExternal<double>(slot)' in text and 'Three AIR instructions become one typed intrinsic' in text
+assert 'relational evidence, not a proof of equivalence' in text
+assert 'HYPOTHETICAL / PROPOSED' in text
+assert 'partially orthogonal axes' in text
+assert 'PROPOSED PLANNER MODEL' in text
+assert 'ILLUSTRATIVE LOWERING' in text
+assert 'soundness / false discharge' in text and 'stale or contradictory evidence must not discharge' in text
+assert 'extensible semantic-contract layer' in text and 'not one universal ontology or one solver' in text
+assert 'Plugin systems can define APIs, lifecycle and extension points' in full_text
+assert 'Resolve composition abstractions before execution; keep semantics available through transformation.' in text
+print('Deck contract PASS: 67 main + 6 appendix; foundation → current deabstraction/parity → research; audited semantic boundaries present')
