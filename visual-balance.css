@@ -1,77 +1,56 @@
 /*
- * Optical mass normalization for compact left-aligned stack slides.
+ * Vertical-composition ownership for explanatory / technical stack slides.
  *
- * The audited slides below share the same failure mode: the slide header and a
- * comparatively small primary visual form one compositional group, but the
- * default stack layout pins that group to the top of the working area. Keep
- * their left alignment and slide-specific visual language; only move the
- * group's vertical center toward the middle working zone.
+ * Active .slide.stack surfaces are flex columns (styles.css), so block-axis
+ * auto margins on children participate in vertical layout. Several reusable
+ * visual primitives also use margin:auto for horizontal centering; in a flex
+ * column that accidentally creates vertical auto margins as well. The old
+ * repair compensated with a data-note-key allowlist and whole-slide centering,
+ * which moved some slideheads and left other archetypes inconsistent.
  *
- * Slides with deliberate bottom anchors (.bigq/.caption), dense/tall content,
- * or centered composition are intentionally excluded.
+ * Model:
+ *   1. slidehead remains the stable top/left anchor;
+ *   2. primary visual + optional takeaway/caption form one semantic cluster;
+ *   3. that cluster shares the remaining usable height above the nav/sourcebar;
+ *   4. dense clusters naturally consume the free space and fall back to flow.
+ *
+ * Only block-axis margins are normalized, so primitives that intentionally use
+ * inline auto margins keep their horizontal centering.
  */
-.slide.stack.active:is(
-  [data-note-key="m7"],
-  [data-note-key="m17"],
-  [data-note-key="m22"],
-  [data-note-key="m24"],
-  [data-note-key="m28"],
-  [data-note-key="m42"],
-  [data-note-key="m49"],
-  [data-note-key="m66"],
-  [data-note-key="a1"],
-  [data-note-key="a2"],
-  [data-note-key="a3"],
-  [data-note-key="a4"],
-  [data-note-key="a6"]
-) {
-  justify-content: center;
-  padding-top: 6.8vh;
+.slide.stack.active > :not(.slidehead):not(.sourcebar) {
+  margin-block: 0;
+}
+
+/* Center the semantic cluster inside the height left below the slidehead. */
+.slide.stack.active > .slidehead + :not(.sourcebar) {
+  margin-top: auto;
+}
+
+/* Slides without a sourcebar: the last semantic child closes the cluster. */
+.slide.stack.active > :not(.slidehead):not(.sourcebar):last-child {
+  margin-bottom: auto;
+}
+
+/* Slides with an absolutely positioned sourcebar: close one child earlier. */
+.slide.stack.active:has(> .sourcebar)
+  > :not(.slidehead):not(.sourcebar):nth-last-child(2) {
+  margin-bottom: auto;
 }
 
 /*
- * At smaller desktop sizes preserve the same optical intent while leaving more
- * headroom for wrapped headings. The existing bottom padding/nav/sourcebar
- * geometry remains untouched.
+ * Narrow/mobile layouts can become much taller when multi-column primitives
+ * collapse. Prefer normal top-down flow there instead of centering a tall
+ * semantic cluster. Conference validation starts at 1280px, but this preserves
+ * the existing small-screen safety behavior.
  */
-@media (max-width: 1400px) {
-  .slide.stack.active:is(
-    [data-note-key="m7"],
-    [data-note-key="m17"],
-    [data-note-key="m22"],
-    [data-note-key="m24"],
-    [data-note-key="m28"],
-    [data-note-key="m42"],
-    [data-note-key="m49"],
-    [data-note-key="m66"],
-    [data-note-key="a1"],
-    [data-note-key="a2"],
-    [data-note-key="a3"],
-    [data-note-key="a4"],
-    [data-note-key="a6"]
-  ) {
-    padding-top: 6.1vh;
-  }
-}
-
-/* Mobile stacking can become much taller, so centering is intentionally off. */
 @media (max-width: 900px) {
-  .slide.stack.active:is(
-    [data-note-key="m7"],
-    [data-note-key="m17"],
-    [data-note-key="m22"],
-    [data-note-key="m24"],
-    [data-note-key="m28"],
-    [data-note-key="m42"],
-    [data-note-key="m49"],
-    [data-note-key="m66"],
-    [data-note-key="a1"],
-    [data-note-key="a2"],
-    [data-note-key="a3"],
-    [data-note-key="a4"],
-    [data-note-key="a6"]
-  ) {
-    justify-content: flex-start;
-    padding-top: 4.4vh;
+  .slide.stack.active > .slidehead + :not(.sourcebar) {
+    margin-top: 0;
+  }
+
+  .slide.stack.active > :not(.slidehead):not(.sourcebar):last-child,
+  .slide.stack.active:has(> .sourcebar)
+    > :not(.slidehead):not(.sourcebar):nth-last-child(2) {
+    margin-bottom: 0;
   }
 }
