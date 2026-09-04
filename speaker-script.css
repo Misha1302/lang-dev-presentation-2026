@@ -1,0 +1,15 @@
+/* Presenter panel is a teleprompter: show only the words to be spoken. */
+body.presenter-mode .notes .presenter-note-section h3{
+  display:none!important;
+}
+body.presenter-mode .notes .presenter-note-section{
+  padding:.9rem 1rem!important;
+  border:1px solid rgba(125,211,252,.30)!important;
+  border-left:4px solid var(--accent)!important;
+  border-radius:14px!important;
+  background:rgba(125,211,252,.07)!important;
+}
+body.presenter-mode .notes .presenter-note-section p{
+  color:var(--fg)!important;
+  font-weight:560!important;
+}
