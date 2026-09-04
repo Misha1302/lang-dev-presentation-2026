@@ -15,8 +15,8 @@ browser=next((n for n in ['google-chrome-stable','google-chrome','chromium-brows
 if browser is None: print('Render check FAILED: Chrome/Chromium was not found'); sys.exit(1)
 server=subprocess.Popen([sys.executable,'-m','http.server','8878','--bind','127.0.0.1'],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 common=[browser,'--headless=new','--disable-gpu','--disable-dev-shm-usage','--no-sandbox','--no-first-run']
-required=[(1920,1080),(1366,768)]; stress=[(1536,864),(1280,720)]; presenter_vp=[(1920,1080),(1366,768),(1280,720)]
-presenter_targets=[f'#{i}' for i in [1,8,13,18,23,27,31,37,38,39,40,46,48,53,56,58,63,64,67]]+['#a5']
+required=[(1920,1080),(1366,768)]; stress=[(1536,864),(1280,720)]; screenshot_vp=required+[(1280,720)]; presenter_vp=[(1920,1080),(1366,768),(1280,720)]
+presenter_targets=[f'#{i}' for i in [1,8,9,11,13,18,23,27,31,37,38,39,40,46,48,53,56,58,63,64,67]]+['#a5']
 
 def inspect(width,height,target,presenter=False):
     mode='presenter=1&' if presenter else ''
@@ -53,7 +53,7 @@ try:
             marker='data-nav-errors="'; start=nav.stdout.find(marker); detail='navigation status missing'
             if start>=0: start+=len(marker); detail=nav.stdout[start:nav.stdout.find('"',start)]
             failures.append(f'navigation: {detail}')
-    for w,h in required:
+    for w,h in screenshot_vp:
         for target in targets:
             output=ARTIFACTS/f'{w}x{h}-{target[1:]}.png'; url=f'http://127.0.0.1:8878/{target}'
             try: shot=subprocess.run(common+[f'--window-size={w},{h}','--hide-scrollbars',f'--screenshot={output}',url],capture_output=True,text=True,timeout=25)
@@ -65,7 +65,7 @@ try:
             try: shot=subprocess.run(common+[f'--window-size={w},{h}','--hide-scrollbars',f'--screenshot={output}',url],capture_output=True,text=True,timeout=25)
             except subprocess.TimeoutExpired: failures.append(f'presenter screenshot {w}x{h} {target}: timeout'); continue
             if shot.returncode!=0 or not output.exists(): failures.append(f'presenter screenshot {w}x{h} {target}: failed')
-    expected=len(targets)*len(required)+len(presenter_targets)*len(presenter_vp); actual=len(list(ARTIFACTS.glob('*.png')))
+    expected=len(targets)*len(screenshot_vp)+len(presenter_targets)*len(presenter_vp); actual=len(list(ARTIFACTS.glob('*.png')))
     if actual!=expected: failures.append(f'screenshot coverage: expected {expected}, got {actual}')
     if failures:
         print('Render check FAILED:'); [print(' - '+x) for x in failures]; sys.exit(1)
