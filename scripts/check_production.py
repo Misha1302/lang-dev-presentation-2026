@@ -12,10 +12,10 @@ PRODUCTION='https://misha1302.github.io/lang-dev-presentation-2026/'
 sha=os.environ.get('GITHUB_SHA','unknown')
 raw='\n'.join(p.read_text(encoding='utf-8') for p in sorted(ROOT.glob('deck-act-*.js')))
 main_count=len(re.findall(r'data-kind="main"',raw)); appendix_count=len(re.findall(r'data-kind="appendix"',raw))
-if (main_count,appendix_count)!=(67,6): print('Production check FAILED: local deck count contract mismatch'); sys.exit(1)
+if (main_count,appendix_count)!=(68,7): print('Production check FAILED: local deck count contract mismatch'); sys.exit(1)
 browser=next((n for n in ['google-chrome-stable','google-chrome','chromium-browser','chromium'] if shutil.which(n)),None)
 if browser is None: print('Production check FAILED: Chrome/Chromium was not found'); sys.exit(1)
-assets=['deck.js','deck-act-2.js','deck-act-3.js','deck-act-4.js','deck-act-7.js','deck-act-8.js','foundation.css','styles.css','visual-balance.css']
+assets=['deck.js','deck-act-2.js','deck-act-3.js','deck-act-4.js','deck-act-5.js','deck-act-7.js','deck-act-8.js','deck-act-9.js','speaker-notes-research.js','foundation.css','styles.css','visual-balance.css']
 local_hashes={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in assets}
 deadline=time.time()+360; last=''
 while time.time()<deadline:
@@ -40,7 +40,7 @@ if nav:
     for marker in ['A small language rarely stays small','one representation abstraction actually disappears','Backends may differ in representation','Stable semantic contracts','upward semantic projection','soundness / false discharge']:
         if marker not in nav.stdout: failures.append(f'production narrative marker missing: {marker}')
     if 'data-deck-qa-contract="semantic-composition-v1"' not in nav.stdout: failures.append('production DOM contract marker mismatch')
-representative=['#1','#5','#7','#8','#9','#11','#13','#18','#23','#28','#34','#37','#38','#39','#40','#45','#48','#53','#56','#58','#63','#64','#67','#a5','#a6']
+representative=['#1','#5','#7','#8','#9','#11','#13','#18','#23','#27','#29','#35','#38','#39','#40','#41','#46','#49','#54','#57','#59','#64','#65','#68','#a5','#a6','#a7']
 for target in representative:
     url=f'{PRODUCTION}?visual-check=1&qa={quote(sha)}{target}'
     try: result=subprocess.run(common+['--window-size=1366,768','--dump-dom',url],capture_output=True,text=True,timeout=35)

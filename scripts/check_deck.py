@@ -26,10 +26,12 @@ class P(HTMLParser):
         if self.cur is not None:self.buf.append(data)
 p=P(); p.feed(fragments)
 main=[s for s in p.slides if s[0].get('data-kind')!='appendix']; appendix=[s for s in p.slides if s[0].get('data-kind')=='appendix']
-assert len(main)==67, f'expected 67 main slides, got {len(main)}'
-assert len(appendix)==6, f'expected 6 appendix slides, got {len(appendix)}'
-assert [x[0].get('data-note-key') for x in main]==[f'm{i}' for i in range(1,68)]
-assert [x[0].get('data-note-key') for x in appendix]==[f'a{i}' for i in range(1,7)]
+assert len(main)==68, f'expected 68 main slides, got {len(main)}'
+assert len(appendix)==7, f'expected 7 appendix slides, got {len(appendix)}'
+expected_main_keys=[f'm{i}' for i in range(1,27)]+['m26r']+[f'm{i}' for i in range(27,68)]
+expected_appendix_keys=[f'a{i}' for i in range(1,8)]
+assert [x[0].get('data-note-key') for x in main]==expected_main_keys
+assert [x[0].get('data-note-key') for x in appendix]==expected_appendix_keys
 assert 'data-deck-qa-contract="semantic-composition-v1"' in index
 for name in [f'deck-act-{i}.js' for i in range(1,10)]+['speaker-notes-hardening.js','speaker-notes-research.js','deck.js','styles.css','foundation.css','presenter.css']:
     assert (ROOT/name).exists(), f'missing runtime asset {name}'
@@ -104,7 +106,7 @@ raw_research=(ROOT/'speaker-notes-research.js').read_text(encoding='utf-8')
 m=re.search(r'Object\.assign\(window\.SPEAKER_NOTES,\s*(\{.*\})\);\s*$',raw_research,re.S)
 assert m
 notes.update(json.loads(m.group(1)))
-for key in [f'm{i}' for i in range(1,68)]+[f'a{i}' for i in range(1,7)]:
+for key in expected_main_keys+expected_appendix_keys:
     assert key in notes and 'СКАЗАТЬ:' in notes[key], f'missing usable note {key}'
-assert len(notes)==73, f'expected 73 unique note entries, got {len(notes)}'
-print('Deck contract PASS: 67 main + 6 appendix; audit repairs encoded; current evidence precedes research; semantic boundaries regression-checked')
+assert len(notes)==75, f'expected 75 unique note entries, got {len(notes)}'
+print('Deck contract PASS: 68 main + 7 appendix; bounded-reflection bridge encoded; current evidence precedes research; semantic boundaries regression-checked')

@@ -8,7 +8,7 @@ if ARTIFACTS.exists(): shutil.rmtree(ARTIFACTS)
 ARTIFACTS.mkdir()
 raw='\n'.join(p.read_text(encoding='utf-8') for p in sorted(ROOT.glob('deck-act-*.js')))
 main_count=len(re.findall(r'data-kind="main"',raw)); appendix_count=len(re.findall(r'data-kind="appendix"',raw))
-if main_count!=67 or appendix_count!=6:
+if main_count!=68 or appendix_count!=7:
     print(f'Render check FAILED: discovered {main_count} main + {appendix_count} appendix'); sys.exit(1)
 targets=[f'#{i}' for i in range(1,main_count+1)]+[f'#a{i}' for i in range(1,appendix_count+1)]
 browser=next((n for n in ['google-chrome-stable','google-chrome','chromium-browser','chromium'] if shutil.which(n)),None)
@@ -16,7 +16,7 @@ if browser is None: print('Render check FAILED: Chrome/Chromium was not found');
 server=subprocess.Popen([sys.executable,'-m','http.server','8878','--bind','127.0.0.1'],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 common=[browser,'--headless=new','--disable-gpu','--disable-dev-shm-usage','--no-sandbox','--no-first-run']
 required=[(1920,1080),(1366,768)]; stress=[(1536,864),(1280,720)]; screenshot_vp=required+[(1280,720)]; presenter_vp=[(1920,1080),(1366,768),(1280,720)]
-presenter_targets=[f'#{i}' for i in [1,8,9,11,13,18,23,27,31,37,38,39,40,46,48,53,56,58,63,64,67]]+['#a5']
+presenter_targets=[f'#{i}' for i in [1,8,9,11,13,18,23,27,28,32,38,39,40,41,47,49,54,57,59,64,65,68]]+['#a5','#a7']
 
 def inspect(width,height,target,presenter=False):
     mode='presenter=1&' if presenter else ''

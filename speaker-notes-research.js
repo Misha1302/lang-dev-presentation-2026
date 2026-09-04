@@ -5,12 +5,13 @@ Object.assign(window.SPEAKER_NOTES, {
   "m18": "СКАЗАТЬ: The generic pipeline is a teaching model; real compilers may interleave or repeat lowering and optimization stages.",
   "m25": "СКАЗАТЬ: LanguagePlan is a resolved configuration artifact with features, contributions, runtime provider and a route for each enabled backend.",
   "m26": "СКАЗАТЬ: One resolved plan contains preplanned routes for enabled backends; each execution chooses one backend. This is not a zero-overhead claim.",
+  "m26r": "СКАЗАТЬ: CURRENT UT: reflection runs only after LanguagePlan has selected the exact implementation types. SelectedCapabilityCatalogBuilder performs no feature/package/backend/route selection; CapabilityProviderTypeResolver reads provider attributes, validates known provider interfaces and applies explicit deterministic ordering. Reflection removes wiring, not planning. ПЕРЕХОД: open-world authoring does not require open-world execution.",
   "m34": "СКАЗАТЬ: Current UT checks declared artifact-contract/route feasibility plus mandatory/order/provider constraints before preference; it does not prove semantic equivalence.",
   "m35": "СКАЗАТЬ: Matching declared contract identities let the planner connect a route, but do not prove that independently authored components preserve the same meaning. Cost is only preference.",
   "m37": "СКАЗАТЬ: The first half establishes an architectural target. Now we need a current implementation witness where representation machinery really disappears.",
   "m38": "СКАЗАТЬ: CURRENT UT: exact LoadEnvironment + Push(slot) + LoadExternal<T> becomes typed LoadExternal<T>(slot) only with known slot/type and backend capability. Three AIR steps disappear; semantics do not.",
   "m39": "СКАЗАТЬ: CURRENT UT: Interpreter and CIL preserve one upstream shadowing/binding meaning. Parity is relational evidence for tested programs, not proof for every Wist program.",
-  "m40": "СКАЗАТЬ: The research layer begins only after shipped planning/deabstraction/parity evidence. Independent components also derive knowledge.",
+  "m40": "СКАЗАТЬ: We already use the structural shape in current UT: a selected module can expose a typed capability provider without the generic layer hard-coding that module. The research question is whether a similarly stable boundary can carry richer semantic knowledge. This is an analogy of architecture shape, not implementation equivalence.",
   "m41": "СКАЗАТЬ: A refinement producer may know a fact useful to a bounds consumer; the consumer should not depend on the concrete producer API.",
   "m42": "СКАЗАТЬ: Direct producer×consumer adapters grow pairwise. The goal is a stable shared query boundary.",
   "m43": "СКАЗАТЬ: Falsifiable target: add a producer, change zero existing consumers. This is proposed, not current UT behavior.",
@@ -43,5 +44,6 @@ Object.assign(window.SPEAKER_NOTES, {
   "a3": "СКАЗАТЬ: Transformations need invalidation rules; stale knowledge is a correctness risk.",
   "a4": "СКАЗАТЬ: Split, merge/fusion and deletion explain why universal inverse lowering fails.",
   "a5": "СКАЗАТЬ: Current UT: config, Feature/Contribution planning, routes/plans, typed AIR rewrite and Interpreter/CIL parity. Proposed: Judgement/obligations/projection.",
-  "a6": "СКАЗАТЬ: Plugin systems can define loading/lifecycle/APIs, but loading alone does not define semantic composition, route legality or cross-component knowledge reuse."
+  "a6": "СКАЗАТЬ: Plugin systems can define loading/lifecycle/APIs, but loading alone does not define semantic composition, route legality or cross-component knowledge reuse.",
+  "a7": "СКАЗАТЬ: Reflection is replaceable. Current generic authoring supports explicit typed registration; current capability projection uses bounded reflection over already selected implementation types. Source-generated registration is an architectural alternative if trimming/AOT becomes a requirement. НЕ ПЕРЕОБЕЩАТЬ: Native AOT support and broad external-package auto-discovery are not current UT claims."
 });
