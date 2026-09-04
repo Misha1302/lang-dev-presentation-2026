@@ -54,3 +54,84 @@
     margin-bottom: 0;
   }
 }
+
+/*
+ * Whole-group optical centering for audited compact stacks with metadata
+ * captions. On these slides the eyebrow/title, primary visual, and small
+ * caption form one compositional unit. Keeping the slidehead pinned to the top
+ * still makes the visual center jump relative to neighbouring slides, even
+ * though the visual itself is centered in the remaining height.
+ *
+ * This is deliberately narrow: dense stacks and stacks with intentional lower
+ * anchors keep the systemic rule above. Left alignment is unchanged; only the
+ * block-axis placement of the audited group is adjusted.
+ */
+@media (min-width: 901px) {
+  .slide.stack.active:is(
+    [data-note-key="m37"],
+    [data-note-key="m44"],
+    [data-note-key="m45"],
+    [data-note-key="m50"],
+    [data-note-key="m52"],
+    [data-note-key="m53"],
+    [data-note-key="m56"],
+    [data-note-key="m59"]
+  ) {
+    justify-content: center;
+    padding-top: 6.8vh;
+  }
+
+  .slide.stack.active:is(
+    [data-note-key="m37"],
+    [data-note-key="m44"],
+    [data-note-key="m45"],
+    [data-note-key="m50"],
+    [data-note-key="m52"],
+    [data-note-key="m53"],
+    [data-note-key="m56"],
+    [data-note-key="m59"]
+  ) > .slidehead + :not(.sourcebar) {
+    margin-top: 0;
+  }
+
+  .slide.stack.active:is(
+    [data-note-key="m37"],
+    [data-note-key="m44"],
+    [data-note-key="m45"],
+    [data-note-key="m50"],
+    [data-note-key="m52"],
+    [data-note-key="m53"],
+    [data-note-key="m56"],
+    [data-note-key="m59"]
+  ) > :not(.slidehead):not(.sourcebar):last-child {
+    margin-bottom: 0;
+  }
+
+  .slide.stack.active:is(
+    [data-note-key="m37"],
+    [data-note-key="m44"],
+    [data-note-key="m45"],
+    [data-note-key="m50"],
+    [data-note-key="m52"],
+    [data-note-key="m53"],
+    [data-note-key="m56"],
+    [data-note-key="m59"]
+  ) > .caption {
+    margin-top: .95rem;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1400px) {
+  .slide.stack.active:is(
+    [data-note-key="m37"],
+    [data-note-key="m44"],
+    [data-note-key="m45"],
+    [data-note-key="m50"],
+    [data-note-key="m52"],
+    [data-note-key="m53"],
+    [data-note-key="m56"],
+    [data-note-key="m59"]
+  ) {
+    padding-top: 6.1vh;
+  }
+}
