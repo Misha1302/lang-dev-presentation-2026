@@ -1,0 +1,77 @@
+/*
+ * Optical mass normalization for compact left-aligned stack slides.
+ *
+ * The audited slides below share the same failure mode: the slide header and a
+ * comparatively small primary visual form one compositional group, but the
+ * default stack layout pins that group to the top of the working area. Keep
+ * their left alignment and slide-specific visual language; only move the
+ * group's vertical center toward the middle working zone.
+ *
+ * Slides with deliberate bottom anchors (.bigq/.caption), dense/tall content,
+ * or centered composition are intentionally excluded.
+ */
+.slide.stack.active:is(
+  [data-note-key="m7"],
+  [data-note-key="m17"],
+  [data-note-key="m22"],
+  [data-note-key="m24"],
+  [data-note-key="m28"],
+  [data-note-key="m42"],
+  [data-note-key="m49"],
+  [data-note-key="m66"],
+  [data-note-key="a1"],
+  [data-note-key="a2"],
+  [data-note-key="a3"],
+  [data-note-key="a4"],
+  [data-note-key="a6"]
+) {
+  justify-content: center;
+  padding-top: 6.8vh;
+}
+
+/*
+ * At smaller desktop sizes preserve the same optical intent while leaving more
+ * headroom for wrapped headings. The existing bottom padding/nav/sourcebar
+ * geometry remains untouched.
+ */
+@media (max-width: 1400px) {
+  .slide.stack.active:is(
+    [data-note-key="m7"],
+    [data-note-key="m17"],
+    [data-note-key="m22"],
+    [data-note-key="m24"],
+    [data-note-key="m28"],
+    [data-note-key="m42"],
+    [data-note-key="m49"],
+    [data-note-key="m66"],
+    [data-note-key="a1"],
+    [data-note-key="a2"],
+    [data-note-key="a3"],
+    [data-note-key="a4"],
+    [data-note-key="a6"]
+  ) {
+    padding-top: 6.1vh;
+  }
+}
+
+/* Mobile stacking can become much taller, so centering is intentionally off. */
+@media (max-width: 900px) {
+  .slide.stack.active:is(
+    [data-note-key="m7"],
+    [data-note-key="m17"],
+    [data-note-key="m22"],
+    [data-note-key="m24"],
+    [data-note-key="m28"],
+    [data-note-key="m42"],
+    [data-note-key="m49"],
+    [data-note-key="m66"],
+    [data-note-key="a1"],
+    [data-note-key="a2"],
+    [data-note-key="a3"],
+    [data-note-key="a4"],
+    [data-note-key="a6"]
+  ) {
+    justify-content: flex-start;
+    padding-top: 4.4vh;
+  }
+}
