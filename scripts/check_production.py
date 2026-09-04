@@ -15,7 +15,7 @@ main_count=len(re.findall(r'data-kind="main"',raw)); appendix_count=len(re.finda
 if (main_count,appendix_count)!=(67,6): print('Production check FAILED: local deck count contract mismatch'); sys.exit(1)
 browser=next((n for n in ['google-chrome-stable','google-chrome','chromium-browser','chromium'] if shutil.which(n)),None)
 if browser is None: print('Production check FAILED: Chrome/Chromium was not found'); sys.exit(1)
-assets=['deck-act-2.js','deck-act-3.js','deck-act-4.js','deck-act-7.js','deck-act-8.js','foundation.css']
+assets=['deck.js','deck-act-2.js','deck-act-3.js','deck-act-4.js','deck-act-7.js','deck-act-8.js','foundation.css']
 local_hashes={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in assets}
 deadline=time.time()+360; last=''
 while time.time()<deadline:
@@ -45,7 +45,11 @@ for target in representative:
     url=f'{PRODUCTION}?visual-check=1&qa={quote(sha)}{target}'
     try: result=subprocess.run(common+['--window-size=1366,768','--dump-dom',url],capture_output=True,text=True,timeout=35)
     except subprocess.TimeoutExpired: failures.append(f'production {target}: browser timeout'); continue
-    if result.returncode!=0 or 'data-visual-check="ok"' not in result.stdout: failures.append(f'production {target}: visual-check failed'); continue
+    if result.returncode!=0 or 'data-visual-check="ok"' not in result.stdout:
+        marker='data-visual-errors="'; start=result.stdout.find(marker); detail='visual-check failed'
+        if start>=0:
+            start+=len(marker); detail=result.stdout[start:result.stdout.find('"',start)] or detail
+        failures.append(f'production {target}: {detail}'); continue
     output=ARTIFACTS/f'1366x768-{target[1:]}.png'; shot_url=f'{PRODUCTION}?qa={quote(sha)}{target}'
     try: shot=subprocess.run(common+['--window-size=1366,768','--hide-scrollbars',f'--screenshot={output}',shot_url],capture_output=True,text=True,timeout=35)
     except subprocess.TimeoutExpired: failures.append(f'production screenshot {target}: timeout'); continue
