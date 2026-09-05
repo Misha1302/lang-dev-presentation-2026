@@ -8,8 +8,8 @@ raw = (ROOT / 'speaker-script-canonical.js').read_text(encoding='utf-8')
 match = re.search(r'window\.SPEAKER_SCRIPT\s*=\s*Object\.freeze\((\{.*\})\);\s*$', raw, re.S)
 assert match, 'cannot parse canonical speaker script'
 speech = json.loads(match.group(1))
-main_keys = [f'm{i}' for i in range(1, 49)]
-assert list(speech)[:48] == main_keys, 'main script order mismatch'
+main_keys = [f'm{i}' for i in range(1, 53)]
+assert list(speech)[:52] == main_keys, 'main script order mismatch'
 
 word_counts = [len(re.findall(r"[\w'-]+", speech[key])) for key in main_keys]
 seconds = [round(words / 130 * 60) for words in word_counts]
@@ -18,4 +18,5 @@ print(f'main slides: {len(main_keys)}')
 print(f'main spoken words: {sum(word_counts)}')
 print(f'rehearsal estimate at 130 wpm: {total // 60:02d}:{total % 60:02d}')
 print(f'per-slide spoken range: {min(seconds)}-{max(seconds)} s')
-print('Timing audit PASS: estimate is informational; no artificial slide-count cap is enforced')
+assert 25 * 60 <= total <= 27 * 60, f'timing contract outside 25-27 min: {total // 60:02d}:{total % 60:02d}'
+print('Timing audit PASS: canonical main script stays inside the 25-27 minute rehearsal envelope at 130 wpm')
