@@ -8,8 +8,8 @@ raw = (ROOT / 'speaker-script-canonical.js').read_text(encoding='utf-8')
 match = re.search(r'window\.SPEAKER_SCRIPT\s*=\s*Object\.freeze\((\{.*\})\);\s*$', raw, re.S)
 assert match, 'cannot parse canonical speaker script'
 speech = json.loads(match.group(1))
-main_keys = [f'm{i}' for i in range(1, 41)]
-assert list(speech)[:40] == main_keys, 'main script order mismatch'
+main_keys = [f'm{i}' for i in range(1, 49)]
+assert list(speech)[:48] == main_keys, 'main script order mismatch'
 
 word_counts = [len(re.findall(r"[\w'-]+", speech[key])) for key in main_keys]
 seconds = [round(words / 130 * 60) for words in word_counts]
