@@ -99,7 +99,7 @@ anchors = [
     'FEASIBILITY FIRST.',
     'Resolve the open world once.',
     'Extensibility machinery can stay off the runtime hot path',
-    'Peephole optimization looks at a small window',
+    'Peephole optimization replaces an exact pattern in a small window',
     'Local rewrites are easy. Global optimization needs shared facts.',
     'A bounds check is a non-local proof problem',
     'Two authors should not need a private handshake for semantic knowledge either.',
