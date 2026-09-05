@@ -20,7 +20,7 @@ deck_assets = [name for name in load_order if name.startswith('deck-') and name 
 raw = '\n'.join((ROOT / name).read_text(encoding='utf-8') for name in deck_assets)
 main_count = len(re.findall(r'data-kind="main"', raw))
 appendix_count = len(re.findall(r'data-kind="appendix"', raw))
-if (main_count, appendix_count) != (40, 8):
+if (main_count, appendix_count) != (48, 8):
     print(f'Render check FAILED: discovered {main_count} main + {appendix_count} appendix')
     sys.exit(1)
 
