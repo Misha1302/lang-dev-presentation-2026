@@ -2,64 +2,64 @@
 
 Conference talk:
 
-> **Build an extensible language. Resolve it into one compiler.**
+> **Author many language pieces. Resolve one compiler. Keep the meaning.**
 
-The presentation is about a general compiler architecture question, not about UniversalToolchain internals:
+The presentation is about a general compiler-architecture question, not about UniversalToolchain internals:
 
-> How can independently authored language/compiler components compose into one concrete compiler, keep extensibility off the runtime hot path, retain local and non-local optimization opportunities, and preserve the semantic information later optimizers still need as representations are lowered?
+> How can independently authored language capabilities be reused and recombined into several concrete language profiles, resolved into one feasible compiler, optimized after composition machinery disappears, and still share the semantic knowledge required by later non-local optimizations?
 
-UniversalToolchain/Wist is used only as an **implementation witness** for mechanisms that exist today.
+UniversalToolchain/Wist is used only as an **implementation witness** for bounded mechanisms that exist today.
 
 ## Main narrative
 
-The rebuilt main deck is **48 slides** in eleven causal acts:
+The main deck is **52 slides**. The story is deliberately one causal chain rather than separate “dialect”, “planner”, and “optimization” sections:
 
-1. Why extensibility — and when a monolith is better.
-2. Reusable capabilities + declarative configuration → one resolved compiler plan.
-3. Planning as a correctness problem: representation requirements, route feasibility and the current UT planner regression.
-4. Extensibility is primarily authoring-time; it does not have to remain on the hot path.
-5. Local/peephole optimization and the concrete Wist AIR 3→1 rewrite.
-6. The correct performance-evidence boundary: setup vs prepared steady-state execution.
-7. Why local optimization is insufficient: the array-bounds proof example.
-8. A second semantic domain: write semantics, orthogonal effects and operation-centric queries.
-9. Independent semantic producers plus meaning/validity across lowering.
-10. LLVM/MLIR prior art, the strongest local-mechanism alternative and a falsifiable experiment.
-11. What is demonstrated vs what remains the research bet.
+1. A monolithic compiler remains the baseline; extensibility earns its cost only when reuse, variation or independent authorship matters.
+2. A **capability / extension** is a reusable authored compiler slice. A **dialect / language profile** is a concrete declarative composition of many such pieces. They are different entities.
+3. One ecosystem can produce multiple dialects. Extensibility therefore means both **adding new capabilities** and **recombining existing capabilities**.
+4. Independent authors should not need a private handshake. A dialect declares **WHAT** language is wanted; composition/planning resolves **HOW** to assemble it.
+5. The resulting compiler plan must be feasible before preferences rank alternatives. Optimization requirements can constrain representation routes, and the historical UT planner failure makes **FEASIBILITY FIRST. PREFERENCE SECOND.** an evidence-backed rule.
+6. Freeze open-world composition into one concrete plan so extensibility machinery can stay off the repeated runtime path.
+7. Local optimization can erase modular representation machinery; Wist AIR supplies a concrete 3→1 deabstraction witness.
+8. Global/non-local optimization needs shared facts. Range + extent knowledge motivates `SafeIndex(a,i)` and possible bounds-check elimination.
+9. The private-handshake problem returns at the semantic level: independently authored analyses and consumers need a stable way to exchange semantic knowledge without private producer-consumer APIs.
+10. `Write(place, value)` supplies a second semantic domain with volatility, atomicity, ordering, visibility, GC-barrier and transaction concerns. Operation-centric queries avoid encoding their cross-product as one inheritance lattice.
+11. Typed facts can become stale. `Judgement` models contextual valid knowledge; `Obligation` models what must hold before a transformation is legal.
+12. Representation and knowledge are separate axes. There is no universal inverse lowering, so later passes may need meaning preserved, exposed on the current representation, or re-analysed.
+13. LLVM and MLIR are prior art; local interfaces/adapters are the strongest alternative; the shared semantic-contract hypothesis must earn its complexity in a falsifiable producer experiment.
+14. The final synthesis separates **IMPLEMENTED WITNESS**, **GENERAL DESIGN**, and **RESEARCH HYPOTHESIS**, then reconnects the three themes as **AUTHOR → RESOLVE → OPTIMIZE**.
 
-The appendix contains **8 slides** for UT-specific terminology/configuration/planner staging, bounded reflection, parity evidence, validity/trust, the lower-level planner lesson and numerical benchmark publication requirements.
+The appendix remains **8 slides** for UT-specific terminology/configuration/planner staging, bounded reflection, parity evidence, validity/trust, lower-level planner detail and numerical benchmark publication requirements.
 
-## Why the 48-slide version
+## Central synthesis
 
-The 40-slide reduction was too aggressive in two places. This version restores both load-bearing arguments:
+> **Extensibility should disappear where it is machinery — and survive where it is meaning.**
 
-- planner causality is back in the main story: optimization/mandatory-pass requirements can constrain representation routes, a cheaper reachable route may be inadmissible, and the historical UT failure makes **feasibility before preference** an evidence-backed lesson rather than a slogan;
-- one bounds-check example is no longer carrying the entire semantic thesis: `Write(place, value)` supplies a second independent domain and shows why volatility, atomicity, ordering, visibility, GC-barrier and transaction concerns do not fit one inheritance lattice.
+- **AUTHOR** — independent capabilities can be added and recombined into multiple dialects.
+- **RESOLVE** — a declarative WHAT becomes one feasible concrete compiler HOW.
+- **OPTIMIZE** — composition and representation machinery can be erased while useful semantic knowledge is preserved, re-exposed or re-derived.
 
-Validity is also reintroduced through a concrete failure mode — typed facts can become stale after transformations — while broader research questions remain compact rather than expanding back into a UT tutorial.
+This is not a zero-overhead claim. Composition, compiler construction and compilation may cost more. Equal-or-better-than-C# performance is not guaranteed.
 
-## Central claims
+## Claim-status boundary
 
-The deck distinguishes only the status categories needed to interpret a claim:
+The deck uses three interpretation categories:
 
 - **IMPLEMENTED WITNESS** — current UT/Wist demonstrates the bounded mechanism/example;
 - **GENERAL DESIGN** — architecture argued by the talk;
-- **RESEARCH HYPOTHESIS** — not yet established and intended to be falsified or supported experimentally.
+- **RESEARCH HYPOTHESIS** — falsifiable architecture not yet established by the implementation.
 
-A central phrase is:
-
-> **Extensibility does not have to cost runtime performance.**
-
-That is deliberately not a claim that extensibility is free. Composition and compilation may cost more, and equal-or-better-than-C# performance is not guaranteed.
+UniversalToolchain remains evidence for the general argument, not its ontology. Wist-specific `module / Feature / Contribution` terminology and bounded-reflection details stay in the appendix.
 
 ## Performance evidence
 
-The main deck contains no numerical C#↔Wist performance ratio. Current UT has a BenchmarkDotNet hot-path suite with a prepared C# delegate baseline and a Wist compiled delegate, and it keeps composition/compilation/setup in separate suites. But a current reviewed raw Release artifact is not checked into this presentation repository, so numbers are withheld rather than reconstructed from memory or smoke jobs.
+The main deck contains no numerical C#↔Wist performance ratio. Current UT has a BenchmarkDotNet hot-path suite with a prepared C# delegate baseline and a Wist compiled delegate, and it keeps composition/compilation/setup in separate suites. A numerical conference claim remains withheld until a current reviewed raw Release BenchmarkDotNet artifact, environment metadata, source identity and correctness/parity precheck are preserved and reviewed.
 
 See `claims.md` for the exact publication boundary.
 
 ## Runtime assets
 
-- `deck-main.js` — 48-slide main story;
+- `deck-main.js` — 52-slide main story;
 - `deck-appendix.js` — 8-slide appendix;
 - `speaker-script-canonical.js` — the single canonical stage-ready English speaker script for every slide;
 - `deck.js` — navigation, presenter mode and geometry/runtime diagnostics;
@@ -72,7 +72,7 @@ Presenter mode does not load or merge legacy structured notes. The panel renders
 
 Conference-facing UT source links use moving `master` paths. The presentation architecture is not tied to a UT commit hash.
 
-Normal CI checks out current `master` intentionally and runs focused witness checks. Exact source/environment identity belongs in raw benchmark evidence when numerical reproducibility requires it; it is not a deck-wide truth snapshot.
+Normal CI checks current `master` intentionally and runs focused witness checks. Exact source/environment identity belongs in raw benchmark evidence when numerical reproducibility requires it; it is not a deck-wide truth snapshot.
 
 ## Presenter mode
 
@@ -92,10 +92,12 @@ python3 scripts/timing_audit.py
 python3 scripts/check_render.py
 ```
 
-`check_deck.py` reconstructs the actual script load order from `index.html`, verifies 48 main + 8 appendix keys, enforces planner/semantic/lowering causal anchors, rejects conference-facing UT commit pins, and proves that exactly one `speaker-script-*.js` owner supplies complete spoken text.
+`check_deck.py` reconstructs the actual script load order, verifies 52 main + 8 appendix keys, enforces the causal dialect/extensibility → planner → local/global → semantic-contract → lowering → synthesis story, keeps planner/Write blocks in main, rejects conference-facing UT commit pins, and proves that exactly one canonical speaker-script owner supplies complete spoken text.
+
+`timing_audit.py` verifies the main canonical script remains inside the 25–27 minute rehearsal envelope at 130 wpm.
 
 `check_render.py` geometry-checks every audience and presenter slide at conference/stress viewports, captures every audience slide at three viewports plus every presenter slide at 1366×768, and keeps navigation/presenter synchronization checks.
 
-On `main`, `check_production.py` waits for GitHub Pages, compares exact hashes for the built deck **including `speaker-script-canonical.js`**, and exercises both audience and presenter states. A stale deployed speaker script therefore fails production validation.
+On `main`, `check_production.py` waits for GitHub Pages, compares exact hashes for the built deck including `speaker-script-canonical.js`, and exercises representative audience and presenter states. A stale deployed speaker script therefore fails production validation.
 
-Presentation CI also checks the current UT `master` witness: pricing/parity demo, the typed-intrinsic local rewrite tests, route-order feasibility, and the benchmark-methodology boundary. It does not run a smoke benchmark and call it performance evidence.
+Presentation CI also checks the current UT `master` witness: pricing/parity demo, typed-intrinsic local rewrite tests, route-order feasibility, and benchmark-methodology boundary. It does not turn a smoke benchmark or remembered number into performance evidence.
