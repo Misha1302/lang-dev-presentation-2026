@@ -48,7 +48,6 @@ class SlideParser(HTMLParser):
             self.depth += 1
 
     def handle_startendtag(self, tag: str, attrs) -> None:
-        # Self-closing visual elements such as <br/> must not change nesting depth.
         return
 
     def handle_endtag(self, tag: str) -> None:
@@ -69,13 +68,13 @@ parser = SlideParser()
 parser.feed(fragments)
 main = [slide for slide in parser.slides if slide[0].get('data-kind') == 'main']
 appendix = [slide for slide in parser.slides if slide[0].get('data-kind') == 'appendix']
-expected_main_keys = [f'm{i}' for i in range(1, 41)]
+expected_main_keys = [f'm{i}' for i in range(1, 49)]
 expected_appendix_keys = [f'a{i}' for i in range(1, 9)]
-assert len(main) == 40, f'expected 40 main slides, got {len(main)}'
+assert len(main) == 48, f'expected 48 main slides, got {len(main)}'
 assert len(appendix) == 8, f'expected 8 appendix slides, got {len(appendix)}'
 assert [slide[0].get('data-note-key') for slide in main] == expected_main_keys
 assert [slide[0].get('data-note-key') for slide in appendix] == expected_appendix_keys
-assert len({slide[0].get('data-note-key') for slide in parser.slides}) == 48, 'duplicate slide note key'
+assert len({slide[0].get('data-note-key') for slide in parser.slides}) == 56, 'duplicate slide note key'
 
 main_text = '\n'.join(slide[1] for slide in main)
 appendix_text = '\n'.join(slide[1] for slide in appendix)
@@ -84,14 +83,20 @@ all_text = main_text + '\n' + appendix_text
 anchors = [
     'A monolithic compiler is often the right answer',
     'Freeze composition into a concrete compiler plan',
+    'Optimization intent can constrain the representation route',
+    'Choosing a conversion skeleton too early actually missed feasible routes',
+    'FEASIBILITY FIRST.',
     'Extensibility is an authoring-time property',
     'Peephole optimization looks at a small window',
     'Local rewrites are easy. Global optimization needs shared facts.',
     'Prepared hot execution and setup are different measurements',
     'A bounds check is a non-local proof problem',
+    'A write is not just “writable”',
+    'Ask about the operation, not the inheritance tree',
+    'Judgements discharge obligations in more than one domain',
     'Stable typed semantic queries decouple producers from consumers',
     'Lowering can erase the node while later optimization still needs its meaning',
-    'Judgement = what we know. Obligation = what must be true.',
+    'A typed fact can become stale after a transformation',
     'LLVM shows extensible pass infrastructure resolving to concrete pipelines',
     'Add a producer. Change zero consumers. Measure soundness and coupling.',
     'Separate the witness from the research hypothesis',
@@ -104,13 +109,16 @@ assert positions == sorted(positions), 'causal narrative anchors are out of orde
 
 assert 'Three AIR instructions become one typed intrinsic' in main_text
 assert 'SafeIndex(a,i)' in main_text
+assert 'GC-barrier semantics' in main_text
+assert 'IAtomicVolatileOrderedWritable' in main_text
+assert 'Historical failure mode' in main_text
+assert 'Cost is not a proof of semantic preservation' in main_text
 assert 'RangeAnalysis' in main_text and 'ShapeAnalysis' in main_text
 assert 'fact stays queryable / re-derivable' in main_text
 assert 'No numerical ratio is published in this deck' in main_text
 assert 'prepared C# delegate' in main_text and 'Wist compiled delegate' in main_text
 assert 'Wist module, Feature and Contribution' not in main_text
 assert 'bounded reflection' not in main_text.lower()
-assert 'Historical failure mode' not in main_text
 assert 'CMake' not in main_text
 assert 'Wist module, Feature and Contribution' in appendix_text
 assert 'Historical failure mode' in appendix_text
@@ -120,7 +128,14 @@ for required_status in ['IMPLEMENTED WITNESS', 'GENERAL DESIGN', 'RESEARCH HYPOT
 for stale_status in ['CURRENT UT', 'DESIGN SKETCH', 'PROPOSED / RESEARCH', 'OPEN ARCHITECTURE QUESTION']:
     assert stale_status not in all_text, f'stale status remains: {stale_status}'
 
-conference_files = [ROOT / 'deck-main.js', ROOT / 'deck-appendix.js', ROOT / 'speaker-script-canonical.js', ROOT / 'claims.md', ROOT / 'README.md', ROOT / 'index.html']
+conference_files = [
+    ROOT / 'deck-main.js',
+    ROOT / 'deck-appendix.js',
+    ROOT / 'speaker-script-canonical.js',
+    ROOT / 'claims.md',
+    ROOT / 'README.md',
+    ROOT / 'index.html',
+]
 pin_pattern = re.compile(r'UniversalToolchain/(?:blob|tree)/[0-9a-f]{7,40}/', re.I)
 for path in conference_files:
     if path.exists():
@@ -145,4 +160,4 @@ repo_speaker_assets = sorted(path.name for path in ROOT.glob('speaker-script-*.j
 assert repo_speaker_assets == ['speaker-script-canonical.js'], f'competing speaker-script assets remain: {repo_speaker_assets}'
 assert not list(ROOT.glob('speaker-notes-*.js')), 'legacy speaker-note owners must be removed'
 
-print('Deck contract PASS: 40 main + 8 appendix; causal architecture story, status boundaries, moving UT sources and one canonical spoken-script owner verified')
+print('Deck contract PASS: 48 main + 8 appendix; planner causality, second semantic domain, validity/lowering story, status boundaries and one canonical spoken-script owner verified')
