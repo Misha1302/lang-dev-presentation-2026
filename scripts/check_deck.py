@@ -47,7 +47,7 @@ foundation=[
  'Wist has a concrete multi-stage pipeline',
  'A list of stages stops being enough',
  'Definition → Compiler → Plan → Runtime',
- 'Extensibility can exist mostly during authoring and planning',
+ 'Planning freezes composition; programs still traverse the frozen route',
  'FEASIBILITY FIRST. PREFERENCE SECOND.',
  'Here one representation abstraction actually disappears',
  'Backends may differ in representation — not in binding meaning'
@@ -72,10 +72,20 @@ assert 'Not MLIR dialect' in text and text.index('Not MLIR dialect') < text.inde
 required_boundaries=[
  'not base-profile subtraction or inheritance',
  'a preplanned route for each enabled backend; each request chooses one',
- 'declared contract / route feasibility',
+ 'Per-backend candidate artifact route space',
+ 'not one global provider/backend solver',
+ 'Current UT resolves composition in stages — not with one global solver',
+ 'Route reachability does not choose a provider',
+ 'Third-party packages enter through the same explicit typed registry',
+ 'Freeze removes composition uncertainty',
+ 'verified current scope',
+ 'architectural target',
+ 'mandatory-pass coverage',
  'matching contract identities do not prove semantic equivalence',
  'Three AIR instructions become one typed intrinsic',
  'Backend diversity is allowed. Semantic diversity is not.',
+ 'OPEN ARCHITECTURE QUESTION',
+ 'query composition, conflicting evidence, caching and invalidation',
  'HYPOTHETICAL / PROPOSED',
  'PROPOSED PLANNER MODEL',
  'ILLUSTRATIVE LOWERING',
@@ -86,7 +96,7 @@ required_boundaries=[
 ]
 for phrase in required_boundaries:
     assert phrase in text or phrase in fragments, f'missing semantic boundary: {phrase}'
-for source in ['NativeCILOptimizerModule.cs','TypedIntrinsicEmitterOptimizerTests.cs','InterpreterBindingsParityTests.cs']:
+for source in ['NativeCILOptimizerModule.cs','TypedIntrinsicEmitterOptimizerTests.cs','InterpreterBindingsParityTests.cs','Acme.PricingLanguage/Program.cs']:
     assert source in fragments, f'missing current-UT evidence source: {source}'
 for forbidden in [
  'Extensibility includes subtraction and policy',
@@ -95,7 +105,8 @@ for forbidden in [
  'one open semantic contract',
  'Plugins solve loading',
  'Make abstractions disappear from execution',
- 'ShapeAnalysis i < n?'
+ 'ShapeAnalysis i < n?',
+ 'hard constraints declared contract / route feasibility · mandatory constraints · explicit ambiguity handling'
 ]:
     assert forbidden.lower() not in text.lower(), f'forbidden stale claim remains: {forbidden}'
 raw_notes=(ROOT/'speaker-notes-hardening.js').read_text(encoding='utf-8')
@@ -109,4 +120,4 @@ notes.update(json.loads(m.group(1)))
 for key in expected_main_keys+expected_appendix_keys:
     assert key in notes and 'СКАЗАТЬ:' in notes[key], f'missing usable note {key}'
 assert len(notes)==75, f'expected 75 unique note entries, got {len(notes)}'
-print('Deck contract PASS: 68 main + 7 appendix; bounded-reflection bridge encoded; current evidence precedes research; semantic boundaries regression-checked')
+print('Deck contract PASS: 68 main + 7 appendix; staged planner and per-program lifecycle explicit; current-vs-research boundaries regression-checked')
