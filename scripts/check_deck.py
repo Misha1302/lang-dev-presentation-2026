@@ -191,7 +191,8 @@ for key in expected_keys:
 # semantically in the canonical stage script, not only on slide furniture.
 assert 'private handshake' in speech['m11'].lower()
 assert 'private handshake' in speech['m32'].lower()
-assert 'structural extensibility' in speech['m32'].lower() and 'semantic extensibility' in speech['m32'].lower()
+assert 'structural' in speech['m32'].lower() and 'semantic' in speech['m32'].lower()
+assert 'same extensibility problem' in speech['m32'].lower()
 assert 'what' in speech['m12'].lower() and 'how' in speech['m12'].lower()
 assert 'feasibility first' in speech['m20'].lower()
 assert 'judgement' in speech['m40'].lower() and 'obligation' in speech['m41'].lower()
