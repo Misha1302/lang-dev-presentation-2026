@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-EXPECTED_UT_SHA="7005371d6c30175dff4b0e9f906a26218b0ee54d"
 ROOT="${1:-${UNIVERSAL_TOOLCHAIN_ROOT:-}}"
 
 if [[ -z "$ROOT" || ! -d "$ROOT/UniversalToolchain/Wistc" ]]; then
@@ -11,23 +10,13 @@ fi
 
 if git -C "$ROOT" rev-parse HEAD >/dev/null 2>&1; then
   ACTUAL="$(git -C "$ROOT" rev-parse HEAD)"
-  echo "UniversalToolchain source: $ACTUAL"
-  if [[ "$ACTUAL" != "$EXPECTED_UT_SHA" ]]; then
-    echo "ERROR: talk truth snapshot is $EXPECTED_UT_SHA, got $ACTUAL." >&2
-    if [[ "${DEMO_ALLOW_SOURCE_DRIFT:-0}" != "1" ]]; then
-      exit 3
-    fi
-    echo "WARNING: DEMO_ALLOW_SOURCE_DRIFT=1; result is not conference evidence." >&2
-  fi
+  BRANCH="$(git -C "$ROOT" branch --show-current || true)"
+  printf 'UniversalToolchain witness source: %s%s\n' "$ACTUAL" "${BRANCH:+ ($BRANCH)}"
 else
-  echo "WARNING: supplied checkout has no readable Git HEAD; source identity cannot be verified." >&2
-  if [[ "${DEMO_ALLOW_SOURCE_DRIFT:-0}" != "1" ]]; then
-    exit 3
-  fi
+  echo "WARNING: supplied checkout has no readable Git HEAD; witness source identity is unavailable." >&2
 fi
 
 # UniversalToolchain/NuGet.config declares a repository-local packages feed.
-# The upstream CI provisions the directory even when the feed is empty.
 mkdir -p "$ROOT/UniversalToolchain/packages"
 
 WISTC="$ROOT/UniversalToolchain/Wistc/Wistc.csproj"

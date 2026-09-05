@@ -1,138 +1,34 @@
 # Claim ledger — LangDev 2026
 
-Current presentation truth snapshot: `Misha1302/UniversalToolchain@1078ddb5b9fd83b569a8ef0e590c4bec9594e1c5`.
+UniversalToolchain is an **implementation witness**, not the source of truth for the general architecture. Conference-facing links use the repository's current `master` paths; the talk is not pinned to a UT commit.
 
-Historical demo material may still reference `7005371d6c30175dff4b0e9f906a26218b0ee54d`, but that older snapshot must not be used to describe the current planner.
+The deck uses three status categories when interpretation depends on them:
 
-Claims are classified as **CURRENT IMPLEMENTATION**, **PROPOSED / INTENDED DESIGN**, **OPEN ARCHITECTURE QUESTION**, or **NEEDS MEASUREMENT**.
+- **IMPLEMENTED WITNESS** — current UT/Wist demonstrates the bounded mechanism or example;
+- **GENERAL DESIGN** — architecture argued by the talk without claiming it is already UT behavior;
+- **RESEARCH HYPOTHESIS** — a falsifiable proposal that still needs experiments.
 
-## CURRENT IMPLEMENTATION — restricted pricing language
+## IMPLEMENTED WITNESS — declarative language selection
 
-The repository contains the Wist pricing-restricted dialect. Its role in the talk is a composition-constrained language profile, not a hardened sandbox guarantee.
+Current Wist profiles select language capabilities, policy, optimizers and backends through `.wistdialect` configuration. Dependency closure and implementation selection are resolved after the declaration.
 
-## CURRENT IMPLEMENTATION — Wist compiler path
+Allowed claim: configuration says what language is wanted; composition resolves how an admissible compiler is assembled.
 
-The current Wist implementation uses a concrete path conceptually described as:
+## IMPLEMENTED WITNESS — resolved compiler staging
 
-```text
-source text
-→ lexer / parser AST
-→ module-oriented Bytecode
-→ AIR
-→ backend-neutral optimization / specialization
-→ interpreter or CIL backend
-```
+Current UT separates `LanguageDefinition`, `LanguageCompiler`, immutable `LanguagePlan` and `LanguageRuntime`. Explicitly registered third-party packages enter the same typed planning path.
 
-Boundary:
+Allowed claim: language composition can be resolved before repeated execution. Per-program compilation and optimization still happen later; freezing composition does not pre-optimize future programs.
 
-- Bytecode and AIR are current Wist implementation artifacts;
-- the generic language-authoring architecture does not require every language to use Wist Bytecode/AIR.
+## IMPLEMENTED WITNESS — Wist representation stack
 
-## CURRENT IMPLEMENTATION — cross-backend semantic parity
+Current Wist uses a concrete AST → Bytecode → AIR → optimization → Interpreter/CIL path.
 
-`UniversalToolchain/Tests/Backends/InterpreterBindingsParityTests.cs` exercises Interpreter/CIL parity for covered binding and shadowing scenarios.
+Boundary: Bytecode and AIR are Wist implementation choices. The general architecture does not require other languages to copy them.
 
-Allowed claim:
+## IMPLEMENTED WITNESS — local AIR deabstraction
 
-> Backend diversity is allowed; accidental semantic diversity is not.
-
-The regression is relational evidence for covered programs, not a proof of equivalence for every Wist program.
-
-## CURRENT IMPLEMENTATION — staged whole-language planning
-
-`LanguageCompiler.Compile(...)` is staged:
-
-1. feature resolution / dependency closure;
-2. contribution and provider resolution;
-3. artifact-route planning for each enabled backend;
-4. immutable `LanguagePlan` construction and verification.
-
-Provider ambiguity is fail-closed. Route reachability is not used as an implicit provider-selection policy.
-
-`LanguageRuntime.Create(...)` materializes the already-resolved plan. Runtime execution does not reopen feature/provider/route planning.
-
-## CURRENT IMPLEMENTATION — third-party package path
-
-The generic authoring path supports explicit typed package registration. A third-party package can provide Feature/Contribution descriptors plus implementations, be registered with `LanguagePackageRegistry.AddPackage(...)`, and enter the same `LanguageCompiler` flow without the planner hard-coding that package.
-
-Source-backed sample: `samples/Acme.PricingLanguage/Program.cs`.
-
-This is the preferred example for “independent extension author joins the ecosystem”.
-
-## CURRENT IMPLEMENTATION — LanguagePlan data
-
-Current `LanguagePlan` contains the requested definition, resolved features/contributions, selected runtime provider, per-backend routes, `PlanHash`, and summary data.
-
-`PlanHash` identifies the resolved snapshot. It is not semantic proof, security attestation, or a performance certificate.
-
-## CURRENT IMPLEMENTATION — route planning at 1078ddb
-
-Current `LanguageArtifactRoutePhase` separates selected contract-changing conversions from selected same-contract passes.
-
-For each enabled backend it:
-
-1. requires exactly one selected backend capability owner;
-2. determines the backend/runtime input artifact contract;
-3. collects already-selected transformation contributions compatible with that backend;
-4. searches conversion routes with state `(artifact contract, mandatory-pass coverage)`;
-5. minimizes declared route `Cost` only among states that cover all mandatory pass contracts;
-6. fails closed on distinct equal-best routes (`UTL2207`);
-7. inserts same-contract passes with explicit ordering/ambiguity checks;
-8. validates descriptor-level and definition-level executable ordering on the produced route;
-9. constructs the route only after those validations succeed.
-
-Confirmed current repair relative to the old `7005371...` snapshot:
-
-> Mandatory-pass coverage participates in route search before route Cost chooses a candidate.
-
-Therefore the old claim “current routing chooses the cheapest conversion skeleton first and only afterward discovers whether mandatory passes fit” is stale and must not appear as current truth.
-
-## CURRENT IMPLEMENTATION — remaining route-order boundary
-
-At `1078ddb`, conversion-route search still chooses its minimum-cost route before `ValidateDescriptorRouteOrder(...)` / `ValidateDefinitionRouteOrder(...)` run on the executable steps.
-
-This creates a focused open implementation question:
-
-> If the cheapest conversion route violates an executable Before/After constraint, but a more expensive route is valid, does the planner search the more expensive route or fail after validating only the cheapest candidate?
-
-Source control flow strongly suggests the latter, but the presentation must treat this as **NEEDS FOCUSED REGRESSION** until the counterexample test is executed.
-
-Until that regression passes, current on-stage wording is deliberately narrower:
-
-- **verified current scope:** artifact reachability + mandatory-pass coverage + equal-best ambiguity before Cost;
-- **architectural target:** all correctness constraints participate in feasibility before preferences rank alternatives.
-
-## CURRENT IMPLEMENTATION — artifact identity and Cost boundary
-
-Artifact route connectivity compares declared contract identity. Matching identities do not prove that independently authored transformations preserve identical semantics.
-
-Route `Cost` is a planner preference weight. It does not prove semantic preservation, trust, runtime latency, or optimization quality.
-
-## CURRENT IMPLEMENTATION — language-time vs program-time lifecycle
-
-Planning freezes language composition once into `LanguagePlan`.
-
-Per program, the runtime/build pipeline still:
-
-```text
-select the already-planned backend route
-→ apply concrete route transformations
-→ verify each produced artifact contract
-→ run the selected passes/optimizers represented by that route
-→ execute/materialize the backend
-```
-
-Therefore “freeze” means composition uncertainty is removed. It does **not** mean program optimization happened when the plan was built.
-
-## CURRENT IMPLEMENTATION — bounded reflection
-
-Current capability projection uses reflection only over exact implementation types already selected by `LanguagePlan`.
-
-`SelectedCapabilityCatalogBuilder` performs no feature/package/backend/route selection. Reflection removes wiring; planning remains the semantic authority.
-
-## CURRENT IMPLEMENTATION — local deabstraction witness
-
-The AIR rewrite demonstrated in the deck turns the exact pattern:
+The current optimizer contains a focused rewrite from:
 
 ```text
 LoadEnvironment()
@@ -140,74 +36,98 @@ Push(slot)
 LoadExternal<T>()
 ```
 
-into a typed direct external-load intrinsic when the required slot/type/backend conditions hold.
+to one typed external-load intrinsic when the exact slot/type/backend conditions hold.
 
-Three representation operations become one. Representation machinery disappears; external-load semantics do not.
+Allowed claim: three representation operations become one; local representation machinery disappears while the external-load meaning remains.
 
-## NEEDS MEASUREMENT — performance
+## IMPLEMENTED WITNESS — backend parity regression
 
-No raw BenchmarkDotNet artifact is bound into this presentation revision. Therefore the deck makes no numerical claim for CIL-vs-C# speed, planner latency, materialization cost, allocation count, or amortization break-even.
+Interpreter/CIL tests cover selected binding and shadowing scenarios. They are relational evidence for those cases, not a proof of equivalence for every Wist program.
 
-Allowed wording:
+## IMPLEMENTED WITNESS — current planner regression in appendix
 
-> Composition can be resolved before repeated execution. That changes the lifecycle; it does not make extensibility free.
+Current `master` includes a focused regression showing route search can reject a cheaper order-invalid conversion route and select a more expensive order-valid route.
 
-## PROPOSED / INTENDED DESIGN — semantic contracts
+This is appendix evidence for the principle “requirements before preference”; it is not needed to understand the main talk.
 
-The research layer proposes typed/versioned shared semantic query schemas so independently authored producers and consumers do not require pairwise adapters.
+## IMPLEMENTED WITNESS — benchmark boundary
 
-Falsifiable target:
+UT keeps steady-state prepared execution, convenience `Evaluate` overhead and compilation/setup in separate BenchmarkDotNet suites. The hot-path suite excludes parsing, language composition, compiler construction and compilation.
+
+Allowed claim: the architecture permits hot execution to be measured separately from authoring/composition/setup work.
+
+## NEEDS-VERIFICATION — numerical performance
+
+No current reviewed raw Release BenchmarkDotNet artifact is checked into this presentation repository. Therefore the conference deck publishes no C#↔Wist ratio, slowdown percentage, speedup percentage or amortization figure.
+
+A numerical slide becomes publishable only after preserving raw BenchmarkDotNet output, source identity, environment metadata and correctness/parity precheck for comparable prepared call boundaries.
+
+## GENERAL DESIGN — extensible authoring, concrete execution
+
+The talk argues for this lifecycle:
+
+```text
+independently authored capabilities
+→ declarative language configuration
+→ composition / planning
+→ one concrete compiler plan
+→ per-program compilation / optimization / execution
+```
+
+Core wording:
+
+> Extensibility is an authoring-time property. It does not have to become a runtime tax.
+
+This is not a zero-overhead guarantee. Composition, compiler construction and compilation may still cost more.
+
+## GENERAL DESIGN — local vs non-local optimization
+
+Local/peephole optimization uses a small IR window and exact local facts. Non-local optimization uses facts outside that window, potentially across blocks, loop iterations or independently authored components.
+
+The running example is bounds-check elimination:
+
+```text
+Range: 0 <= i < N
+Extent: N = Length(a)
+→ SafeIndex(a, i)
+→ repeated bounds check may be omitted
+```
+
+This example motivates the semantic architecture; it is not presented as an already implemented UT optimization.
+
+## RESEARCH HYPOTHESIS — shared semantic query contracts
+
+Producers should expose knowledge through stable typed semantic questions so consumers do not depend on concrete producer implementations.
+
+Primary falsifiable criterion:
 
 > Add a semantic producer. Change zero existing consumers.
 
-The proposal does not require one universal ontology, one solver, or one global semantic service.
+Positive control: fresh consistent evidence may strengthen an answer.
 
-## OPEN ARCHITECTURE QUESTION — who owns semantic query composition?
+Negative control: stale or contradictory evidence must never discharge an unsafe obligation.
 
-The contract schema boundary does not yet answer:
+## RESEARCH HYPOTHESIS — meaning across lowering
 
-- who combines multiple producer answers;
-- how contradictory evidence is handled;
-- where caching lives;
-- who invalidates stale evidence after transformations;
-- whether different semantic domains use different engines;
-- how engine selection is exposed without creating a mega-solver.
+Representation lowering and semantic knowledge are separate axes. When high-level nodes disappear, later passes may still need selected higher-level semantic questions answered.
 
-The deck must present these as open design questions, not current implementation facts.
+Candidate mechanisms:
 
-## PROPOSED / INTENDED DESIGN — obligations and validity
+- provenance / stable semantic identity;
+- typed semantic views or query contracts on the current representation;
+- re-analysis on lowered IR;
+- explicit validity / revision discipline.
 
-The research model distinguishes:
-
-- contextual `Judgement` — what is known, with subject/context/revision/evidence/assumptions;
-- semantic `Obligation` — what must hold before a transformation or check elimination is legal.
-
-Negative control requirement:
-
-> stale or contradictory producer evidence must not discharge an obligation.
+`Judgement` names what is known with context/validity/evidence. `Obligation` names what must be true before a transformation is legal. These are proposed modeling terms, not a finished universal ontology.
 
 ## STRONGEST ALTERNATIVE
 
-Before introducing a shared semantic substrate, prefer the smallest mechanism that already owns the decision:
+A shared semantic layer may be unnecessary. Local pass managers, IR interfaces, domain-specific analyses, explicit adapters and local invalidation rules may solve the real coupling problem with less machinery.
 
-- explicit compiler pipeline for one stable sequence;
-- builder/DI for configuration and object wiring;
-- pass manager for a known pass set and invalidation model;
-- MLIR-style interfaces/legalization for local IR semantics;
-- domain-specific analysis APIs and adapters where cross-domain reuse is limited.
+The research hypothesis earns its complexity only if experiments show lower pairwise coupling without sacrificing soundness or hiding domain semantics.
 
-A shared semantic-contract layer earns its complexity only if it measurably improves producer independence, correctness, or coupling relative to those local mechanisms.
+## Final conference boundary
 
-## Core wording
+Already demonstrated: declarative selection, staged resolution into frozen plans, preplanned backend routes, local deabstraction, selected backend parity regressions, and a disciplined benchmark boundary.
 
-> **Feasibility before preference.**
-
-Current implementation evidence supports this fully for mandatory-pass route coverage; broader correctness-before-preference remains the architectural target until each interaction has regression evidence.
-
-> **Resolve globally only what correctness cannot own locally.**
-
-> **Declare requirements locally. Resolve feasibility globally. Execute one concrete plan.**
-
-Anti-takeaway:
-
-> If one owner already knows the stable compiler, wire it explicitly.
+Research bet: shared semantic queries and validity discipline can preserve useful non-local optimization knowledge across independently authored components and changing representations.
