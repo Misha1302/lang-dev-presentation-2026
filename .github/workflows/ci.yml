@@ -19,43 +19,75 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Validate authored deck, notes and causal narrative
+
+      - name: Validate rebuilt narrative and canonical speaker ownership
         run: python3 scripts/check_deck.py
-      - name: Check JavaScript syntax for runtime and split deck assets
+
+      - name: Check JavaScript syntax for every runtime deck and speaker asset
         run: |
+          set -euo pipefail
           node --check deck.js
-          for file in deck-act-*.js speaker-notes-*.js; do node --check "$file"; done
-      - name: Audit intellectual-deck timing without an upper cap
+          for file in deck-*.js speaker-script-*.js; do
+            node --check "$file"
+          done
+
+      - name: Audit stage-ready spoken timing
         run: python3 scripts/timing_audit.py
-      - name: Checkout exact UniversalToolchain demo snapshot
+
+      - name: Checkout current UniversalToolchain witness
         uses: actions/checkout@v4
         with:
           repository: Misha1302/UniversalToolchain
-          ref: 7005371d6c30175dff4b0e9f906a26218b0ee54d
+          ref: master
           path: _deps/UniversalToolchain
-      - name: Run canonical pricing and cross-backend parity demo
+
+      - name: Verify UT benchmark claim boundary without treating smoke as performance evidence
+        run: |
+          set -euo pipefail
+          test -f _deps/UniversalToolchain/UniversalToolchain/Benchmarks/UniversalToolchain.Benchmarks/FormulaHotPathBenchmarks.cs
+          grep -Fq 'Steady-state invocation of already prepared formula artifacts' _deps/UniversalToolchain/UniversalToolchain/Benchmarks/UniversalToolchain.Benchmarks/README.md
+          grep -Fq 'Treat the `Dry` job as discovery/runtime smoke only, never as performance evidence.' _deps/UniversalToolchain/docs/reference/benchmark-methodology.md
+
+      - name: Run current pricing and cross-backend parity witness
         run: |
           ./demo/run-demo.sh "$GITHUB_WORKSPACE/_deps/UniversalToolchain" | tee demo-source-output.txt
-          grep -Fq "[language] pricing-restricted dialect" demo-source-output.txt
-          grep -Fq "[pricing:interpreter] result=95" demo-source-output.txt
-          grep -Fq "[pricing:cil] result=95" demo-source-output.txt
-          grep -Fq "[parity] external bindings + local shadowing" demo-source-output.txt
-          grep -Fq "[parity] shadowing regression PASS" demo-source-output.txt
+          grep -Fq '[language] pricing-restricted dialect' demo-source-output.txt
+          grep -Fq '[pricing:interpreter] result=95' demo-source-output.txt
+          grep -Fq '[pricing:cil] result=95' demo-source-output.txt
+          grep -Fq '[parity] shadowing regression PASS' demo-source-output.txt
+
       - name: Re-run conference demo without build or restore
         run: |
           DEMO_NO_BUILD=1 ./demo/run-demo.sh "$GITHUB_WORKSPACE/_deps/UniversalToolchain" | tee demo-stage-output.txt
-          grep -Fq "[language] pricing-restricted dialect" demo-stage-output.txt
-          grep -Fq "[pricing:interpreter] result=95" demo-stage-output.txt
-          grep -Fq "[pricing:cil] result=95" demo-stage-output.txt
-          grep -Fq "[parity] external bindings + local shadowing" demo-stage-output.txt
-          grep -Fq "[parity] shadowing regression PASS" demo-stage-output.txt
-      - name: Render-check every slide at conference and stress viewports
+          grep -Fq '[pricing:interpreter] result=95' demo-stage-output.txt
+          grep -Fq '[pricing:cil] result=95' demo-stage-output.txt
+          grep -Fq '[parity] shadowing regression PASS' demo-stage-output.txt
+
+      - name: Verify local 3-to-1 deabstraction witness on current master
+        working-directory: _deps/UniversalToolchain
+        run: |
+          dotnet test UniversalToolchain/UniversalToolchain.Modules.Tests/UniversalToolchain.Modules.Tests.csproj \
+            -c Release \
+            --filter 'FullyQualifiedName~TypedIntrinsicEmitterOptimizerTests' \
+            --verbosity minimal
+
+      - name: Verify route-order feasibility appendix witness on current master
+        working-directory: _deps/UniversalToolchain
+        run: |
+          dotnet test UniversalToolchain/UniversalToolchain.LanguageSdk.Tests/UniversalToolchain.LanguageSdk.Tests.csproj \
+            -c Release \
+            --filter 'FullyQualifiedName~PlannerPolicyControlTests.RouteSearch_ShouldChooseMoreExpensiveRoute_WhenCheaperRouteViolatesDescriptorOrder' \
+            --verbosity minimal
+
+      - name: Render-check every audience and presenter slide
         run: python3 scripts/check_render.py
-      - name: Re-open deployed GitHub Pages in Chromium
+
+      - name: Re-open deployed GitHub Pages and compare exact production assets
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: python3 scripts/check_production.py
+
       - name: Upload validation evidence
         if: always()
         uses: actions/upload-artifact@v4
