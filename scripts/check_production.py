@@ -25,7 +25,7 @@ deck_assets = [name for name in load_order if name.startswith('deck-') and name 
 raw = '\n'.join((ROOT / name).read_text(encoding='utf-8') for name in deck_assets)
 main_count = len(re.findall(r'data-kind="main"', raw))
 appendix_count = len(re.findall(r'data-kind="appendix"', raw))
-if (main_count, appendix_count) != (40, 8):
+if (main_count, appendix_count) != (48, 8):
     print('Production check FAILED: local deck count contract mismatch')
     sys.exit(1)
 
@@ -79,11 +79,16 @@ if nav:
     if nav.returncode != 0 or 'data-nav-check="ok"' not in nav.stdout:
         failures.append('production navigation: nav-check did not pass')
     for marker in [
+        'Optimization intent can constrain the representation route',
+        'FEASIBILITY FIRST.',
         'Extensibility is an authoring-time property',
         'Peephole optimization looks at a small window',
         'Local rewrites are easy. Global optimization needs shared facts.',
         'A bounds check is a non-local proof problem',
+        'A write is not just “writable”',
+        'Ask about the operation, not the inheritance tree',
         'Stable typed semantic queries decouple producers from consumers',
+        'A typed fact can become stale after a transformation',
         'Global optimization makes semantic preservation a lowering problem',
         'Extensibility does not have to cost runtime performance.'
     ]:
@@ -92,7 +97,12 @@ if nav:
     if 'data-deck-qa-contract="architecture-story-v2"' not in nav.stdout:
         failures.append('production DOM contract marker mismatch')
 
-representative = ['#1', '#2', '#7', '#10', '#13', '#17', '#18', '#20', '#21', '#24', '#26', '#29', '#32', '#34', '#38', '#39', '#40', '#a3', '#a5', '#a8']
+representative = [
+    '#1', '#2', '#7', '#10', '#13', '#14', '#15', '#16',
+    '#17', '#21', '#22', '#24', '#25', '#28', '#29', '#30',
+    '#31', '#32', '#34', '#37', '#41', '#42', '#45', '#46',
+    '#47', '#48', '#a3', '#a5', '#a7', '#a8'
+]
 for target in representative:
     url = f'{PRODUCTION}?visual-check=1&qa={quote(sha)}{target}'
     try:
@@ -113,7 +123,7 @@ for target in representative:
     if shot.returncode != 0 or not output.exists():
         failures.append(f'production screenshot {target}: failed')
 
-presenter_representative = ['#1', '#13', '#17', '#20', '#21', '#26', '#32', '#38', '#40', '#a8']
+presenter_representative = ['#1', '#13', '#15', '#17', '#21', '#24', '#29', '#32', '#34', '#41', '#46', '#48', '#a8']
 for target in presenter_representative:
     url = f'{PRODUCTION}?presenter=1&visual-check=1&qa={quote(sha)}{target}'
     try:
