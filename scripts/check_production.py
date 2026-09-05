@@ -25,7 +25,7 @@ deck_assets = [name for name in load_order if name.startswith('deck-') and name 
 raw = '\n'.join((ROOT / name).read_text(encoding='utf-8') for name in deck_assets)
 main_count = len(re.findall(r'data-kind="main"', raw))
 appendix_count = len(re.findall(r'data-kind="appendix"', raw))
-if (main_count, appendix_count) != (40, 8):
+if (main_count, appendix_count) != (52, 8):
     print('Production check FAILED: local deck count contract mismatch')
     sys.exit(1)
 
@@ -79,20 +79,42 @@ if nav:
     if nav.returncode != 0 or 'data-nav-check="ok"' not in nav.stdout:
         failures.append('production navigation: nav-check did not pass')
     for marker in [
-        'Extensibility is an authoring-time property',
-        'Peephole optimization looks at a small window',
+        'A capability / extension is something authored once and reusable across languages',
+        'A dialect is one declarative language profile built from that ecosystem',
+        'Capability ≠ dialect',
+        'One ecosystem → multiple dialects',
+        'Two extension authors should not need a private handshake',
+        'The WHAT now creates a concrete HOW problem.',
+        'Requested behavior can require a representation property',
+        'FEASIBILITY FIRST.',
+        'Extensibility machinery can stay off the runtime hot path',
+        'Peephole optimization replaces an exact pattern in a small window',
         'Local rewrites are easy. Global optimization needs shared facts.',
         'A bounds check is a non-local proof problem',
+        'structural extensibility → semantic extensibility',
         'Stable typed semantic queries decouple producers from consumers',
-        'Global optimization makes semantic preservation a lowering problem',
-        'Extensibility does not have to cost runtime performance.'
+        'A write is not just “writable”',
+        'A Judgement says what is known',
+        'An Obligation is what must hold before a transformation is legal',
+        'Representation axis ≠ knowledge axis',
+        'There is no universal inverse lowering',
+        'Preserve, expose or re-analyse the facts a later pass still needs',
+        'Maybe a shared semantic layer is unnecessary',
+        'Add a producer. Change zero consumers. Measure soundness and coupling.',
+        'Final synthesis',
+        'preserve / re-expose semantic knowledge',
     ]:
         if marker not in nav.stdout:
             failures.append(f'production narrative marker missing: {marker}')
-    if 'data-deck-qa-contract="architecture-story-v2"' not in nav.stdout:
+    if 'data-deck-qa-contract="architecture-story-v3"' not in nav.stdout:
         failures.append('production DOM contract marker mismatch')
 
-representative = ['#1', '#2', '#7', '#10', '#13', '#17', '#18', '#20', '#21', '#24', '#26', '#29', '#32', '#34', '#38', '#39', '#40', '#a3', '#a5', '#a8']
+representative = [
+    '#1', '#2', '#5', '#6', '#7', '#8', '#9', '#10', '#11', '#12', '#13', '#14',
+    '#17', '#18', '#19', '#20', '#21', '#22', '#25', '#26', '#27', '#28', '#31', '#32',
+    '#34', '#36', '#39', '#40', '#41', '#43', '#45', '#49', '#50', '#51', '#52',
+    '#a1', '#a3', '#a5', '#a7', '#a8'
+]
 for target in representative:
     url = f'{PRODUCTION}?visual-check=1&qa={quote(sha)}{target}'
     try:
@@ -113,7 +135,7 @@ for target in representative:
     if shot.returncode != 0 or not output.exists():
         failures.append(f'production screenshot {target}: failed')
 
-presenter_representative = ['#1', '#13', '#17', '#20', '#21', '#26', '#32', '#38', '#40', '#a8']
+presenter_representative = ['#1', '#6', '#11', '#12', '#17', '#19', '#20', '#25', '#26', '#32', '#36', '#40', '#41', '#45', '#50', '#52', '#a8']
 for target in presenter_representative:
     url = f'{PRODUCTION}?presenter=1&visual-check=1&qa={quote(sha)}{target}'
     try:
