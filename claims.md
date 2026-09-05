@@ -92,7 +92,8 @@ Hardware evidence is validation, not the main causal story. Primary/upstream exa
 - Google Coral documents an MLIR/IREE compiler path for the RISC-V-based Coral NPU, including target-specific plugins and dialects;
 - AMD/Xilinx MLIR-AIE is an MLIR-based toolchain for AI Engine devices and uses representations at multiple abstraction levels;
 - Tenstorrent `tt-mlir` is an MLIR-based compiler infrastructure with several target-specific dialects;
-- Buddy-MLIR's DynamicVector proposal uses RVV as an end-to-end example and explicitly warns that an architecture-specific RVV dialect without a generic vector abstraction risks becoming a silo.
+- Buddy-MLIR's DynamicVector proposal uses RVV as an end-to-end example and explicitly warns that an architecture-specific RVV dialect without a generic vector abstraction risks becoming a silo;
+- Mesa RADV deliberately uses its own shader stack: SPIR-V is translated to NIR, optimized/lowered in NIR, then the lowered NIR is passed to the ACO backend for GPU-specific ISA generation.
 
 Allowed conclusion only:
 
@@ -106,6 +107,7 @@ Primary sources:
 - https://xilinx.github.io/mlir-aie/latest/getting-started/
 - https://docs.tenstorrent.com/tt-mlir/overview.html
 - https://github.com/buddy-compiler/buddy-mlir/blob/main/docs/DynamicVector.md
+- https://docs.mesa3d.org/drivers/radv.html
 
 ## IMPLEMENTED WITNESS — declarative language selection
 
