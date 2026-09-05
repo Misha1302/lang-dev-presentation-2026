@@ -47,6 +47,10 @@ class SlideParser(HTMLParser):
         if self.current is not None and tag not in {'br', 'meta', 'link', 'img', 'input'}:
             self.depth += 1
 
+    def handle_startendtag(self, tag: str, attrs) -> None:
+        # Self-closing visual elements such as <br/> must not change nesting depth.
+        return
+
     def handle_endtag(self, tag: str) -> None:
         if self.current is None:
             return
