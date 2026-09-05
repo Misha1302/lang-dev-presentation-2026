@@ -92,6 +92,7 @@ anchors = [
     'There are two independent moves',
     'Two extension authors should not need a private handshake',
     'The dialect declares WHAT language we want.',
+    'MLIR makes compiler representations extensible.',
     'A configuration is not yet a compiler',
     'Composition should end in one concrete compiler plan',
     'Requested behavior can require a representation property',
@@ -121,7 +122,8 @@ for anchor in anchors:
 positions = [main_text.index(anchor) for anchor in anchors]
 assert positions == sorted(positions), 'causal narrative anchors are out of order'
 
-# Dialect/extensibility story must remain explicit rather than implied.
+# Dialect/extensibility story and the MLIR scope boundary must remain explicit
+# rather than implied.
 for marker in [
     'It is not a language by itself.',
     'One capability can appear in many language profiles.',
@@ -129,6 +131,9 @@ for marker in [
     'add new pieces + recombine existing pieces',
     'First goal: both can enter the same ecosystem and participate in one dialect without pairwise coordination.',
     'The composer / planner resolves HOW to assemble it.',
+    'VERIFIED PRIOR ART',
+    'Which capabilities? Which provider? Which conflicts? Which representation route? Which backend? Which mandatory ordering?',
+    'not a claim that MLIR cannot implement such policy in user code',
     'structural extensibility → semantic extensibility',
 ]:
     assert marker in main_text, f'missing extensibility marker: {marker}'
@@ -152,9 +157,12 @@ assert 'Wist module, Feature and Contribution' not in main_text
 assert 'bounded reflection' not in main_text.lower()
 assert 'CMake' not in main_text
 assert 'Wist module, Feature and Contribution' in appendix_text
-assert 'Historical failure mode' in appendix_text
+assert 'Why not just MLIR?' in appendix_text
+assert 'ConversionTarget' in appendix_text and 'legalization paths' in appendix_text
+assert 'MLIR may itself be a provider.' in appendix_text
+assert 'extra UT layer is not justified' in appendix_text
 
-for required_status in ['IMPLEMENTED WITNESS', 'GENERAL DESIGN', 'RESEARCH HYPOTHESIS']:
+for required_status in ['VERIFIED PRIOR ART', 'IMPLEMENTED WITNESS', 'GENERAL DESIGN', 'RESEARCH HYPOTHESIS']:
     assert required_status in all_text, f'missing status category {required_status}'
 for stale_status in ['CURRENT UT', 'DESIGN SKETCH', 'PROPOSED / RESEARCH', 'OPEN ARCHITECTURE QUESTION']:
     assert stale_status not in all_text, f'stale status remains: {stale_status}'
@@ -194,6 +202,10 @@ assert 'private handshake' in speech['m32'].lower()
 assert 'structural' in speech['m32'].lower() and 'semantic' in speech['m32'].lower()
 assert 'same extensibility problem' in speech['m32'].lower()
 assert 'what' in speech['m12'].lower() and 'how' in speech['m12'].lower()
+assert 'mlir' in speech['m13'].lower() and 'languageplan' in speech['m13'].lower()
+assert 'do not want to replace' in speech['m13'].lower()
+assert 'mlir-based' in speech['m48'].lower() and 'does not implement' in speech['m48'].lower() and 'general design' in speech['m48'].lower()
+assert 'not justified' in speech['a7'].lower() and 'legalization paths' in speech['a7'].lower()
 assert 'feasibility first' in speech['m20'].lower()
 assert 'judgement' in speech['m40'].lower() and 'obligation' in speech['m41'].lower()
 assert 'author' in speech['m52'].lower() and 'resolve' in speech['m52'].lower() and 'optimize' in speech['m52'].lower()
@@ -202,4 +214,4 @@ repo_speaker_assets = sorted(path.name for path in ROOT.glob('speaker-script-*.j
 assert repo_speaker_assets == ['speaker-script-canonical.js'], f'competing speaker-script assets remain: {repo_speaker_assets}'
 assert not list(ROOT.glob('speaker-notes-*.js')), 'legacy speaker-note owners must be removed'
 
-print('Deck contract PASS: 52 main + 8 appendix; dialect/extensibility causality, planner feasibility, local/global optimization, semantic callback, Write/Judgement/Obligation, lowering story and one canonical spoken-script owner verified')
+print('Deck contract PASS: 52 main + 8 appendix; dialect/extensibility causality, MLIR scope boundary, planner feasibility, local/global optimization, semantic callback, Write/Judgement/Obligation, lowering story and one canonical spoken-script owner verified')
