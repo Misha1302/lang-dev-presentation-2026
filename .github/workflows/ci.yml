@@ -23,10 +23,11 @@ jobs:
       - name: Validate rebuilt narrative and canonical speaker ownership
         run: python3 scripts/check_deck.py
 
-      - name: Check JavaScript syntax for every runtime deck and speaker asset
+      - name: Check JavaScript syntax and runtime QA contract
         run: |
           set -euo pipefail
           node --check deck.js
+          grep -Fq "const DECK_QA_CONTRACT = 'architecture-story-v3';" deck.js
           for file in deck-*.js speaker-script-*.js; do
             node --check "$file"
           done

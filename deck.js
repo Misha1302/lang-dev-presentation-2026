@@ -1,4 +1,4 @@
-const DECK_QA_CONTRACT = 'architecture-story-v2';
+const DECK_QA_CONTRACT = 'architecture-story-v3';
 document.documentElement.dataset.deckQaContract = DECK_QA_CONTRACT;
 const VISUAL_CHECK_MODE = new URLSearchParams(location.search).get('visual-check') === '1';
 if (VISUAL_CHECK_MODE) document.documentElement.classList.add('visual-check-mode');
