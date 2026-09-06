@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "campaign": "langdev-2026-content-finalization-sol5.6",
+  "preferred_branch": "content/langdev-finalization-2026-09",
+  "execution_mode": "one phase per fresh GPT-5.6 Sol chat",
+  "current_phase": 2,
+  "completed_phases": [
+    1
+  ],
+  "presentation_main_seen": "e69cab6adf38286945e191dee1fc95b278730ee4",
+  "campaign_head": "937af7b1619d3df1535c653cd07d36b6af443c53",
+  "ut_master_seen": "40117eb68c630f7129c120aaaadc69be8f4ecbfb",
+  "evidence_ledger_commit": null,
+  "content_gate": null,
+  "validation": {
+    "phase_01": {
+      "validated_candidate": "937af7b1619d3df1535c653cd07d36b6af443c53",
+      "phase_commits": [
+        "d1024017dbf51c0c77d566a840c3cc4a03876238",
+        "937af7b1619d3df1535c653cd07d36b6af443c53"
+      ],
+      "workflow": "Presentation CI",
+      "workflow_run_id": 34037107437,
+      "result": "success",
+      "checks": {
+        "semantic_narrative_contract": "PASS",
+        "semantic_contract_probes": "PASS",
+        "javascript_runtime_contract": "PASS",
+        "timing_audit": "PASS; policy unchanged and out of Phase 01 scope",
+        "ut_benchmark_claim_boundary": "PASS",
+        "pricing_cross_backend_demo": "PASS",
+        "demo_no_build_rerun": "PASS",
+        "ut_local_deabstraction_regression": "PASS",
+        "ut_route_order_feasibility_regression": "PASS",
+        "render_check": "PASS",
+        "production_pages": "SKIPPED on campaign-branch push by existing main-only workflow condition"
+      },
+      "artifact": {
+        "name": "presentation-validation-evidence",
+        "artifact_id": "9990712175",
+        "digest": "sha256:3f315a49056ac7841b24ff7572322131df7615de9df5aa707a7774d03b34fcc6",
+        "contains": [
+          "render screenshots",
+          "demo-source-output.txt",
+          "demo-stage-output.txt",
+          "ut-witness-sha.txt"
+        ]
+      }
+    }
+  },
+  "external_blockers": [],
+  "next_phase": {
+    "id": 2,
+    "file": "PHASE_02_UNIFIED_EVIDENCE_RESEARCH.md",
+    "title": "Unified evidence and research ledger"
+  },
+  "notes": [
+    "This file is a handoff index only. Actual GitHub state is authoritative.",
+    "Do not advance a phase until its candidate-bound validation was actually run.",
+    "Phase 01 preserved substantive deck and canonical speaker content; the campaign diff from observed main changes validation representation only.",
+    "campaign_head records the validated Phase 01 implementation candidate; the state-file commit necessarily follows it and cannot self-reference its own commit SHA."
+  ]
+}
