@@ -18,18 +18,29 @@ The main deck is **52 slides**. The story is deliberately one causal chain rathe
 2. A **capability / extension** is a reusable authored compiler slice. A **dialect / language profile** is a concrete declarative composition of many such pieces. They are different entities.
 3. One ecosystem can produce multiple dialects. Extensibility therefore means both **adding new capabilities** and **recombining existing capabilities**.
 4. Independent authors should not need a private handshake. A dialect declares **WHAT** language is wanted; composition/planning resolves **HOW** to assemble it.
-5. The resulting compiler plan must be feasible before preferences rank alternatives. Optimization requirements can constrain representation routes, and the historical UT planner failure makes **FEASIBILITY FIRST. PREFERENCE SECOND.** an evidence-backed rule.
-6. Freeze open-world composition into one concrete plan so extensibility machinery can stay off the repeated runtime path.
-7. Local optimization can erase modular representation machinery; Wist AIR supplies a concrete 3→1 deabstraction witness.
-8. Global/non-local optimization needs shared facts. Range + extent knowledge motivates `SafeIndex(a,i)` and possible bounds-check elimination.
-9. The private-handshake problem returns at the semantic level: independently authored analyses and consumers need a stable way to exchange semantic knowledge without private producer-consumer APIs.
-10. `Write(place, value)` supplies a second semantic domain with volatility, atomicity, ordering, visibility, GC-barrier and transaction concerns. Operation-centric queries avoid encoding their cross-product as one inheritance lattice.
-11. Typed facts can become stale. `Judgement` models contextual valid knowledge; `Obligation` models what must hold before a transformation is legal.
-12. Representation and knowledge are separate axes. There is no universal inverse lowering, so later passes may need meaning preserved, exposed on the current representation, or re-analysed.
-13. LLVM and MLIR are prior art; local interfaces/adapters are the strongest alternative; the shared semantic-contract hypothesis must earn its complexity in a falsifiable producer experiment.
-14. The final synthesis separates **IMPLEMENTED WITNESS**, **GENERAL DESIGN**, and **RESEARCH HYPOTHESIS**, then reconnects the three themes as **AUTHOR → RESOLVE → OPTIMIZE**.
+5. MLIR is introduced here as strong prior art: IR dialects, interfaces, legality/conversion, pass infrastructure and the Transform dialect already make representations and transformations highly extensible. That success exposes, rather than erases, the next research question: who resolves one coherent compiler from the requested capabilities, providers, conflicts, representation routes, ordering and backend?
+6. The resulting compiler plan must be feasible before preferences rank alternatives. Optimization requirements can constrain representation routes, and the historical UT planner failure makes **FEASIBILITY FIRST. PREFERENCE SECOND.** an evidence-backed rule.
+7. Freeze open-world composition into one concrete plan so extensibility machinery can stay off the repeated runtime path.
+8. Local optimization can erase modular representation machinery; Wist AIR supplies a concrete 3→1 deabstraction witness.
+9. Global/non-local optimization needs shared facts. Range + extent knowledge motivates `SafeIndex(a,i)` and possible bounds-check elimination.
+10. The private-handshake problem returns at the semantic level: independently authored analyses and consumers need a stable way to exchange semantic knowledge without private producer-consumer APIs.
+11. `Write(place, value)` supplies a second semantic domain with volatility, atomicity, ordering, visibility, GC-barrier and transaction concerns. Operation-centric queries avoid encoding their cross-product as one inheritance lattice.
+12. Typed facts can become stale. `Judgement` models contextual valid knowledge; `Obligation` models what must hold before a transformation is legal.
+13. Representation and knowledge are separate axes. There is no universal inverse lowering, so later passes may need meaning preserved, exposed on the current representation, or re-analysed.
+14. LLVM and MLIR are prior art; local interfaces/adapters are the strongest alternative; the shared semantic-contract hypothesis must earn its complexity in a falsifiable producer experiment.
+15. The final synthesis separates **IMPLEMENTED WITNESS**, **GENERAL DESIGN**, and **RESEARCH HYPOTHESIS**, then reconnects the three themes as **AUTHOR → RESOLVE → OPTIMIZE**.
 
-The appendix remains **8 slides** for UT-specific terminology/configuration/planner staging, bounded reflection, parity evidence, validity/trust, lower-level planner detail and numerical benchmark publication requirements.
+The appendix remains **8 slides** for UT-specific terminology/configuration/planner staging, bounded reflection, parity evidence, validity/trust, a falsifiable “Why not just MLIR?” Q&A, and numerical benchmark publication requirements.
+
+## MLIR boundary
+
+MLIR is treated as **VERIFIED PRIOR ART**, not as a competitor or strawman. The deck explicitly distinguishes this talk's `dialect` (language profile) from an MLIR IR dialect.
+
+The core scope distinction is:
+
+> **MLIR makes compiler representations extensible. We are asking how compiler composition itself becomes resolvable.**
+
+That does not mean MLIR cannot host such policy in user code. The research move is to make whole-composition resolution a first-class architectural object. A future `LanguagePlan` could select an MLIR-based subsystem and lower onward to LLVM or a specialized backend; current UT does not implement that provider integration. If MLIR plus local adapters solves the same problem with less machinery, the extra layer is not justified.
 
 ## Central synthesis
 
@@ -43,8 +54,9 @@ This is not a zero-overhead claim. Composition, compiler construction and compil
 
 ## Claim-status boundary
 
-The deck uses three interpretation categories:
+The deck uses four interpretation categories:
 
+- **VERIFIED PRIOR ART** — externally verified mechanisms from primary/upstream sources;
 - **IMPLEMENTED WITNESS** — current UT/Wist demonstrates the bounded mechanism/example;
 - **GENERAL DESIGN** — architecture argued by the talk;
 - **RESEARCH HYPOTHESIS** — falsifiable architecture not yet established by the implementation.
@@ -92,7 +104,7 @@ python3 scripts/timing_audit.py
 python3 scripts/check_render.py
 ```
 
-`check_deck.py` reconstructs the actual script load order, verifies 52 main + 8 appendix keys, enforces the causal dialect/extensibility → planner → local/global → semantic-contract → lowering → synthesis story, keeps planner/Write blocks in main, rejects conference-facing UT commit pins, and proves that exactly one canonical speaker-script owner supplies complete spoken text.
+`check_deck.py` reconstructs the actual script load order, verifies 52 main + 8 appendix keys, enforces the causal dialect/extensibility → MLIR scope bridge → planner → local/global → semantic-contract → lowering → synthesis story, keeps planner/Write blocks in main, rejects conference-facing UT commit pins, and proves that exactly one canonical speaker-script owner supplies complete spoken text.
 
 `timing_audit.py` verifies the main canonical script remains inside the 25–27 minute rehearsal envelope at 130 wpm.
 

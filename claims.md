@@ -2,8 +2,9 @@
 
 UniversalToolchain is an **implementation witness**, not the source of truth for the general architecture. Conference-facing links use the repository's current `master` paths; the talk is not pinned to a UT commit.
 
-The deck uses three status categories when interpretation depends on them:
+The deck uses four status categories when interpretation depends on them:
 
+- **VERIFIED PRIOR ART** — externally verified mechanisms from primary/upstream sources;
 - **IMPLEMENTED WITNESS** — current UT/Wist demonstrates the bounded mechanism or example;
 - **GENERAL DESIGN** — architecture argued by the talk without claiming it is already UT behavior;
 - **RESEARCH HYPOTHESIS** — a falsifiable proposal that still needs experiments.
@@ -32,6 +33,81 @@ Independent-authorship criterion:
 > Two extension authors should not need a private handshake merely to enter the same ecosystem and participate in one dialect.
 
 This is a design goal, not a claim that every arbitrary pair of extensions is semantically compatible. Conflicts and requirements still need explicit composition rules.
+
+## VERIFIED PRIOR ART — MLIR extensibility and conversion
+
+MLIR is strong prior art for extensible compiler infrastructure. Official MLIR documentation supports the following bounded claims:
+
+- dialects provide extensible IR namespaces with custom operations, types and attributes;
+- `OpInterface` / dialect interfaces let generic infrastructure query dialect-defined behavior;
+- Dialect Conversion uses a `ConversionTarget`, legalization rules and rewrite patterns, and can backtrack/rollback along legalization paths;
+- pass infrastructure supports registered, textual and dynamically constructed pipelines;
+- the Transform dialect provides an IR for expressing and controlling transformations.
+
+Allowed claim: MLIR already provides substantial machinery for representation extensibility, semantic interfaces, legality/conversion and programmable transformations. The talk must not imply that MLIR cannot compose IR dialects, build legalization paths, target unusual hardware, or express custom compiler policy in user code.
+
+Primary sources:
+
+- https://mlir.llvm.org/docs/Dialects/
+- https://mlir.llvm.org/docs/Interfaces/
+- https://mlir.llvm.org/docs/DialectConversion/
+- https://mlir.llvm.org/docs/PassManagement/
+- https://mlir.llvm.org/docs/Dialects/Transform/
+- Alex Zinenko, LLVM Developer Meeting 2023, *MLIR Is Not an ML Compiler, and Other Common Misconceptions*.
+
+The Zinenko talk explicitly frames MLIR as a collection of abstractions and transforms for assembling a compiler rather than one compiler with a single established pass pipeline, target selection, heuristics and benchmark policy.
+
+## GENERAL DESIGN — the MLIR / LanguagePlan scope boundary
+
+The early MLIR bridge asks a narrower architectural question than “is MLIR extensible?”:
+
+> Once independently authored language capabilities, alternative providers, conflicts, mandatory transformations, representation requirements, routes and backends coexist, which coherent compiler are we building for this language profile and target?
+
+Allowed claim: UT treats this whole-language/compiler resolution as a first-class planning object and research subject. This is a scope/ownership distinction, not a claim that MLIR user code is incapable of implementing such policy.
+
+Memorable distinction:
+
+> **MLIR makes compiler representations extensible. We are asking how compiler composition itself becomes resolvable.**
+
+Terminology remains explicit: this talk's `dialect` means declarative language profile; an MLIR dialect is an IR namespace / semantic extension.
+
+## GENERAL DESIGN — MLIR may be a provider, not a competitor
+
+A future compiler plan could select an MLIR-based representation/transformation subsystem for the stages where MLIR is appropriate and then lower to LLVM or to a specialized backend.
+
+This is conceptual architecture only. Current UT does **not** implement MLIR, Roslyn, NIR or other third-party compiler subsystems as selectable `LanguagePlan` providers.
+
+## RESEARCH HYPOTHESIS — whole-compiler subsystem composition must earn its layer
+
+Broad third-party compiler-subsystem composition, including MLIR/Roslyn/NIR provider integration and universal cross-subsystem semantic contracts, is not implemented evidence. It remains a research hypothesis.
+
+Falsifiability condition:
+
+> If MLIR plus local interfaces, pass pipelines and adapters resolves the same composition problem with less machinery, the additional UT abstraction layer is not justified.
+
+## VERIFIED PRIOR ART — hardware/toolchain diversity
+
+Hardware evidence is validation, not the main causal story. Primary/upstream examples show both patterns:
+
+- Google Coral documents an MLIR/IREE compiler path for the RISC-V-based Coral NPU, including target-specific plugins and dialects;
+- AMD/Xilinx MLIR-AIE is an MLIR-based toolchain for AI Engine devices and uses representations at multiple abstraction levels;
+- Tenstorrent `tt-mlir` is an MLIR-based compiler infrastructure with several target-specific dialects;
+- Buddy-MLIR's DynamicVector proposal uses RVV as an end-to-end example and explicitly warns that an architecture-specific RVV dialect without a generic vector abstraction risks becoming a silo;
+- Mesa RADV deliberately uses its own shader stack: SPIR-V is translated to NIR, optimized/lowered in NIR, then the lowered NIR is passed to the ACO backend for GPU-specific ISA generation.
+
+Allowed conclusion only:
+
+> New hardware does not imply MLIR failure. Real compiler ecosystems use both MLIR-based multi-level stacks and deliberately specialized IR/backend stacks.
+
+The deck does not turn these examples into an adoption trend, commercial-market-share claim, or a claim that one architecture is universally preferable.
+
+Primary sources:
+
+- https://developers.google.com/coral/guides/software/mlir-iree-compilers
+- https://xilinx.github.io/mlir-aie/latest/getting-started/
+- https://docs.tenstorrent.com/tt-mlir/overview.html
+- https://github.com/buddy-compiler/buddy-mlir/blob/main/docs/DynamicVector.md
+- https://docs.mesa3d.org/drivers/radv.html
 
 ## IMPLEMENTED WITNESS — declarative language selection
 
@@ -201,9 +277,11 @@ Candidate mechanisms for keeping selected questions answerable:
 
 ## PRIOR ART BOUNDARY
 
-LLVM demonstrates extensible pass infrastructure that resolves to concrete optimization pipelines. MLIR demonstrates semantic interfaces plus explicit legality/conversion across abstraction levels.
+LLVM demonstrates extensible pass infrastructure that resolves to concrete optimization pipelines. MLIR demonstrates extensible IR dialects, interfaces, explicit legality/conversion, configurable pass infrastructure and programmable transformations.
 
-The talk uses them as prior art, not as novelty foils. Their existence strengthens the burden of proof for any additional shared semantic layer.
+The talk uses them as prior art, not as novelty foils. In particular, MLIR Dialect Conversion already has legalization paths with rollback/backtracking, and the Transform dialect / PassManager already provide programmable transformation policy. Their existence strengthens the burden of proof for any additional planning or shared semantic layer.
+
+Hardware evidence is deliberately secondary. New or unusual hardware is not evidence that MLIR “failed”; architecture-specific validation belongs in appendix/research discussion rather than the main causal chain.
 
 ## STRONGEST ALTERNATIVE
 
@@ -211,15 +289,19 @@ A shared semantic layer may be unnecessary. Local pass managers, IR interfaces, 
 
 The research hypothesis earns its complexity only if experiments show lower pairwise coupling without sacrificing soundness or hiding domain semantics.
 
+The same falsifiability standard applies to the planning layer: if MLIR plus local policy/adapters expresses the required whole-composition resolution with less machinery and equal inspectability, the additional UT layer should be removed rather than defended rhetorically.
+
 Open research questions retained in the main narrative: semantic identity across transforms, trust in evidence, invalidation granularity, and ownership of obligations across specialized engines.
 
 ## Final conference boundary
 
+**VERIFIED PRIOR ART:** MLIR provides extensible IR dialects, semantic interfaces, Dialect Conversion legality/legalization, configurable pass pipelines and the Transform dialect.
+
 **IMPLEMENTED WITNESS:** declarative language profiles, staged resolution into frozen plans, route feasibility before preference, local deabstraction, selected backend parity regressions, and a disciplined benchmark boundary.
 
-**GENERAL DESIGN:** independent capabilities can be added and recombined into multiple dialects; dialects declare WHAT, planning resolves one feasible HOW; open-world composition can freeze before repeated execution.
+**GENERAL DESIGN:** independent capabilities can be added and recombined into multiple dialects; dialects declare WHAT, planning resolves one feasible HOW; open-world composition can freeze before repeated execution; an MLIR-based subsystem could conceptually participate as a provider.
 
-**RESEARCH HYPOTHESIS:** shared semantic queries plus validity discipline can preserve optimization-quality meaning across independently authored components and changing representations, while semantic obligations constrain legal lowering without pairwise wiring.
+**RESEARCH HYPOTHESIS:** broad third-party compiler-subsystem composition and shared semantic queries plus validity discipline can preserve optimization-quality meaning across independently authored components and changing representations, while semantic obligations constrain legal lowering without pairwise wiring.
 
 Final synthesis:
 
