@@ -1,308 +1,202 @@
-# Claim ledger — LangDev 2026
+# Conference claim contract — LangDev 2026
 
-UniversalToolchain is an **implementation witness**, not the source of truth for the general architecture. Conference-facing links use the repository's current `master` paths; the talk is not pinned to a UT commit.
+`CONTENT_EVIDENCE_LEDGER.md` is the authoritative evidence boundary for this content-finalization campaign. UniversalToolchain/Wist is an **implementation witness** for bounded mechanisms that exist today; it is not evidence that the general architecture is novel or universally correct.
 
-The deck uses four status categories when interpretation depends on them:
+The talk keeps four interpretation classes separate:
 
-- **VERIFIED PRIOR ART** — externally verified mechanisms from primary/upstream sources;
-- **IMPLEMENTED WITNESS** — current UT/Wist demonstrates the bounded mechanism or example;
-- **GENERAL DESIGN** — architecture argued by the talk without claiming it is already UT behavior;
-- **RESEARCH HYPOTHESIS** — a falsifiable proposal that still needs experiments.
+- **PRIOR ART / VERIFIED PRIOR ART** — mechanisms established by primary/upstream or peer-reviewed sources;
+- **IMPLEMENTED WITNESS** — current UT/Wist code or tests demonstrate the bounded mechanism stated;
+- **GENERAL DESIGN** — an architectural responsibility or distinction argued by the talk;
+- **RESEARCH HYPOTHESIS** — a falsifiable proposal that still has to beat credible alternatives experimentally.
 
-## GENERAL DESIGN — capability / extension vs dialect / language profile
+## Vocabulary and independent development
 
-A **capability / extension** is an independently authored reusable compiler slice. Depending on the domain it may contribute syntax, typing, analysis, lowering, optimization, backend behavior or tooling.
+A **language capability** is a reusable authored compiler contribution. Depending on the system, it may participate in syntax, typing, analysis, lowering, optimization, backend behavior or tooling.
 
-A **dialect / language profile** is a concrete declarative language configuration assembled from many reusable ecosystem pieces plus restrictions, policy and targets.
+A **language profile** is one concrete request/configuration that selects and constrains reusable capabilities, policies and targets.
 
-Allowed claim: capability and dialect are different entities. One capability can participate in multiple profiles; one profile selects and constrains multiple reusable pieces.
+The unqualified word **dialect** is not the general term in this talk. It is reserved for an ecosystem's own terminology: Wist's `.wistdialect` file is one implementation syntax, while an MLIR dialect is an IR namespace/semantic extension.
 
-Terminology boundary: in this talk, “dialect” means language profile/configuration. It does not mean an MLIR IR dialect.
+Independent development means that producers can implement against **published ecosystem contracts** rather than requiring private pairwise integration APIs with every other author. It does **not** mean zero coordination, arbitrary compatibility or automatic semantic non-interference. Shared schema/version rules, declared dependencies, conflicts, ordering constraints and trust policy are all legitimate ecosystem contracts.
 
-## GENERAL DESIGN — extensibility has two moves
+## Prior-art / novelty boundary
 
-The talk uses “extensible” in two independent senses that reinforce each other:
+The following broad ideas are not novelty claims for this talk:
 
-1. **extend the ecosystem** — add a new capability, optimizer, backend, type-system component or tooling contribution;
-2. **compose a language** — select, restrict and recombine existing pieces into a different dialect/profile.
+- independently developed or modular language extensions and automatic/reusable composition — Silver/ableC, Neverlang and MontiCore are direct prior art;
+- relative cross-extension ordering and explicit/global generation plans — JetBrains MPS is direct prior art;
+- extensible pass pipelines, generic cached analysis lookup and explicit preservation/invalidation — LLVM New Pass Manager is direct prior art;
+- decoupled semantic interfaces/external models, effect queries, legality/conversion and reusable data-flow infrastructure — MLIR is direct prior art;
+- semantic preservation and per-translation/refinement validation — CompCert, translation validation and Alive2 establish much stronger correctness baselines than structural route planning.
 
-One ecosystem may therefore produce multiple materially different languages without duplicating the whole compiler.
+Safe framing:
 
-Independent-authorship criterion:
+> Independent language extension is the starting problem, not the invention. The research question is whether a narrower cross-component **semantic-evidence lifecycle** buys something useful beyond these mature mechanisms.
 
-> Two extension authors should not need a private handshake merely to enter the same ecosystem and participate in one dialect.
+Composition also must not be equated with soundness:
 
-This is a design goal, not a claim that every arbitrary pair of extensions is semantically compatible. Conflicts and requirements still need explicit composition rules.
+> Composition answers whether pieces can be assembled under declared rules. Semantic preservation/non-interference is a separate property that needs its own proof, validator, trusted contract or fail-closed obligation mechanism.
 
-## VERIFIED PRIOR ART — MLIR extensibility and conversion
+## IMPLEMENTED WITNESS — Wist profile selection
 
-MLIR is strong prior art for extensible compiler infrastructure. Official MLIR documentation supports the following bounded claims:
+Current Wist ships multiple `.wistdialect` examples. The dialect frontend parses that syntax and translates the requested modules/policy/backend into a `LanguageDefinition`; `LanguageCompiler` subsequently resolves the concrete plan.
 
-- dialects provide extensible IR namespaces with custom operations, types and attributes;
-- `OpInterface` / dialect interfaces let generic infrastructure query dialect-defined behavior;
-- Dialect Conversion uses a `ConversionTarget`, legalization rules and rewrite patterns, and can backtrack/rollback along legalization paths;
-- pass infrastructure supports registered, textual and dynamically constructed pipelines;
-- the Transform dialect provides an IR for expressing and controlling transformations.
+Allowed wording: Wist has a declarative language-profile syntax today.
 
-Allowed claim: MLIR already provides substantial machinery for representation extensibility, semantic interfaces, legality/conversion and programmable transformations. The talk must not imply that MLIR cannot compose IR dialects, build legalization paths, target unusual hardware, or express custom compiler policy in user code.
+Not allowed: the syntax proves arbitrary third-party compatibility, or represents the general architecture by itself.
 
-Primary sources:
+## IMPLEMENTED WITNESS — staged plan lifecycle
 
-- https://mlir.llvm.org/docs/Dialects/
-- https://mlir.llvm.org/docs/Interfaces/
-- https://mlir.llvm.org/docs/DialectConversion/
-- https://mlir.llvm.org/docs/PassManagement/
-- https://mlir.llvm.org/docs/Dialects/Transform/
-- Alex Zinenko, LLVM Developer Meeting 2023, *MLIR Is Not an ML Compiler, and Other Common Misconceptions*.
+Current UT separates requested language definition, semantic planning, a read-only snapshotted `LanguagePlan`, and runtime/build-session materialization.
 
-The Zinenko talk explicitly frames MLIR as a collection of abstractions and transforms for assembling a compiler rather than one compiler with a single established pass pipeline, target selection, heuristics and benchmark policy.
+Allowed wording:
 
-## GENERAL DESIGN — the MLIR / LanguagePlan scope boundary
+> Composition decisions can be resolved into an inspectable plan before runtime execution; runtime materializes that plan rather than rediscovering language features.
 
-The early MLIR bridge asks a narrower architectural question than “is MLIR extensible?”:
+Do not say the whole compiler or all third-party state is immutable/stateless, or that freezing the plan proves semantic correctness.
 
-> Once independently authored language capabilities, alternative providers, conflicts, mandatory transformations, representation requirements, routes and backends coexist, which coherent compiler are we building for this language profile and target?
+## GENERAL DESIGN — profile WHAT / planner HOW
 
-Allowed claim: UT treats this whole-language/compiler resolution as a first-class planning object and research subject. This is a scope/ownership distinction, not a claim that MLIR user code is incapable of implementing such policy.
+The language profile owns requested capabilities, exclusions/restrictions, policy and targets. Planning owns dependency/provider resolution, declared conflicts/order and executable representation routes.
 
-Memorable distinction:
+A whole-language planning object is a responsibility boundary, not a novelty claim that global plans do not exist elsewhere. MPS generation plans and ordinary compiler pipeline builders are explicit prior art.
 
-> **MLIR makes compiler representations extensible. We are asking how compiler composition itself becomes resolvable.**
+A future plan could select an MLIR-based subsystem where useful. Current UT does not implement an MLIR provider.
 
-Terminology remains explicit: this talk's `dialect` means declarative language profile; an MLIR dialect is an IR namespace / semantic extension.
+## IMPLEMENTED WITNESS — structural feasibility before preference
 
-## GENERAL DESIGN — MLIR may be a provider, not a competitor
+Current UT has a focused route-search regression in which a cost-2 route is rejected because artifact flow and a hard contribution-order constraint cannot both hold; a direct cost-10 route remains feasible and is selected.
 
-A future compiler plan could select an MLIR-based representation/transformation subsystem for the stages where MLIR is appropriate and then lower to LLVM or to a specialized backend.
+Allowed wording:
 
-This is conceptual architecture only. Current UT does **not** implement MLIR, Roslyn, NIR or other third-party compiler subsystems as selectable `LanguagePlan` providers.
+> Hard declared requirements participate before route-cost preference. Cost ranks surviving structurally feasible candidates.
 
-## RESEARCH HYPOTHESIS — whole-compiler subsystem composition must earn its layer
+Mandatory boundary:
 
-Broad third-party compiler-subsystem composition, including MLIR/Roslyn/NIR provider integration and universal cross-subsystem semantic contracts, is not implemented evidence. It remains a research hypothesis.
+> **Structural feasibility is not semantic preservation.** The regression checks artifact connectivity, declared ordering and selected route identity; it does not define or prove a source-target semantic relation.
 
-Falsifiability condition:
+Semantic preservation must come from separate proofs, validators, trusted transformation contracts or explicit obligations/evidence.
 
-> If MLIR plus local interfaces, pass pipelines and adapters resolves the same composition problem with less machinery, the additional UT abstraction layer is not justified.
+## GENERAL DESIGN — precise freeze boundary
 
-## VERIFIED PRIOR ART — hardware/toolchain diversity
+Open-world authoring/composition may terminate in one resolved plan, so ecosystem discovery and global composition need not repeat on an already-resolved per-program path.
 
-Hardware evidence is validation, not the main causal story. Primary/upstream examples show both patterns:
+This says nothing universal about mutable runtime/provider state, program-specific optimization cost, code size, dispatch cost or semantic non-interference. Per-program compilation and optimization still happen after the composition decision is frozen.
 
-- Google Coral documents an MLIR/IREE compiler path for the RISC-V-based Coral NPU, including target-specific plugins and dialects;
-- AMD/Xilinx MLIR-AIE is an MLIR-based toolchain for AI Engine devices and uses representations at multiple abstraction levels;
-- Tenstorrent `tt-mlir` is an MLIR-based compiler infrastructure with several target-specific dialects;
-- Buddy-MLIR's DynamicVector proposal uses RVV as an end-to-end example and explicitly warns that an architecture-specific RVV dialect without a generic vector abstraction risks becoming a silo;
-- Mesa RADV deliberately uses its own shader stack: SPIR-V is translated to NIR, optimized/lowered in NIR, then the lowered NIR is passed to the ACO backend for GPU-specific ISA generation.
+## IMPLEMENTED WITNESS — local deabstraction
 
-Allowed conclusion only:
+Current UT contains bounded local rewrites, including:
 
-> New hardware does not imply MLIR failure. Real compiler ecosystems use both MLIR-based multi-level stacks and deliberately specialized IR/backend stacks.
+- a recognized managed comparison call becoming a typed comparison intrinsic under the tested capability gate;
+- `LoadEnvironment + Push(slot) + LoadExternal<T>` becoming one typed `LoadExternal<T>(slot)` intrinsic when the exact requested type/capability is supported.
 
-The deck does not turn these examples into an adoption trend, commercial-market-share claim, or a claim that one architecture is universally preferable.
+Unsupported cases fail closed to the original IR in the tested paths.
 
-Primary sources:
+Instruction-count reduction is not a numerical performance claim or a proof of whole-program equivalence.
 
-- https://developers.google.com/coral/guides/software/mlir-iree-compilers
-- https://xilinx.github.io/mlir-aie/latest/getting-started/
-- https://docs.tenstorrent.com/tt-mlir/overview.html
-- https://github.com/buddy-compiler/buddy-mlir/blob/main/docs/DynamicVector.md
-- https://docs.mesa3d.org/drivers/radv.html
+## IMPLEMENTED WITNESS — backend parity and benchmark boundaries
 
-## IMPLEMENTED WITNESS — declarative language selection
+Selected CIL/interpreter behavior is protected by differential regressions, including external-binding and shadowing cases. This is relational test evidence for covered cases, not a formal equivalence theorem.
 
-Current Wist profiles select language capabilities, policy, optimizers and backends through `.wistdialect` configuration. Existing examples include a minimal arithmetic profile and richer/restricted profiles that reuse overlapping ecosystem pieces.
+The presentation publishes no C#↔Wist numerical performance ratio until a current reviewed raw Release BenchmarkDotNet artifact with environment/source identity and correctness/parity precheck exists. Setup and prepared execution remain separate measurement boundaries.
 
-Allowed claim: configuration says **WHAT** language is wanted; dependency closure and implementation selection are resolved after the declaration.
+## RESEARCH HYPOTHESIS — semantic evidence contract
 
-Boundary: `.wistdialect` syntax is one implementation witness for the declarative boundary, not the general architecture itself.
+Generic semantic queries and invalidation are already prior art in LLVM/MLIR. The narrower proposal to test is a minimal cross-component **semantic-evidence lifecycle** with explicit identity, validity, contradiction and obligation rules.
 
-## GENERAL DESIGN — dialect WHAT / planner HOW
+For a proposition `P`, a query result must distinguish at least:
 
-The declarative profile owns the requested language surface, exclusions/restrictions, optimizer intent, policy and targets. Composition/planning owns dependency closure, provider selection, conflicts, ordering and executable representation routes.
+1. **unsupported** — this provider/contract does not answer this proposition;
+2. **unknown** — the proposition is supported but current evidence cannot establish either side;
+3. **established(P)** — current-valid suitable evidence supports `P`;
+4. **refuted(P)** — current-valid suitable evidence supports `¬P`;
+5. **contradictory** — current-valid suitable evidence supports both `P` and `¬P`, or otherwise conflicts under the contract.
 
-Allowed claim:
+Only current-valid evidence suitable for the proposition may discharge a legality obligation. **Unknown, unsupported and contradictory do not discharge it.** Contradictory current-valid evidence fails closed unless the published contract defines an explicit trusted reconciliation rule.
 
-> The dialect declares WHAT language we want. The composer / planner resolves HOW to assemble it.
+A shared query/evidence contract also needs explicit ownership and versioning. The contract owner defines proposition identity, evidence compatibility and result semantics; a producer cannot privately redefine what `P` means for existing consumers.
 
-A configuration is not yet a compiler. The output of composition should be one inspectable concrete compiler plan.
+## RESEARCH HYPOTHESIS — obligations belong to transformations
 
-## IMPLEMENTED WITNESS — resolved compiler staging
+A transformation/lowering owns the legal precondition it must satisfy. Producers contribute evidence; they do not get to weaken or redefine that precondition.
 
-Current UT separates `LanguageDefinition`, `LanguageCompiler`, immutable `LanguagePlan` and `LanguageRuntime`. Explicitly registered third-party packages enter the same typed planning path.
+Example:
 
-Allowed claim: language composition can be resolved before repeated execution. Per-program compilation and optimization still happen later; freezing composition does not pre-optimize future programs.
+> “May omit this bounds check?” is a transformation obligation. Range/shape producers can contribute evidence toward `SafeIndex(a,i)`, but the consumer/transform defines the exact safety proposition and which side conditions matter.
 
-## IMPLEMENTED WITNESS — Wist representation stack
+## RESEARCH HYPOTHESIS — `SafeIndex` side conditions
 
-Current Wist uses a concrete AST → Bytecode → AIR → optimization → Interpreter/CIL path.
-
-Boundary: Bytecode and AIR are Wist implementation choices. The general architecture does not require other languages to copy them.
-
-## IMPLEMENTED WITNESS — planner feasibility before preference
-
-Current `master` includes focused regressions showing route search can reject a cheaper route that violates mandatory descriptor ordering and select a more expensive feasible route.
-
-Historical lesson: choosing a preferred conversion skeleton before all mandatory-pass/order requirements participate can miss a feasible compiler plan.
-
-Allowed claim: requirements such as reachability, mandatory-pass coverage and ordering participate in admissibility before `Cost`/`Order` preference ranks surviving routes.
-
-Boundary: route cost is a preference signal. It is not evidence of semantic equivalence, trust or preservation by itself.
-
-## GENERAL DESIGN — freeze the open world before repeated execution
-
-The talk argues for this lifecycle:
+The mnemonic equation
 
 ```text
-independently authored capabilities
-→ declarative dialect / language profile
-→ composition / planning
-→ one feasible concrete compiler plan
-→ per-program compilation / optimization / execution
+0 <= i < N
+N = Length(a)
+=> SafeIndex(a, i)
 ```
 
-Core wording: open-world authoring can terminate in a closed, inspectable plan. Extensibility machinery therefore does not have to remain in the repeated runtime path.
+is intentionally incomplete unless its evidence is scoped. A defensible obligation must account for at least:
 
-This is not a zero-overhead guarantee. Composition, compiler construction, parsing, compilation, code-size choices and target dispatch may still cost more.
+- facts describing the same semantic array/index and the same relevant context/revision;
+- no intervening invalidating mutation/reallocation/extent change for the modeled object;
+- the actual integer/signedness/overflow semantics used by the access and comparison;
+- path/control-flow/dominance conditions under which the range and extent facts hold;
+- assumptions attached to the analyses/evidence.
 
-## IMPLEMENTED WITNESS — local AIR deabstraction
+If those conditions cannot be established, the transformation keeps the check.
 
-The current optimizer contains a focused rewrite from:
+## RESEARCH HYPOTHESIS — operation semantics vs lowering obligations for writes
 
-```text
-LoadEnvironment()
-Push(slot)
-LoadExternal<T>()
-```
+`Write(place, value)` spans two distinct layers that must not be collapsed.
 
-to one typed external-load intrinsic when the exact slot/type/backend conditions hold.
+**Operation/source semantic questions** may include writability, abstract effects/resources, alias/resource identity, visibility, volatility and language-level ordering/atomicity requirements.
 
-Allowed claim: three representation operations become one; local representation machinery disappears while the external-load meaning remains.
+**Lowering/runtime obligations** may include a CoreCLR GC write barrier for a managed-reference heap store, a target-specific atomic/fence sequence, or a runtime/transaction protocol.
 
-## IMPLEMENTED WITNESS — backend parity regression
+MLIR effect interfaces are direct prior art for operation/effect queries. A CoreCLR GC barrier is a concrete JIT/runtime lowering obligation whose legal normal/checked/no-barrier choice depends on runtime/JIT facts; it is not simply a source-language `IWritable` trait.
 
-Interpreter/CIL tests cover selected binding and shadowing scenarios. They are relational evidence for those cases, not a proof of equivalence for every Wist program.
+## RESEARCH HYPOTHESIS — validity and cross-representation correspondence
 
-## IMPLEMENTED WITNESS — benchmark boundary
+A typed value alone is insufficient because evidence can become stale after transformation. The proposed `Judgement` name means a proposition/result together with subject, context/revision/validity, assumptions and evidence. It is modeling terminology, not a claimed universal ontology.
 
-UT keeps steady-state prepared execution, convenience `Evaluate` overhead and compilation/setup in separate BenchmarkDotNet suites. The hot-path suite excludes parsing, language composition, compiler construction and compilation.
+Stable IDs/provenance can help, but they are not sufficient for transformations such as cloning, fusion, CSE, inlining, unrolling, code motion or many-to-one lowering. The meaningful question is a **semantic correspondence**: refinement, simulation, projection/property transport or another explicitly defined relation.
 
-Allowed claim: the architecture permits hot execution to be measured separately from authoring/composition/setup work.
+For a transformation `T : r -> r'`, each affected fact that a later decision still uses must be handled explicitly:
 
-## NEEDS-VERIFICATION — numerical performance
+1. **transport/project** it through a justified correspondence relation;
+2. **re-analyse/recompute** it on `r'`; or
+3. **invalidate** it so it cannot discharge a later obligation.
 
-No current reviewed raw Release BenchmarkDotNet artifact is checked into this presentation repository. Therefore the conference deck publishes no C#↔Wist ratio, slowdown percentage, speedup percentage or amortization figure.
-
-A numerical slide becomes publishable only after preserving raw BenchmarkDotNet output, source identity, environment metadata and correctness/parity precheck for comparable prepared call boundaries.
-
-## GENERAL DESIGN — local vs non-local optimization
-
-Local/peephole optimization uses a small IR window and exact local facts. Non-local optimization uses facts outside that window, potentially across blocks, loop iterations or independently authored components.
-
-The first running example is bounds-check elimination:
-
-```text
-Range: 0 <= i < N
-Extent: N = Length(a)
-→ SafeIndex(a, i)
-→ repeated bounds check may be omitted
-```
-
-This example motivates the semantic architecture; it is not presented as an already implemented UT optimization.
-
-## RESEARCH HYPOTHESIS — semantic extensibility is the same independence problem at a second level
-
-The structural story says independently authored language extensions should not need private pairwise coordination merely to compose into one ecosystem/profile.
-
-The semantic story asks the analogous question after optimization becomes non-local:
-
-> Can independently authored semantic producers and consumers exchange useful knowledge without private producer-consumer APIs?
-
-This callback is intentional. Semantic contracts are not a separate topic appended to the talk; they are the second level of the same extensibility problem.
-
-## RESEARCH HYPOTHESIS — shared semantic query contracts
-
-Producers should expose knowledge through stable typed semantic questions so consumers do not depend on concrete producer implementations.
-
-Primary falsifiable criterion:
-
-> Add a semantic producer. Change zero existing consumers.
-
-Positive control: fresh consistent evidence may strengthen an answer.
-
-Negative control: stale or contradictory evidence must never discharge an unsafe obligation.
-
-A shared query schema does not imply one universal solver or one mega-service. Domain-specific analyses may remain specialized.
-
-## RESEARCH HYPOTHESIS — operation-centric write semantics
-
-The second semantic domain is a write:
-
-```text
-Write(place, value)
-```
-
-Correctness may depend on partially independent dimensions such as writability, effects, volatility, atomicity, ordering, visibility, GC-barrier obligations and transaction context.
-
-Hypothesis: consumers should query the dimensions relevant to an operation rather than require one inheritance hierarchy encoding the cross-product of semantic traits.
-
-This is a general architecture example, not a claim about a currently implemented UT write-semantics subsystem.
-
-## RESEARCH HYPOTHESIS — Judgement, Obligation and validity
-
-A naked typed fact can become stale after a transformation. `Judgement` therefore names what is known together with subject, value, context, revision/validity, evidence and assumptions.
-
-`Obligation` names what must be true before a transformation or lowering is legal. Only valid Judgements may discharge an Obligation.
-
-Example: a reference store may require GC-barrier behavior to be preserved or emitted. That semantic requirement constrains the feasible lowering set before target/cost preference ranks candidates.
-
-This reconnects semantic legality to the earlier planner rule:
-
-> Feasibility first. Preference second.
-
-`Judgement` and `Obligation` are proposed modeling terms, not a finished universal ontology.
-
-## RESEARCH HYPOTHESIS — meaning and validity across lowering
-
-Representation lowering and semantic knowledge are separate axes. A more concrete representation does not automatically carry less semantic responsibility.
-
-There is no universal inverse lowering: real transformations split, merge, fuse, delete and many-to-one lower operations. Rebuilding every previous IR is therefore not a general solution.
-
-Candidate mechanisms for keeping selected questions answerable:
-
-- preserve provenance / stable semantic identity;
-- expose typed semantic views on the current representation;
-- re-analyse the property on the lowered IR;
-- maintain explicit validity / revision discipline.
-
-## PRIOR ART BOUNDARY
-
-LLVM demonstrates extensible pass infrastructure that resolves to concrete optimization pipelines. MLIR demonstrates extensible IR dialects, interfaces, explicit legality/conversion, configurable pass infrastructure and programmable transformations.
-
-The talk uses them as prior art, not as novelty foils. In particular, MLIR Dialect Conversion already has legalization paths with rollback/backtracking, and the Transform dialect / PassManager already provide programmable transformation policy. Their existence strengthens the burden of proof for any additional planning or shared semantic layer.
-
-Hardware evidence is deliberately secondary. New or unusual hardware is not evidence that MLIR “failed”; architecture-specific validation belongs in appendix/research discussion rather than the main causal chain.
+“There is no universal inverse lowering” motivates this rule but is not itself a correctness proof. CompCert, translation validation and Alive2 are important stronger baselines for cross-representation correctness claims.
 
 ## STRONGEST ALTERNATIVE
 
-A shared semantic layer may be unnecessary. Local pass managers, IR interfaces, domain-specific analyses, explicit adapters and local invalidation rules may solve the real coupling problem with less machinery.
+The strongest practical alternative is deliberately ordinary:
 
-The research hypothesis earns its complexity only if experiments show lower pairwise coupling without sacrificing soundness or hiding domain semantics.
+> local IR interfaces + domain-specific analyses + a pass/analysis manager + explicit adapters + local invalidation.
 
-The same falsifiability standard applies to the planning layer: if MLIR plus local policy/adapters expresses the required whole-composition resolution with less machinery and equal inspectability, the additional UT layer should be removed rather than defended rhetorically.
+LLVM AnalysisManager/`PreservedAnalyses` and MLIR interfaces/external models/effects/data-flow make this alternative substantial, not a strawman.
 
-Open research questions retained in the main narrative: semantic identity across transforms, trust in evidence, invalidation granularity, and ownership of obligations across specialized engines.
+The shared evidence layer should be rejected if it cannot demonstrate a better engineering/correctness tradeoff. A fair comparator experiment must measure at least:
+
+- edits required in existing consumers when a new producer is added;
+- number of integration edges/adapters;
+- **false obligation discharges** / unsafe transformations (must remain zero in the test model);
+- analysis/optimization precision;
+- invalidation and re-analysis cost;
+- schema/versioning/infrastructure burden.
+
+Negative controls include stale evidence, contradictory evidence and representation changes. If the shared layer merely renames MLIR/LLVM-style local mechanisms or adds schema burden without reducing coupling, remove it.
 
 ## Final conference boundary
 
-**VERIFIED PRIOR ART:** MLIR provides extensible IR dialects, semantic interfaces, Dialect Conversion legality/legalization, configurable pass pipelines and the Transform dialect.
+**PRIOR ART:** independent/modular language extension and composition; global/ordered generation plans; generic semantic interfaces/effect queries; analysis caching/preservation/invalidation; semantic-preservation/translation-validation approaches.
 
-**IMPLEMENTED WITNESS:** declarative language profiles, staged resolution into frozen plans, route feasibility before preference, local deabstraction, selected backend parity regressions, and a disciplined benchmark boundary.
+**IMPLEMENTED WITNESS:** Wist profiles; staged UT planning; focused structural feasibility-before-preference regression; bounded local deabstraction; selected CIL/interpreter parity regressions; benchmark methodology boundary.
 
-**GENERAL DESIGN:** independent capabilities can be added and recombined into multiple dialects; dialects declare WHAT, planning resolves one feasible HOW; open-world composition can freeze before repeated execution; an MLIR-based subsystem could conceptually participate as a provider.
+**GENERAL DESIGN:** language capability/profile distinction; profile WHAT vs planner HOW; one resolved structural plan can terminate open-world composition before an already-resolved per-program path; composition is not soundness.
 
-**RESEARCH HYPOTHESIS:** broad third-party compiler-subsystem composition and shared semantic queries plus validity discipline can preserve optimization-quality meaning across independently authored components and changing representations, while semantic obligations constrain legal lowering without pairwise wiring.
+**RESEARCH HYPOTHESIS:** whether a versioned cross-component semantic-evidence lifecycle with five-state results, fail-closed contradictions, transformation-owned obligations and explicit transport/reanalyse/invalidate rules measurably reduces coupling versus LLVM/MLIR/local-adapter baselines without weakening correctness.
 
 Final synthesis:
 
-> **Extensibility should disappear where it is machinery — and survive where it is meaning.**
+> **AUTHOR against published contracts. RESOLVE one declared-feasible plan. OPTIMIZE only when current-valid evidence justifies the transformation.**
