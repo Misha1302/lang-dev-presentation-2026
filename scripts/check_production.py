@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import quote
 from urllib.request import urlopen
 import hashlib
+import json
 import os
 import re
 import shutil
@@ -19,15 +21,67 @@ if ARTIFACTS.exists():
 ARTIFACTS.mkdir()
 PRODUCTION = 'https://misha1302.github.io/lang-dev-presentation-2026/'
 sha = os.environ.get('GITHUB_SHA', 'unknown')
+contract = json.loads((ROOT / 'CONTENT_NARRATIVE_CONTRACT.json').read_text(encoding='utf-8'))
 index = (ROOT / 'index.html').read_text(encoding='utf-8')
 load_order = re.findall(r'<script\s+src="([^"]+)"', index)
 deck_assets = [name for name in load_order if name.startswith('deck-') and name != 'deck.js']
-raw = '\n'.join((ROOT / name).read_text(encoding='utf-8') for name in deck_assets)
-main_count = len(re.findall(r'data-kind="main"', raw))
-appendix_count = len(re.findall(r'data-kind="appendix"', raw))
-if (main_count, appendix_count) != (52, 8):
-    print('Production check FAILED: local deck count contract mismatch')
-    sys.exit(1)
+
+
+def fragment_text(path: Path) -> str:
+    raw = path.read_text(encoding='utf-8')
+    match = re.search(r'String\.raw`(.*)`\);\s*$', raw, re.S)
+    if not match:
+        raise RuntimeError(f'cannot parse {path.name}')
+    return match.group(1)
+
+
+class SlideMetaParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.slides: list[dict[str, str]] = []
+
+    def handle_starttag(self, tag: str, attrs) -> None:
+        if tag != 'section':
+            return
+        attr = dict(attrs)
+        if 'slide' in attr.get('class', '').split():
+            self.slides.append(attr)
+
+
+def parse_slide_meta(raw: str) -> list[dict[str, str]]:
+    parser = SlideMetaParser()
+    parser.feed(raw)
+    return parser.slides
+
+
+def validate_semantic_owners(slides: list[dict[str, str]]) -> list[str]:
+    note_keys = [slide.get('data-note-key', '').strip() for slide in slides]
+    if not all(note_keys) or len(note_keys) != len(set(note_keys)):
+        raise RuntimeError('production DOM slide identity is missing or duplicated')
+    by_key = {slide['data-note-key']: slide for slide in slides}
+    main_keys = [slide['data-note-key'] for slide in slides if slide.get('data-kind') == 'main']
+    main_position = {key: idx for idx, key in enumerate(main_keys)}
+    milestones = contract['milestones']
+    for milestone_id, spec in milestones.items():
+        owner = spec['owner']
+        if owner not in by_key:
+            raise RuntimeError(f'production semantic owner missing: {milestone_id}:{owner}')
+        if by_key[owner].get('data-kind') != spec['kind']:
+            raise RuntimeError(f'production semantic owner kind mismatch: {milestone_id}')
+    for before, after in contract['causal_edges']:
+        a = milestones[before]
+        b = milestones[after]
+        if a['kind'] == b['kind'] == 'main' and main_position[a['owner']] > main_position[b['owner']]:
+            raise RuntimeError(f'production causal order violated: {before}>{after}')
+    return note_keys
+
+
+local_slides = parse_slide_meta('\n'.join(fragment_text(ROOT / name) for name in deck_assets))
+local_note_keys = validate_semantic_owners(local_slides)
+main_keys = [slide['data-note-key'] for slide in local_slides if slide.get('data-kind') == 'main']
+appendix_keys = [slide['data-note-key'] for slide in local_slides if slide.get('data-kind') == 'appendix']
+note_target = {key: f'#{i + 1}' for i, key in enumerate(main_keys)}
+note_target.update({key: f'#a{i + 1}' for i, key in enumerate(appendix_keys)})
 
 browser = next((name for name in ['google-chrome-stable', 'google-chrome', 'chromium-browser', 'chromium'] if shutil.which(name)), None)
 if browser is None:
@@ -36,9 +90,10 @@ if browser is None:
 
 assets = [
     'index.html',
+    'CONTENT_NARRATIVE_CONTRACT.json',
     'deck-main.js',
     'deck-appendix.js',
-    'speaker-script-canonical.js',
+    contract['speaker_owner'],
     'deck.js',
     'presenter.css',
     'speaker-script.css',
@@ -78,46 +133,26 @@ except subprocess.TimeoutExpired:
 if nav:
     if nav.returncode != 0 or 'data-nav-check="ok"' not in nav.stdout:
         failures.append('production navigation: nav-check did not pass')
-    for marker in [
-        'A capability / extension is something authored once and reusable across languages',
-        'A dialect is one declarative language profile built from that ecosystem',
-        'Capability ≠ dialect',
-        'One ecosystem → multiple dialects',
-        'Two extension authors should not need a private handshake',
-        'MLIR makes compiler representations extensible.',
-        'A configuration is not yet a compiler.',
-        'Why not just MLIR?',
-        'extra UT layer is not justified',
-        'Requested behavior can require a representation property',
-        'FEASIBILITY FIRST.',
-        'Extensibility machinery can stay off the runtime hot path',
-        'Peephole optimization replaces an exact pattern in a small window',
-        'Local rewrites are easy. Global optimization needs shared facts.',
-        'A bounds check is a non-local proof problem',
-        'structural extensibility → semantic extensibility',
-        'Stable typed semantic queries decouple producers from consumers',
-        'A write is not just “writable”',
-        'A Judgement says what is known',
-        'An Obligation is what must hold before a transformation is legal',
-        'Representation axis ≠ knowledge axis',
-        'There is no universal inverse lowering',
-        'Preserve, expose or re-analyse the facts a later pass still needs',
-        'Maybe a shared semantic layer is unnecessary',
-        'Add a producer. Change zero consumers. Measure soundness and coupling.',
-        'Final synthesis',
-        'preserve / re-expose semantic knowledge',
-    ]:
-        if marker not in nav.stdout:
-            failures.append(f'production narrative marker missing: {marker}')
-    if 'data-deck-qa-contract="architecture-story-v3"' not in nav.stdout:
-        failures.append('production DOM contract marker mismatch')
+    if f'data-deck-qa-contract="{contract["runtime_qa_contract"]}"' not in nav.stdout:
+        failures.append('production DOM runtime QA contract marker mismatch')
+    try:
+        deployed_note_keys = validate_semantic_owners(parse_slide_meta(nav.stdout))
+        if deployed_note_keys != local_note_keys:
+            failures.append('production semantic slide identity/order differs from local candidate')
+    except Exception as exc:
+        failures.append(f'production semantic contract: {exc}')
 
-representative = [
-    '#1', '#2', '#5', '#6', '#7', '#8', '#9', '#10', '#11', '#12', '#13', '#14',
-    '#17', '#18', '#19', '#20', '#21', '#22', '#25', '#26', '#27', '#28', '#31', '#32',
-    '#34', '#36', '#39', '#40', '#41', '#43', '#45', '#49', '#50', '#51', '#52',
-    '#a1', '#a3', '#a5', '#a7', '#a8'
-]
+milestone_owner_keys = []
+for milestone_id in contract['milestones']:
+    key = contract['milestones'][milestone_id]['owner']
+    if key not in milestone_owner_keys:
+        milestone_owner_keys.append(key)
+representative = [note_target[key] for key in milestone_owner_keys if key in note_target]
+for key in [main_keys[0], main_keys[-1], appendix_keys[0], appendix_keys[-1]]:
+    target = note_target[key]
+    if target not in representative:
+        representative.append(target)
+
 for target in representative:
     url = f'{PRODUCTION}?visual-check=1&qa={quote(sha)}{target}'
     try:
@@ -138,7 +173,26 @@ for target in representative:
     if shot.returncode != 0 or not output.exists():
         failures.append(f'production screenshot {target}: failed')
 
-presenter_representative = ['#1', '#6', '#11', '#12', '#17', '#19', '#20', '#25', '#26', '#32', '#36', '#40', '#41', '#45', '#50', '#52', '#a8']
+presenter_ids = [
+    'monolith-baseline',
+    'independent-authorship',
+    'what-how',
+    'feasibility-before-preference',
+    'local-deabstraction',
+    'safeindex',
+    'semantic-producer-independence',
+    'validity',
+    'obligation',
+    'cross-representation-correspondence',
+    'strongest-alternative',
+    'author-resolve-optimize-conclusion',
+]
+presenter_representative = []
+for milestone_id in presenter_ids:
+    owner = contract['milestones'][milestone_id]['owner']
+    target = note_target[owner]
+    if target not in presenter_representative:
+        presenter_representative.append(target)
 for target in presenter_representative:
     url = f'{PRODUCTION}?presenter=1&visual-check=1&qa={quote(sha)}{target}'
     try:
@@ -149,7 +203,7 @@ for target in presenter_representative:
     if result.returncode != 0 or 'data-visual-check="ok"' not in result.stdout:
         failures.append(f'production presenter {target}: visual/canonical-script check failed')
         continue
-    if 'data-canonical-owner="speaker-script-canonical.js"' not in result.stdout:
+    if f'data-canonical-owner="{contract["speaker_owner"]}"' not in result.stdout:
         failures.append(f'production presenter {target}: canonical owner marker missing')
 
 if failures:
@@ -157,4 +211,7 @@ if failures:
     for failure in failures:
         print(' - ' + failure)
     sys.exit(1)
-print(f'Production check OK: exact asset hashes including canonical speaker script match Pages; {main_count} main + {appendix_count} appendix; navigation, audience and presenter states PASS')
+print(
+    'Production check OK: exact asset hashes including semantic narrative contract and canonical speaker script match Pages; '
+    f'{len(main_keys)} main + {len(appendix_keys)} appendix; semantic owner/order, navigation, audience and presenter states PASS'
+)

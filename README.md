@@ -2,98 +2,67 @@
 
 Conference talk:
 
-> **Author many language pieces. Resolve one compiler. Keep the meaning.**
+> **Author language pieces. Resolve one compiler. Keep useful meaning.**
 
-The presentation is about a general compiler-architecture question, not about UniversalToolchain internals:
+The talk asks one compiler-architecture question:
 
-> How can independently authored language capabilities be reused and recombined into several concrete language profiles, resolved into one feasible compiler, optimized after composition machinery disappears, and still share the semantic knowledge required by later non-local optimizations?
+> How can independently developed language capabilities form concrete language profiles, resolve into one compiler plan, and still expose current-valid semantic knowledge when later optimizations need non-local facts?
 
-UniversalToolchain/Wist is used only as an **implementation witness** for bounded mechanisms that exist today.
+UniversalToolchain/Wist is a bounded **implementation witness**. It is not the ontology of the general architecture.
 
 ## Main narrative
 
-The main deck is **52 slides**. The story is deliberately one causal chain rather than separate “dialect”, “planner”, and “optimization” sections:
+The Phase-04 main deck is **32 slides**. It is one causal argument:
 
-1. A monolithic compiler remains the baseline; extensibility earns its cost only when reuse, variation or independent authorship matters.
-2. A **capability / extension** is a reusable authored compiler slice. A **dialect / language profile** is a concrete declarative composition of many such pieces. They are different entities.
-3. One ecosystem can produce multiple dialects. Extensibility therefore means both **adding new capabilities** and **recombining existing capabilities**.
-4. Independent authors should not need a private handshake. A dialect declares **WHAT** language is wanted; composition/planning resolves **HOW** to assemble it.
-5. MLIR is introduced here as strong prior art: IR dialects, interfaces, legality/conversion, pass infrastructure and the Transform dialect already make representations and transformations highly extensible. That success exposes, rather than erases, the next research question: who resolves one coherent compiler from the requested capabilities, providers, conflicts, representation routes, ordering and backend?
-6. The resulting compiler plan must be feasible before preferences rank alternatives. Optimization requirements can constrain representation routes, and the historical UT planner failure makes **FEASIBILITY FIRST. PREFERENCE SECOND.** an evidence-backed rule.
-7. Freeze open-world composition into one concrete plan so extensibility machinery can stay off the repeated runtime path.
-8. Local optimization can erase modular representation machinery; Wist AIR supplies a concrete 3→1 deabstraction witness.
-9. Global/non-local optimization needs shared facts. Range + extent knowledge motivates `SafeIndex(a,i)` and possible bounds-check elimination.
-10. The private-handshake problem returns at the semantic level: independently authored analyses and consumers need a stable way to exchange semantic knowledge without private producer-consumer APIs.
-11. `Write(place, value)` supplies a second semantic domain with volatility, atomicity, ordering, visibility, GC-barrier and transaction concerns. Operation-centric queries avoid encoding their cross-product as one inheritance lattice.
-12. Typed facts can become stale. `Judgement` models contextual valid knowledge; `Obligation` models what must hold before a transformation is legal.
-13. Representation and knowledge are separate axes. There is no universal inverse lowering, so later passes may need meaning preserved, exposed on the current representation, or re-analysed.
-14. LLVM and MLIR are prior art; local interfaces/adapters are the strongest alternative; the shared semantic-contract hypothesis must earn its complexity in a falsifiable producer experiment.
-15. The final synthesis separates **IMPLEMENTED WITNESS**, **GENERAL DESIGN**, and **RESEARCH HYPOTHESIS**, then reconnects the three themes as **AUTHOR → RESOLVE → OPTIMIZE**.
+1. A monolithic compiler is the baseline; extensibility earns its cost only when reuse, variation or independent ownership matters.
+2. A language capability can span several compiler layers. A **language capability** is reusable authored inventory; a **language profile** is one concrete configuration selecting capabilities, policy and targets.
+3. Independent development means targeting published ecosystem contracts rather than private pairwise APIs. Broad modular language composition is prior art, not the novelty claim.
+4. A profile declares **WHAT** language is wanted; composition/planning resolves **HOW** to assemble it. MLIR is strong prior art and may be a subsystem inside that answer.
+5. UT witnesses request → resolution → snapshotted plan → runtime staging. The current route-order regression establishes **structural feasibility before preference**, not semantic preservation.
+6. Freezing one composition answer removes global discovery/replanning from the already-resolved repeated path while leaving per-program compiler work intact.
+7. Current UT supplies one strong local deabstraction witness: an exact three-operation AIR external-load sequence becomes one typed intrinsic when its local capability gate holds.
+8. The causal question then changes: what if optimization legality needs non-local facts? Bounds-check elimination motivates `SafeIndex(a,i)` from independently produced range and extent evidence.
+9. A semantic query is a typed proposition with distinct `unsupported`, `unknown`, `established(P)`, `refuted(P)` and `contradictory` outcomes. Side conditions and validity determine whether evidence may discharge the proposition.
+10. LLVM AnalysisManager/PreservedAnalyses and MLIR interfaces/external models/effects/data-flow are the serious baseline. The narrower hypothesis is a minimal cross-component, cross-representation lifecycle for semantic evidence identity, validity, assumptions and evidence.
+11. Modularity is not soundness: contradictory or stale evidence fails closed. `Write(place,value)` supplies a second domain and keeps source/operation semantics separate from runtime/JIT obligations such as a CoreCLR GC write barrier.
+12. `Judgement` names a proposition plus the context that makes its evidence usable. `Obligation` names the proposition a transformation owns and must establish before it is legal.
+13. Representation and knowledge are separate axes. A later-used fact must be transported under a justified semantic correspondence, re-analysed, or invalidated.
+14. LLVM/MLIR, CompCert, translation validation and Alive2 set the prior-art/correctness bar. The strongest alternative is to keep local interfaces, analyses and adapters and reject the shared layer if it adds no measurable benefit.
+15. The primary experiment measures false obligation discharges, existing-consumer edits, integration edges, precision, invalidation/re-analysis cost and schema/version burden.
+16. Final synthesis: **AUTHOR → RESOLVE → OPTIMIZE**. “Meaning” means selected current-valid semantic knowledge needed by later compiler decisions, not permanent preservation of every source representation.
 
-The appendix remains **8 slides** for UT-specific terminology/configuration/planner staging, bounded reflection, parity evidence, validity/trust, a falsifiable “Why not just MLIR?” Q&A, and numerical benchmark publication requirements.
+The appendix is **12 slides** containing UT-specific vocabulary/configuration/planner details, bounded reflection, backend parity, evidence-contract detail, MLIR/LLVM Q&A, benchmark publication requirements, the concrete minimal profile, the second local rewrite, the inheritance cross-product warning and formal correctness baselines.
 
-## MLIR boundary
+## Stable vocabulary
 
-MLIR is treated as **VERIFIED PRIOR ART**, not as a competitor or strawman. The deck explicitly distinguishes this talk's `dialect` (language profile) from an MLIR IR dialect.
+- **language capability** — reusable authored compiler contribution developed against published ecosystem contracts;
+- **language profile** — one concrete language configuration selecting capabilities, restrictions, policy and targets;
+- **feasible plan** — a plan whose declared structural requirements hold; this does not imply semantic preservation;
+- **semantic query** — a typed proposition asked by a consumer about the current program state;
+- **Judgement** — proposed evidence object: subject/proposition + result state + context/revision + assumptions + evidence;
+- **Obligation** — proposition owned by a transformation that must be established before that transformation is legal;
+- **semantic correspondence** — a justified relation describing which property of an old program state remains true of the transformed state; refinement is a stronger directional relation.
 
-The core scope distinction is:
+## Evidence boundaries
 
-> **MLIR makes compiler representations extensible. We are asking how compiler composition itself becomes resolvable.**
+**IMPLEMENTED WITNESS:** declarative Wist profiles; staged UT planning; the tested cost-2-vs-cost-10 structural route regression; local typed-intrinsic deabstraction; selected backend parity; benchmark methodology boundary.
 
-That does not mean MLIR cannot host such policy in user code. The research move is to make whole-composition resolution a first-class architectural object. A future `LanguagePlan` could select an MLIR-based subsystem and lower onward to LLVM or a specialized backend; current UT does not implement that provider integration. If MLIR plus local adapters solves the same problem with less machinery, the extra layer is not justified.
+**GENERAL DESIGN:** language capability/profile split; WHAT/HOW ownership; one inspectable compiler plan; open-world composition vs repeated per-program work; structural feasibility distinct from semantic preservation.
 
-## Central synthesis
+**RESEARCH HYPOTHESIS:** the shared semantic-evidence lifecycle, conservative contradiction handling, transformation-owned obligations, and cross-representation transport/re-analysis/invalidation. Generic queries, invalidation, effect interfaces and semantic correspondence are prior art ingredients rather than novelty claims.
 
-> **Extensibility should disappear where it is machinery — and survive where it is meaning.**
+## Files
 
-- **AUTHOR** — independent capabilities can be added and recombined into multiple dialects.
-- **RESOLVE** — a declarative WHAT becomes one feasible concrete compiler HOW.
-- **OPTIMIZE** — composition and representation machinery can be erased while useful semantic knowledge is preserved, re-exposed or re-derived.
+- `deck-main.js` — 32-slide main causal argument;
+- `deck-appendix.js` — 12-slide evidence/Q&A appendix;
+- `speaker-script-canonical.js` — single canonical spoken owner for all main and appendix slides;
+- `CONTENT_NARRATIVE_CONTRACT.json` — semantic milestones and causal DAG;
+- `claims.md` — scientific/claim boundary owner from Phase 03;
+- `CONTENT_EVIDENCE_LEDGER.md` — implementation/prior-art evidence owner from Phase 02.
 
-This is not a zero-overhead claim. Composition, compiler construction and compilation may cost more. Equal-or-better-than-C# performance is not guaranteed.
+## Deferred work
 
-## Claim-status boundary
-
-The deck uses four interpretation categories:
-
-- **VERIFIED PRIOR ART** — externally verified mechanisms from primary/upstream sources;
-- **IMPLEMENTED WITNESS** — current UT/Wist demonstrates the bounded mechanism/example;
-- **GENERAL DESIGN** — architecture argued by the talk;
-- **RESEARCH HYPOTHESIS** — falsifiable architecture not yet established by the implementation.
-
-UniversalToolchain remains evidence for the general argument, not its ontology. Wist-specific `module / Feature / Contribution` terminology and bounded-reflection details stay in the appendix.
-
-## Performance evidence
-
-The main deck contains no numerical C#↔Wist performance ratio. Current UT has a BenchmarkDotNet hot-path suite with a prepared C# delegate baseline and a Wist compiled delegate, and it keeps composition/compilation/setup in separate suites. A numerical conference claim remains withheld until a current reviewed raw Release BenchmarkDotNet artifact, environment metadata, source identity and correctness/parity precheck are preserved and reviewed.
-
-See `claims.md` for the exact publication boundary.
-
-## Runtime assets
-
-- `deck-main.js` — 52-slide main story;
-- `deck-appendix.js` — 8-slide appendix;
-- `speaker-script-canonical.js` — the single canonical stage-ready English speaker script for every slide;
-- `deck.js` — navigation, presenter mode and geometry/runtime diagnostics;
-- `presenter.css` — speech-only presenter teleprompter layout;
-- `styles.css`, `foundation.css`, `visual-balance.css` — visual system.
-
-Presenter mode does not load or merge legacy structured notes. The panel renders only text from `speaker-script-canonical.js`.
-
-## UniversalToolchain evidence policy
-
-Conference-facing UT source links use moving `master` paths. The presentation architecture is not tied to a UT commit hash.
-
-Normal CI checks current `master` intentionally and runs focused witness checks. Exact source/environment identity belongs in raw benchmark evidence when numerical reproducibility requires it; it is not a deck-wide truth snapshot.
-
-## Presenter mode
-
-```bash
-python3 -m http.server 8000
-# open http://localhost:8000
-```
-
-Keyboard: `←` / `→` / space navigate, `N` presenter mode, `T` TOC, `A` appendix, `F` fullscreen, `P` print.
+Phase 04 does **not** optimize stage timing or redesign visuals. Numerical C#↔Wist performance claims remain withheld until current raw Release evidence is archived and reviewed. Visual/layout work and any separate timing campaign begin only after content finalization.
 
 ## Validate
 
@@ -104,12 +73,4 @@ python3 scripts/timing_audit.py
 python3 scripts/check_render.py
 ```
 
-`check_deck.py` reconstructs the actual script load order, verifies 52 main + 8 appendix keys, enforces the causal dialect/extensibility → MLIR scope bridge → planner → local/global → semantic-contract → lowering → synthesis story, keeps planner/Write blocks in main, rejects conference-facing UT commit pins, and proves that exactly one canonical speaker-script owner supplies complete spoken text.
-
-`timing_audit.py` verifies the main canonical script remains inside the 25–27 minute rehearsal envelope at 130 wpm.
-
-`check_render.py` geometry-checks every audience and presenter slide at conference/stress viewports, captures every audience slide at three viewports plus every presenter slide at 1366×768, and keeps navigation/presenter synchronization checks.
-
-On `main`, `check_production.py` waits for GitHub Pages, compares exact hashes for the built deck including `speaker-script-canonical.js`, and exercises representative audience and presenter states. A stale deployed speaker script therefore fails production validation.
-
-Presentation CI also checks the current UT `master` witness: pricing/parity demo, typed-intrinsic local rewrite tests, route-order feasibility, and benchmark-methodology boundary. It does not turn a smoke benchmark or remembered number into performance evidence.
+Normal CI also checks the current UniversalToolchain `master` witness for pricing/backend parity, the local typed-intrinsic rewrite, the route-order regression and the benchmark evidence boundary.

@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "contract_id": "langdev-2026-narrative-v2",
+  "runtime_qa_contract": "architecture-story-v3",
+  "speaker_owner": "speaker-script-canonical.js",
+  "allowed_evidence_categories": [
+    "IMPLEMENTED_WITNESS",
+    "GENERAL_DESIGN",
+    "RESEARCH_HYPOTHESIS",
+    "PRIOR_ART",
+    "VERIFIED_PRIOR_ART"
+  ],
+  "required_evidence_categories": [
+    "IMPLEMENTED_WITNESS",
+    "GENERAL_DESIGN",
+    "RESEARCH_HYPOTHESIS"
+  ],
+  "milestones": {
+    "monolith-baseline": {
+      "owner": "m2",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "extensibility-motivation": {
+      "owner": "m3",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "capability-profile-distinction": {
+      "owner": "m7",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "independent-authorship": {
+      "owner": "m11",
+      "kind": "main",
+      "evidence_category": "PRIOR_ART"
+    },
+    "what-how": {
+      "owner": "m12",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "feasibility-before-preference": {
+      "owner": "m20",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "resolved-plan-freeze": {
+      "owner": "m21",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "local-deabstraction": {
+      "owner": "m25",
+      "kind": "main",
+      "evidence_category": "IMPLEMENTED_WITNESS"
+    },
+    "local-nonlocal-bridge": {
+      "owner": "m26",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "safeindex": {
+      "owner": "m31",
+      "kind": "main",
+      "evidence_category": "RESEARCH_HYPOTHESIS"
+    },
+    "semantic-producer-independence": {
+      "owner": "m32",
+      "kind": "main",
+      "evidence_category": "RESEARCH_HYPOTHESIS"
+    },
+    "modularity-vs-soundness": {
+      "owner": "m35",
+      "kind": "main",
+      "evidence_category": "RESEARCH_HYPOTHESIS"
+    },
+    "second-semantic-domain": {
+      "owner": "m36",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "validity": {
+      "owner": "m40",
+      "kind": "main",
+      "evidence_category": "RESEARCH_HYPOTHESIS"
+    },
+    "obligation": {
+      "owner": "m41",
+      "kind": "main",
+      "evidence_category": "RESEARCH_HYPOTHESIS"
+    },
+    "cross-representation-correspondence": {
+      "owner": "m45",
+      "kind": "main",
+      "evidence_category": "RESEARCH_HYPOTHESIS"
+    },
+    "prior-art": {
+      "owner": "m48",
+      "kind": "main",
+      "evidence_category": "PRIOR_ART"
+    },
+    "strongest-alternative": {
+      "owner": "m49",
+      "kind": "main",
+      "evidence_category": "RESEARCH_HYPOTHESIS"
+    },
+    "falsification": {
+      "owner": "m50",
+      "kind": "main",
+      "evidence_category": "RESEARCH_HYPOTHESIS"
+    },
+    "author-resolve-optimize-conclusion": {
+      "owner": "m52",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    }
+  },
+  "causal_edges": [
+    [
+      "monolith-baseline",
+      "extensibility-motivation"
+    ],
+    [
+      "extensibility-motivation",
+      "capability-profile-distinction"
+    ],
+    [
+      "capability-profile-distinction",
+      "independent-authorship"
+    ],
+    [
+      "independent-authorship",
+      "what-how"
+    ],
+    [
+      "what-how",
+      "feasibility-before-preference"
+    ],
+    [
+      "feasibility-before-preference",
+      "resolved-plan-freeze"
+    ],
+    [
+      "resolved-plan-freeze",
+      "local-deabstraction"
+    ],
+    [
+      "local-deabstraction",
+      "local-nonlocal-bridge"
+    ],
+    [
+      "local-nonlocal-bridge",
+      "safeindex"
+    ],
+    [
+      "safeindex",
+      "semantic-producer-independence"
+    ],
+    [
+      "semantic-producer-independence",
+      "modularity-vs-soundness"
+    ],
+    [
+      "modularity-vs-soundness",
+      "second-semantic-domain"
+    ],
+    [
+      "second-semantic-domain",
+      "validity"
+    ],
+    [
+      "validity",
+      "obligation"
+    ],
+    [
+      "obligation",
+      "cross-representation-correspondence"
+    ],
+    [
+      "cross-representation-correspondence",
+      "prior-art"
+    ],
+    [
+      "prior-art",
+      "strongest-alternative"
+    ],
+    [
+      "strongest-alternative",
+      "falsification"
+    ],
+    [
+      "falsification",
+      "author-resolve-optimize-conclusion"
+    ]
+  ]
+}
