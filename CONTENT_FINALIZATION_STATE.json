@@ -3,14 +3,15 @@
   "campaign": "langdev-2026-content-finalization-sol5.6",
   "preferred_branch": "content/langdev-finalization-2026-09",
   "execution_mode": "one phase per fresh GPT-5.6 Sol chat",
-  "current_phase": 4,
+  "current_phase": 5,
   "completed_phases": [
     1,
     2,
-    3
+    3,
+    4
   ],
   "presentation_main_seen": "e69cab6adf38286945e191dee1fc95b278730ee4",
-  "campaign_head": "6d2ea80cd7584ba8d828bd202a856fab0d3e25e5",
+  "campaign_head": "1f3c10dbc6547ebda165d81efbbbfc1851112f62",
   "ut_master_seen": "40117eb68c630f7129c120aaaadc69be8f4ecbfb",
   "evidence_ledger_commit": "3a1026af1591922ac06ed76d2da3013c67fafe74",
   "external_source_review_date": "2026-09-06",
@@ -147,13 +148,39 @@
         "digest": "sha256:42c91fde754f089a5a95f0d3d221cb260fc378ec4ce14e1dd04e4368d58aed94",
         "size_in_bytes": 37628834
       }
+    },
+    "phase_04": {
+      "validated_candidate": "1f3c10dbc6547ebda165d81efbbbfc1851112f62",
+      "phase_commits": [
+        "1f3c10dbc6547ebda165d81efbbbfc1851112f62"
+      ],
+      "workflow": "Presentation CI",
+      "workflow_run_id": 34051135819,
+      "result": "content_acceptance_pass_with_deferred_timing_validator_failure",
+      "narrative_recomposition": {
+        "main_slides": 32,
+        "appendix_slides": 12,
+        "stable_milestones": 20,
+        "semantic_contract_id": "langdev-2026-narrative-v2",
+        "mutation_allowlist": "PASS; candidate changes exactly CONTENT_NARRATIVE_CONTRACT.json, README.md, deck-appendix.js, deck-main.js and speaker-script-canonical.js"
+      },
+      "checks": {
+        "semantic_narrative_contract": "PASS; 32 main + 12 appendix, 20 stable milestones, causal DAG, evidence categories, semantic ownership and canonical speaker coverage verified",
+        "semantic_contract_probes": "PASS; wording independence, causal-order rejection and speaker-coverage rejection",
+        "javascript_runtime_contract": "PASS",
+        "timing_audit": "DEFERRED/FAIL; scripts/timing_audit.py hard-codes list(speech)[:52] == main_keys and fails before timing computation after the authorized 32-slide recomposition; Phase 04 explicitly defers timing/visual failures",
+        "ut_witness_checks": "NOT_RUN; workflow stopped after deferred timing validator failure and Phase 04 did not change implementation-witness claims",
+        "render_check": "NOT_RUN; deferred by workflow stop after timing validator failure",
+        "production_pages": "NOT_RUN; campaign branch and workflow stopped before this step"
+      },
+      "artifact": null
     }
   },
   "external_blockers": [],
   "next_phase": {
-    "id": 4,
-    "file": "PHASE_04_NARRATIVE_AND_WORDING.md",
-    "title": "Narrative recomposition + spoken wording"
+    "id": 5,
+    "file": "PHASE_05_ADVERSARIAL_FINALIZER.md",
+    "title": "Adversarial self-repair finalizer"
   },
   "notes": [
     "This file is a handoff index only. Actual GitHub state is authoritative.",
@@ -162,6 +189,9 @@
     "Phase 02 added the authoritative current implementation/prior-art evidence ledger and made no deck/speaker/claims source changes because no narrow demonstrably false implementation/source reference required a Phase 02 hotfix.",
     "Phase 03 repaired the conference-facing architecture truth model across deck, canonical speech, appendix, claims and README without slide reordering, timing optimization or visual redesign.",
     "Phase 03 preserves prior-art/novelty boundaries, separates structural feasibility from semantic preservation, and makes semantic evidence validity/contradiction/obligation behavior fail-closed and falsifiable.",
-    "campaign_head records the validated Phase 03 content candidate; the state-file commit necessarily follows it and cannot self-reference its own commit SHA."
+    "Phase 04 froze a 32-slide causal main deck, moved non-causal detail into a 12-slide appendix, and rewrote canonical spoken wording without reopening Phase 03 research conclusions.",
+    "Phase 04 acceptance follows its explicit contract: content/static/JS checks are required; timing and visual failures are deferred. Run 34051135819 passed the required semantic/static/JS gates and then failed only because timing_audit.py still assumes 52 main slides.",
+    "The stale 52-slide timing validator is not a content blocker. Phase 05 must report timing/visual failures as deliberately deferred and must not change timing thresholds merely to obtain PASS.",
+    "campaign_head records the accepted Phase 04 content candidate; the state-file commit necessarily follows it and cannot self-reference its own commit SHA."
   ]
 }
