@@ -3,13 +3,14 @@
   "campaign": "langdev-2026-content-finalization-sol5.6",
   "preferred_branch": "content/langdev-finalization-2026-09",
   "execution_mode": "one phase per fresh GPT-5.6 Sol chat",
-  "current_phase": 3,
+  "current_phase": 4,
   "completed_phases": [
     1,
-    2
+    2,
+    3
   ],
   "presentation_main_seen": "e69cab6adf38286945e191dee1fc95b278730ee4",
-  "campaign_head": "3a1026af1591922ac06ed76d2da3013c67fafe74",
+  "campaign_head": "6d2ea80cd7584ba8d828bd202a856fab0d3e25e5",
   "ut_master_seen": "40117eb68c630f7129c120aaaadc69be8f4ecbfb",
   "evidence_ledger_commit": "3a1026af1591922ac06ed76d2da3013c67fafe74",
   "external_source_review_date": "2026-09-06",
@@ -107,19 +108,60 @@
         "artifact_id": "9991453747",
         "digest": "sha256:27378b45bc9033093f494bc4f3ed91abccabba285d45c8fd4c7326a7fbaeac84"
       }
+    },
+    "phase_03": {
+      "validated_candidate": "6d2ea80cd7584ba8d828bd202a856fab0d3e25e5",
+      "phase_commits": [
+        "6d2ea80cd7584ba8d828bd202a856fab0d3e25e5"
+      ],
+      "workflow": "Presentation CI",
+      "workflow_run_id": 34044642115,
+      "result": "success",
+      "truth_model": {
+        "files": [
+          "deck-main.js",
+          "deck-appendix.js",
+          "speaker-script-canonical.js",
+          "claims.md",
+          "README.md"
+        ],
+        "local_semantic_static_checks": "PASS; 49/49 assertions plus JavaScript syntax; 52 main + 8 appendix identities and canonical speaker coverage preserved",
+        "mutation_allowlist": "PASS; candidate commit changes exactly the five Phase 03 conference-facing owners"
+      },
+      "checks": {
+        "semantic_narrative_contract": "PASS",
+        "semantic_contract_probes": "PASS",
+        "javascript_runtime_contract": "PASS",
+        "timing_audit": "PASS; policy unchanged and out of Phase 03 scope",
+        "ut_benchmark_claim_boundary": "PASS",
+        "pricing_cross_backend_demo": "PASS",
+        "demo_no_build_rerun": "PASS",
+        "ut_local_deabstraction_regression": "PASS",
+        "ut_route_order_feasibility_regression": "PASS",
+        "render_check": "PASS",
+        "production_pages": "SKIPPED on campaign-branch push by existing main-only workflow condition"
+      },
+      "artifact": {
+        "name": "presentation-validation-evidence",
+        "artifact_id": "9992956334",
+        "digest": "sha256:42c91fde754f089a5a95f0d3d221cb260fc378ec4ce14e1dd04e4368d58aed94",
+        "size_in_bytes": 37628834
+      }
     }
   },
   "external_blockers": [],
   "next_phase": {
-    "id": 3,
-    "file": "PHASE_03_ARCHITECTURE_CONTENT_REPAIR.md",
-    "title": "Architecture content repair"
+    "id": 4,
+    "file": "PHASE_04_NARRATIVE_AND_WORDING.md",
+    "title": "Narrative recomposition + spoken wording"
   },
   "notes": [
     "This file is a handoff index only. Actual GitHub state is authoritative.",
     "Do not advance a phase until its candidate-bound validation was actually run.",
     "Phase 01 preserved substantive deck and canonical speaker content; the campaign diff from observed main changes validation representation only.",
     "Phase 02 added the authoritative current implementation/prior-art evidence ledger and made no deck/speaker/claims source changes because no narrow demonstrably false implementation/source reference required a Phase 02 hotfix.",
-    "campaign_head records the validated Phase 02 implementation candidate; the state-file commit necessarily follows it and cannot self-reference its own commit SHA."
+    "Phase 03 repaired the conference-facing architecture truth model across deck, canonical speech, appendix, claims and README without slide reordering, timing optimization or visual redesign.",
+    "Phase 03 preserves prior-art/novelty boundaries, separates structural feasibility from semantic preservation, and makes semantic evidence validity/contradiction/obligation behavior fail-closed and falsifiable.",
+    "campaign_head records the validated Phase 03 content candidate; the state-file commit necessarily follows it and cannot self-reference its own commit SHA."
   ]
 }
