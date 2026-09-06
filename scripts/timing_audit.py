@@ -8,8 +8,14 @@ raw = (ROOT / 'speaker-script-canonical.js').read_text(encoding='utf-8')
 match = re.search(r'window\.SPEAKER_SCRIPT\s*=\s*Object\.freeze\((\{.*\})\);\s*$', raw, re.S)
 assert match, 'cannot parse canonical speaker script'
 speech = json.loads(match.group(1))
-main_keys = [f'm{i}' for i in range(1, 53)]
-assert list(speech)[:52] == main_keys, 'main script order mismatch'
+
+deck_raw = (ROOT / 'deck-main.js').read_text(encoding='utf-8')
+main_keys = re.findall(
+    r'<section\b[^>]*data-kind="main"[^>]*data-note-key="([^"]+)"',
+    deck_raw,
+)
+assert main_keys, 'cannot discover main slide keys from deck-main.js'
+assert list(speech)[:len(main_keys)] == main_keys, 'main script order mismatch'
 
 word_counts = [len(re.findall(r"[\w'-]+", speech[key])) for key in main_keys]
 seconds = [round(words / 130 * 60) for words in word_counts]
