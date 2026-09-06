@@ -3,14 +3,41 @@
   "campaign": "langdev-2026-content-finalization-sol5.6",
   "preferred_branch": "content/langdev-finalization-2026-09",
   "execution_mode": "one phase per fresh GPT-5.6 Sol chat",
-  "current_phase": 2,
+  "current_phase": 3,
   "completed_phases": [
-    1
+    1,
+    2
   ],
   "presentation_main_seen": "e69cab6adf38286945e191dee1fc95b278730ee4",
-  "campaign_head": "937af7b1619d3df1535c653cd07d36b6af443c53",
+  "campaign_head": "3a1026af1591922ac06ed76d2da3013c67fafe74",
   "ut_master_seen": "40117eb68c630f7129c120aaaadc69be8f4ecbfb",
-  "evidence_ledger_commit": null,
+  "evidence_ledger_commit": "3a1026af1591922ac06ed76d2da3013c67fafe74",
+  "external_source_review_date": "2026-09-06",
+  "claim_ids_established": [
+    "UT-DIALECT-PROFILES",
+    "UT-DIALECT-FRONTEND-PARITY",
+    "UT-STAGED-PLAN-LIFECYCLE",
+    "UT-PLAN-CANONICALIZATION-CONTROLS",
+    "UT-FEASIBILITY-BEFORE-PREFERENCE",
+    "UT-DEABSTRACTION-COMPARISON",
+    "UT-DEABSTRACTION-EXTERNAL-LOAD",
+    "UT-BACKEND-PARITY",
+    "PA-SILVER-ABLEC",
+    "PA-NEVERLANG",
+    "PA-MPS",
+    "PA-MONTICORE",
+    "PA-LLVM-ANALYSIS-INVALIDATION",
+    "PA-MLIR-SEMANTIC-INTERFACES",
+    "PA-COMPCERT-PRESERVATION",
+    "PA-TRANSLATION-VALIDATION",
+    "PA-ALIVE2-REFINEMENT",
+    "PA-CORECLR-GC-WRITE-BARRIER",
+    "CONCLUSION-INDEPENDENT-COMPOSITION-NOVELTY",
+    "CONCLUSION-COMPOSABILITY-NOT-SOUNDNESS",
+    "CONCLUSION-GENERIC-SEMANTIC-QUERY-NOVELTY",
+    "CONCLUSION-PLANNER-NOT-PRESERVATION",
+    "RESEARCH-SHARED-EVIDENCE-LIFECYCLE"
+  ],
   "content_gate": null,
   "validation": {
     "phase_01": {
@@ -46,18 +73,53 @@
           "ut-witness-sha.txt"
         ]
       }
+    },
+    "phase_02": {
+      "validated_candidate": "3a1026af1591922ac06ed76d2da3013c67fafe74",
+      "phase_commits": [
+        "3a1026af1591922ac06ed76d2da3013c67fafe74"
+      ],
+      "workflow": "Presentation CI",
+      "workflow_run_id": 34039613194,
+      "result": "success",
+      "ledger": {
+        "path": "CONTENT_EVIDENCE_LEDGER.md",
+        "blob_sha": "4c843db2e451dbd9f200946c9a9b371e67901e81",
+        "claim_count": 23,
+        "schema_check": "PASS",
+        "source_fidelity_fixes": "NONE_REQUIRED"
+      },
+      "checks": {
+        "semantic_narrative_contract": "PASS",
+        "semantic_contract_probes": "PASS",
+        "javascript_runtime_contract": "PASS",
+        "timing_audit": "PASS; policy unchanged and out of Phase 02 scope",
+        "ut_benchmark_claim_boundary": "PASS",
+        "pricing_cross_backend_demo": "PASS",
+        "demo_no_build_rerun": "PASS",
+        "ut_local_deabstraction_regression": "PASS",
+        "ut_route_order_feasibility_regression": "PASS",
+        "render_check": "PASS",
+        "production_pages": "SKIPPED on campaign-branch push by existing main-only workflow condition"
+      },
+      "artifact": {
+        "name": "presentation-validation-evidence",
+        "artifact_id": "9991453747",
+        "digest": "sha256:27378b45bc9033093f494bc4f3ed91abccabba285d45c8fd4c7326a7fbaeac84"
+      }
     }
   },
   "external_blockers": [],
   "next_phase": {
-    "id": 2,
-    "file": "PHASE_02_UNIFIED_EVIDENCE_RESEARCH.md",
-    "title": "Unified evidence and research ledger"
+    "id": 3,
+    "file": "PHASE_03_ARCHITECTURE_CONTENT_REPAIR.md",
+    "title": "Architecture content repair"
   },
   "notes": [
     "This file is a handoff index only. Actual GitHub state is authoritative.",
     "Do not advance a phase until its candidate-bound validation was actually run.",
     "Phase 01 preserved substantive deck and canonical speaker content; the campaign diff from observed main changes validation representation only.",
-    "campaign_head records the validated Phase 01 implementation candidate; the state-file commit necessarily follows it and cannot self-reference its own commit SHA."
+    "Phase 02 added the authoritative current implementation/prior-art evidence ledger and made no deck/speaker/claims source changes because no narrow demonstrably false implementation/source reference required a Phase 02 hotfix.",
+    "campaign_head records the validated Phase 02 implementation candidate; the state-file commit necessarily follows it and cannot self-reference its own commit SHA."
   ]
 }
