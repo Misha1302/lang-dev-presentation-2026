@@ -2,7 +2,7 @@ name: Presentation CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, content/langdev-finalization-2026-09]
   pull_request:
 
 permissions:
@@ -20,8 +20,70 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Validate rebuilt narrative and canonical speaker ownership
+      - name: Validate semantic narrative and canonical speaker ownership
         run: python3 scripts/check_deck.py
+
+      - name: Probe semantic contract invariants
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import shutil
+          import subprocess
+          import tempfile
+
+          root = Path.cwd()
+
+          def clone_fixture() -> Path:
+              temp = Path(tempfile.mkdtemp(prefix='semantic-contract-'))
+              for name in [
+                  'index.html', 'deck-main.js', 'deck-appendix.js', 'deck.js',
+                  'speaker-script-canonical.js', 'CONTENT_NARRATIVE_CONTRACT.json',
+                  'claims.md', 'README.md'
+              ]:
+                  shutil.copy2(root / name, temp / name)
+              (temp / 'scripts').mkdir()
+              shutil.copy2(root / 'scripts/check_deck.py', temp / 'scripts/check_deck.py')
+              return temp
+
+          def run_check(path: Path) -> subprocess.CompletedProcess[str]:
+              return subprocess.run(
+                  ['python3', 'scripts/check_deck.py'],
+                  cwd=path,
+                  capture_output=True,
+                  text=True,
+              )
+
+          wording = clone_fixture()
+          deck = wording / 'deck-main.js'
+          text = deck.read_text(encoding='utf-8')
+          old = 'A monolithic compiler is often the right answer'
+          assert old in text
+          deck.write_text(text.replace(old, 'A monolith remains the baseline for one-owner languages', 1), encoding='utf-8')
+          result = run_check(wording)
+          assert result.returncode == 0, 'visible wording rename unexpectedly changed narrative truth: ' + result.stderr + result.stdout
+
+          causal = clone_fixture()
+          contract_path = causal / 'CONTENT_NARRATIVE_CONTRACT.json'
+          contract = json.loads(contract_path.read_text(encoding='utf-8'))
+          contract['milestones']['monolith-baseline']['owner'] = 'm52'
+          contract_path.write_text(json.dumps(contract, indent=2) + '\n', encoding='utf-8')
+          result = run_check(causal)
+          assert result.returncode != 0, 'causal-order violation was not rejected'
+
+          speech = clone_fixture()
+          script = speech / 'speaker-script-canonical.js'
+          text = script.read_text(encoding='utf-8')
+          marker = '  "m52": '
+          start = text.index(marker)
+          end = text.index('\n  "a1":', start)
+          script.write_text(text[:start] + text[end + 1:], encoding='utf-8')
+          result = run_check(speech)
+          assert result.returncode != 0, 'missing canonical speaker entry was not rejected'
+
+          print('Semantic contract probes PASS: wording independence, causal-order rejection, speaker-coverage rejection')
+          PY
 
       - name: Check JavaScript syntax and runtime QA contract
         run: |
@@ -41,6 +103,14 @@ jobs:
           repository: Misha1302/UniversalToolchain
           ref: master
           path: _deps/UniversalToolchain
+
+      - name: Record resolved UniversalToolchain witness revision
+        working-directory: _deps/UniversalToolchain
+        run: |
+          set -euo pipefail
+          UT_SHA="$(git rev-parse HEAD)"
+          echo "UniversalToolchain master witness: $UT_SHA"
+          printf '%s\n' "$UT_SHA" > "$GITHUB_WORKSPACE/ut-witness-sha.txt"
 
       - name: Verify UT benchmark claim boundary without treating smoke as performance evidence
         run: |
@@ -99,4 +169,5 @@ jobs:
             production-artifacts/*.png
             demo-source-output.txt
             demo-stage-output.txt
+            ut-witness-sha.txt
           if-no-files-found: ignore
