@@ -74,3 +74,13 @@ python3 scripts/check_render.py
 ```
 
 Normal CI also checks the current UniversalToolchain `master` witness for pricing/backend parity, the local typed-intrinsic rewrite, the route-order regression and the benchmark evidence boundary.
+
+## 2026-09-08 additive measured-evidence layer
+
+The Phase-04 authored files above remain intact. `deck-research-update.js` adds **7 runtime main slides** and reorders those additions around the existing slides before `deck.js` snapshots navigation. The visible main deck is therefore **39 slides** while `deck-main.js` itself remains the original 32-slide authored causal argument.
+
+The new slides insert measured evidence from the reproducible UniversalToolchain DSL-evolution study: observed DSL evolution, the clone/platform trade-off, the frozen experiment design, the E2 marginal-vs-total crossover, the failed E3 propagation hypothesis, the separate RQ3 shared-pipeline control, and an explicit boundary between the completed reuse-economics experiment and the still-proposed semantic-evidence experiment.
+
+`speaker-script-research-update.js` extends `window.SPEAKER_SCRIPT` only for the seven new `r1..r7` slides. Existing entries in `speaker-script-canonical.js` are not edited or shortened. The additive speech is capped at 95 words by `scripts/check_research_insertion.py` so the prior 26:18 baseline remains close to the existing 27-minute ceiling without modifying old speech.
+
+See `RESEARCH_EVIDENCE_UPDATE_2026-09-08.md` for the insertion order, evidence sources and protected-content contract.

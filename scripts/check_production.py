@@ -25,11 +25,21 @@ contract = json.loads((ROOT / 'CONTENT_NARRATIVE_CONTRACT.json').read_text(encod
 index = (ROOT / 'index.html').read_text(encoding='utf-8')
 load_order = re.findall(r'<script\s+src="([^"]+)"', index)
 deck_assets = [name for name in load_order if name.startswith('deck-') and name != 'deck.js']
+RESEARCH_KEYS = [f'r{i}' for i in range(1, 8)]
+RESEARCH_EDGES = [
+    ('r1', 'm3'),
+    ('r2', 'r1'),
+    ('r3', 'r2'),
+    ('r4', 'r3'),
+    ('r5', 'r4'),
+    ('r6', 'm12'),
+    ('r7', 'm25'),
+]
 
 
 def fragment_text(path: Path) -> str:
     raw = path.read_text(encoding='utf-8')
-    match = re.search(r'String\.raw`(.*)`\);\s*$', raw, re.S)
+    match = re.search(r'String\.raw`(.*?)`\);', raw, re.S)
     if not match:
         raise RuntimeError(f'cannot parse {path.name}')
     return match.group(1)
@@ -52,6 +62,19 @@ def parse_slide_meta(raw: str) -> list[dict[str, str]]:
     parser = SlideMetaParser()
     parser.feed(raw)
     return parser.slides
+
+
+def apply_runtime_research_order(slides: list[dict[str, str]]) -> list[dict[str, str]]:
+    main = [slide for slide in slides if slide.get('data-kind') == 'main']
+    appendix = [slide for slide in slides if slide.get('data-kind') == 'appendix']
+    by_key = {slide.get('data-note-key', ''): slide for slide in main}
+    if not all(key in by_key for key in RESEARCH_KEYS):
+        return slides
+    main = [slide for slide in main if slide.get('data-note-key') not in RESEARCH_KEYS]
+    for child, anchor in RESEARCH_EDGES:
+        anchor_index = next(i for i, slide in enumerate(main) if slide.get('data-note-key') == anchor)
+        main.insert(anchor_index + 1, by_key[child])
+    return main + appendix
 
 
 def validate_semantic_owners(slides: list[dict[str, str]]) -> list[str]:
@@ -77,6 +100,7 @@ def validate_semantic_owners(slides: list[dict[str, str]]) -> list[str]:
 
 
 local_slides = parse_slide_meta('\n'.join(fragment_text(ROOT / name) for name in deck_assets))
+local_slides = apply_runtime_research_order(local_slides)
 local_note_keys = validate_semantic_owners(local_slides)
 main_keys = [slide['data-note-key'] for slide in local_slides if slide.get('data-kind') == 'main']
 appendix_keys = [slide['data-note-key'] for slide in local_slides if slide.get('data-kind') == 'appendix']
@@ -92,8 +116,10 @@ assets = [
     'index.html',
     'CONTENT_NARRATIVE_CONTRACT.json',
     'deck-main.js',
+    'deck-research-update.js',
     'deck-appendix.js',
     contract['speaker_owner'],
+    'speaker-script-research-update.js',
     'deck.js',
     'presenter.css',
     'speaker-script.css',
@@ -212,6 +238,6 @@ if failures:
         print(' - ' + failure)
     sys.exit(1)
 print(
-    'Production check OK: exact asset hashes including semantic narrative contract and canonical speaker script match Pages; '
+    'Production check OK: exact asset hashes including additive research layer, semantic narrative contract and speaker scripts match Pages; '
     f'{len(main_keys)} main + {len(appendix_keys)} appendix; semantic owner/order, navigation, audience and presenter states PASS'
 )
