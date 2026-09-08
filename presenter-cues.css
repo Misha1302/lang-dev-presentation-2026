@@ -1,0 +1,103 @@
+/* Presenter-only memory anchors: one chapter cue at top-left and slide cues at top-right. */
+.presenter-topic-memory,
+.presenter-slide-memory{display:none}
+
+body.presenter-mode .presenter-topic-memory:not([hidden]){
+  display:block;
+  position:fixed;
+  z-index:1200;
+  top:1rem;
+  left:1rem;
+  max-width:min(31vw,440px);
+  padding:.58rem .78rem;
+  border:1px solid rgba(125,211,252,.34);
+  border-radius:12px;
+  background:rgba(11,17,36,.90);
+  box-shadow:0 12px 38px rgba(0,0,0,.26);
+  backdrop-filter:blur(10px);
+  color:var(--accent);
+  font-size:clamp(12px,.83vw,16px);
+  font-weight:850;
+  line-height:1.25;
+  letter-spacing:.045em;
+}
+
+body.presenter-mode .presenter-slide-memory:not([hidden]){
+  display:block;
+  position:fixed;
+  z-index:1200;
+  top:.9rem;
+  right:1rem;
+  width:min(calc(var(--presenter-panel-px,32vw) - 2rem),470px);
+  padding:.75rem .9rem .7rem 1rem;
+  border:1px solid rgba(125,211,252,.28);
+  border-radius:13px;
+  background:rgba(11,17,36,.96);
+  box-shadow:0 12px 38px rgba(0,0,0,.24);
+  backdrop-filter:blur(10px);
+  color:var(--fg);
+}
+
+body.presenter-mode .presenter-slide-memory ul{
+  margin:0;
+  padding-left:1.05rem;
+}
+
+body.presenter-mode .presenter-slide-memory li{
+  margin:.18rem 0;
+  font-size:clamp(12px,.78vw,15px);
+  font-weight:680;
+  line-height:1.33;
+}
+
+/* Keep the single teleprompter text window below the compact cue block. */
+body.presenter-mode aside.notes{
+  padding-top:10.5rem !important;
+}
+
+@media(max-width:1400px) and (min-width:1100px){
+  body.presenter-mode .presenter-topic-memory:not([hidden]){
+    top:.7rem;
+    left:.7rem;
+    max-width:31vw;
+    padding:.48rem .62rem;
+    font-size:12px;
+  }
+  body.presenter-mode .presenter-slide-memory:not([hidden]){
+    top:.65rem;
+    right:.7rem;
+    width:calc(var(--presenter-panel-px,32vw) - 1.4rem);
+    padding:.58rem .7rem .55rem .82rem;
+  }
+  body.presenter-mode .presenter-slide-memory li{
+    font-size:12px;
+    line-height:1.28;
+  }
+  body.presenter-mode aside.notes{
+    padding-top:9.5rem !important;
+  }
+}
+
+@media(max-width:1099px){
+  body.presenter-mode .presenter-topic-memory:not([hidden]){
+    top:.65rem;
+    left:.75rem;
+    max-width:44vw;
+    font-size:11px;
+  }
+  body.presenter-mode .presenter-slide-memory:not([hidden]){
+    top:3.65rem;
+    right:1.5vw;
+    width:min(620px,92vw);
+  }
+  body.presenter-mode aside.notes{
+    top:10rem !important;
+    max-height:calc(100vh - 11rem) !important;
+    padding-top:1.2rem !important;
+  }
+}
+
+@media print{
+  .presenter-topic-memory,
+  .presenter-slide-memory{display:none!important}
+}
