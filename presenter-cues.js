@@ -78,7 +78,7 @@
   function update() {
     const slide = document.querySelector('.slide.active');
     const data = CUES[slide?.dataset.noteKey || ''];
-    const visible = document.body.classList.contains('presenter-mode') && Boolean(data);
+    const visible = Boolean(data);
 
     topic.hidden = !visible;
     cues.hidden = !visible;
