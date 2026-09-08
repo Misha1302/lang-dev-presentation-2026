@@ -9,6 +9,8 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / 'CONTENT_NARRATIVE_CONTRACT.json'
+RESEARCH_DECK = 'deck-research-update.js'
+RESEARCH_SPEAKER = 'speaker-script-research-update.js'
 REQUIRED_MILESTONE_IDS = {
     'monolith-baseline',
     'extensibility-motivation',
@@ -35,7 +37,7 @@ REQUIRED_MILESTONE_IDS = {
 
 def fragment_text(path: Path) -> str:
     raw = path.read_text(encoding='utf-8')
-    match = re.search(r'String\.raw`(.*)`\);\s*$', raw, re.S)
+    match = re.search(r'String\.raw`(.*?)`\);', raw, re.S)
     assert match, f'cannot parse {path.name}'
     return match.group(1)
 
@@ -140,9 +142,11 @@ def main() -> None:
     script_load_order = re.findall(r'<script\s+src="([^"]+)"', index)
     deck_assets = [name for name in script_load_order if name.startswith('deck-') and name != 'deck.js']
     speaker_assets = [name for name in script_load_order if re.fullmatch(r'speaker-script-.*\.js', name)]
-    assert deck_assets == ['deck-main.js', 'deck-appendix.js'], f'unexpected deck load order: {deck_assets}'
-    assert speaker_assets == [contract['speaker_owner']], f'canonical speaker owner mismatch: {speaker_assets}'
-    assert script_load_order.index(contract['speaker_owner']) < script_load_order.index('deck.js')
+    expected_deck_assets = ['deck-main.js', RESEARCH_DECK, 'deck-appendix.js']
+    expected_speaker_assets = [contract['speaker_owner'], RESEARCH_SPEAKER]
+    assert deck_assets == expected_deck_assets, f'unexpected deck load order: {deck_assets}'
+    assert speaker_assets == expected_speaker_assets, f'canonical/additive speaker ownership mismatch: {speaker_assets}'
+    assert script_load_order.index(contract['speaker_owner']) < script_load_order.index(RESEARCH_SPEAKER) < script_load_order.index('deck.js')
     assert not any(name.startswith('speaker-notes-') for name in script_load_order), 'legacy notes still participate in runtime ownership'
 
     expected_qa = contract['runtime_qa_contract']
@@ -151,7 +155,9 @@ def main() -> None:
     deck_runtime = (ROOT / 'deck.js').read_text(encoding='utf-8')
     assert f"const DECK_QA_CONTRACT = '{expected_qa}';" in deck_runtime, 'deck.js runtime QA contract mismatch'
 
-    slides = parse_slides(deck_assets)
+    # The Phase-04 semantic contract remains bound to the original authored files.
+    # The additive research layer has its own protected-content/order validator.
+    slides = parse_slides(['deck-main.js', 'deck-appendix.js'])
     main_keys, appendix_keys = validate_contract(contract, slides)
     expected_keys = main_keys + appendix_keys
 
@@ -159,8 +165,8 @@ def main() -> None:
     speech_match = re.search(r'window\.SPEAKER_SCRIPT\s*=\s*Object\.freeze\((\{.*\})\);\s*$', script_raw, re.S)
     assert speech_match, 'cannot parse canonical speaker script'
     speech = json.loads(speech_match.group(1))
-    assert list(speech.keys()) == expected_keys, 'speaker-script key order/coverage differs from slide order'
-    assert set(speech) == set(expected_keys), 'speaker-script has orphan or missing entries'
+    assert list(speech.keys()) == expected_keys, 'speaker-script key order/coverage differs from authored slide order'
+    assert set(speech) == set(expected_keys), 'speaker-script has orphan or missing authored entries'
     for key in expected_keys:
         value = speech[key].strip()
         assert len(value) >= 80, f'{key} speaker text is too short to be useful speech'
@@ -171,8 +177,10 @@ def main() -> None:
 
     conference_files = [
         ROOT / 'deck-main.js',
+        ROOT / RESEARCH_DECK,
         ROOT / 'deck-appendix.js',
         ROOT / contract['speaker_owner'],
+        ROOT / RESEARCH_SPEAKER,
         ROOT / 'claims.md',
         ROOT / 'README.md',
         ROOT / 'index.html',
@@ -183,14 +191,15 @@ def main() -> None:
             assert not pin_pattern.search(path.read_text(encoding='utf-8')), f'presentation-level UT revision pin remains in {path.name}'
 
     repo_speaker_assets = sorted(path.name for path in ROOT.glob('speaker-script-*.js'))
-    assert repo_speaker_assets == [contract['speaker_owner']], f'competing speaker-script assets remain: {repo_speaker_assets}'
+    assert repo_speaker_assets == sorted(expected_speaker_assets), f'unexpected speaker-script assets remain: {repo_speaker_assets}'
     assert not list(ROOT.glob('speaker-notes-*.js')), 'legacy speaker-note owners must be removed'
 
     print(
         'Deck semantic contract PASS: '
-        f"{len(main_keys)} main + {len(appendix_keys)} appendix; "
+        f"authored {len(main_keys)} main + {len(appendix_keys)} appendix; "
         f"{len(REQUIRED_MILESTONE_IDS)} stable milestones; causal DAG, evidence categories, "
-        f"semantic ownership and canonical speaker coverage verified ({contract['contract_id']})"
+        f"semantic ownership and original canonical speaker coverage verified ({contract['contract_id']}); "
+        'additive research layer delegated to check_research_insertion.py'
     )
 
 
