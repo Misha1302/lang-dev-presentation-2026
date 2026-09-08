@@ -34,9 +34,7 @@ body.presenter-mode nav{
   bottom:1.8vh;
 }
 body.presenter-mode .notes{
-  display:flex;
-  flex-direction:column;
-  gap:1.25rem;
+  display:block;
   right:0;
   top:0;
   width:var(--presenter-panel-px,32vw);
@@ -44,9 +42,9 @@ body.presenter-mode .notes{
   max-height:none;
   overflow-y:auto;
   overflow-x:hidden;
-  padding:2rem 1.55rem 2.5rem;
+  padding:2rem 1.7rem 2.5rem;
   border:0;
-  border-left:1px solid var(--line);
+  border-left:4px solid var(--accent);
   border-radius:0;
   background:#0b1124;
   box-shadow:-24px 0 70px rgba(0,0,0,.22);
@@ -54,12 +52,11 @@ body.presenter-mode .notes{
   overscroll-behavior:contain;
 }
 body.presenter-mode .notes p{
-  margin:0;
-  padding:1rem 1.05rem;
-  border:1px solid rgba(125,211,252,.24);
-  border-left:4px solid var(--accent);
-  border-radius:14px;
-  background:rgba(125,211,252,.055);
+  margin:0 0 1.05rem;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:none;
   color:var(--fg);
   font-size:clamp(17px,1.18vw,23px);
   font-weight:540;
@@ -68,6 +65,7 @@ body.presenter-mode .notes p{
   overflow-wrap:anywhere;
   word-break:break-word;
 }
+body.presenter-mode .notes p:last-child{margin-bottom:0}
 body.presenter-mode .toc{
   right:calc(var(--presenter-panel-px,32vw) + 1.25vw);
   left:auto;
@@ -78,8 +76,8 @@ body.presenter-mode .toc{
   outline-offset:3px;
 }
 @media(max-width:1400px) and (min-width:1100px){
-  body.presenter-mode .notes{padding:1.35rem 1.1rem 2rem}
-  body.presenter-mode .notes p{font-size:17px;line-height:1.5;padding:.85rem .9rem}
+  body.presenter-mode .notes{padding:1.35rem 1.2rem 2rem}
+  body.presenter-mode .notes p{font-size:17px;line-height:1.5;margin-bottom:.9rem}
   body.presenter-mode nav{gap:.36rem}
   body.presenter-mode .navbtn{padding:.48rem .68rem;font-size:12px}
   body.presenter-mode .progress{width:150px}
@@ -103,8 +101,9 @@ body.presenter-mode .toc{
     width:min(620px,92vw);
     height:auto;
     max-height:83vh;
-    padding:1.1rem;
+    padding:1.2rem 1.25rem;
     border:1px solid var(--line);
+    border-left:4px solid var(--accent);
     border-radius:20px;
     box-shadow:0 24px 80px rgba(0,0,0,.38);
   }
