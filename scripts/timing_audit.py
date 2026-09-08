@@ -17,12 +17,30 @@ main_keys = re.findall(
 assert main_keys, 'cannot discover main slide keys from deck-main.js'
 assert list(speech)[:len(main_keys)] == main_keys, 'main script order mismatch'
 
-word_counts = [len(re.findall(r"[\w'-]+", speech[key])) for key in main_keys]
+research_raw = (ROOT / 'speaker-script-research-update.js').read_text(encoding='utf-8')
+research_pairs = re.findall(r'^\s*"(r\d+)":\s*"([^"]+)"', research_raw, re.MULTILINE)
+research_speech = dict(research_pairs)
+assert list(research_speech) == [f'r{i}' for i in range(1, 8)], 'research speaker extension mismatch'
+speech.update(research_speech)
+
+runtime_main_keys = list(main_keys)
+for child, anchor in [
+    ('r1', 'm3'),
+    ('r2', 'r1'),
+    ('r3', 'r2'),
+    ('r4', 'r3'),
+    ('r5', 'r4'),
+    ('r6', 'm12'),
+    ('r7', 'm25'),
+]:
+    runtime_main_keys.insert(runtime_main_keys.index(anchor) + 1, child)
+
+word_counts = [len(re.findall(r"[\w'-]+", speech[key])) for key in runtime_main_keys]
 seconds = [round(words / 130 * 60) for words in word_counts]
 total = sum(seconds)
-print(f'main slides: {len(main_keys)}')
+print(f'main slides: {len(runtime_main_keys)} (32 authored + 7 additive research)')
 print(f'main spoken words: {sum(word_counts)}')
 print(f'rehearsal estimate at 130 wpm: {total // 60:02d}:{total % 60:02d}')
 print(f'per-slide spoken range: {min(seconds)}-{max(seconds)} s')
 assert 25 * 60 <= total <= 27 * 60, f'timing contract outside 25-27 min: {total // 60:02d}:{total % 60:02d}'
-print('Timing audit PASS: canonical main script stays inside the 25-27 minute rehearsal envelope at 130 wpm')
+print('Timing audit PASS: runtime main script stays inside the 25-27 minute rehearsal envelope at 130 wpm')
