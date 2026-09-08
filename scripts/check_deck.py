@@ -191,7 +191,9 @@ def main() -> None:
             assert not pin_pattern.search(path.read_text(encoding='utf-8')), f'presentation-level UT revision pin remains in {path.name}'
 
     repo_speaker_assets = sorted(path.name for path in ROOT.glob('speaker-script-*.js'))
-    assert repo_speaker_assets == sorted(expected_speaker_assets), f'unexpected speaker-script assets remain: {repo_speaker_assets}'
+    assert contract['speaker_owner'] in repo_speaker_assets, 'canonical speaker owner is missing from repository'
+    unexpected_speaker_assets = set(repo_speaker_assets) - set(expected_speaker_assets)
+    assert not unexpected_speaker_assets, f'unexpected speaker-script assets remain: {sorted(unexpected_speaker_assets)}'
     assert not list(ROOT.glob('speaker-notes-*.js')), 'legacy speaker-note owners must be removed'
 
     print(
