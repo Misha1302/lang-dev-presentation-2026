@@ -5,13 +5,7 @@
 window.SPEAKER_SCRIPT = Object.freeze({
   ...window.SPEAKER_SCRIPT,
 
-  m1: `Hi everyone.
-
-The title of this talk is: Build the Language, Then Make the Abstractions Disappear.
-
-The question is: can independently developed language capabilities become one concrete language and still optimize well?
-
-I will use three words. AUTHOR: build reusable language pieces. RESOLVE: turn one selected language profile into one concrete compiler plan. OPTIMIZE: erase machinery when it has done its job, while keeping only the semantic facts later compiler decisions still need.`,
+  m1: `Hi everyone. The title of this talk is: Build the Language, Then Make the Abstractions Disappear. The question is: can independently developed language capabilities become one concrete language and still optimize well? I will use three words. AUTHOR: build reusable language pieces. RESOLVE: turn one selected language profile into one concrete compiler plan. OPTIMIZE: erase machinery when it has done its job, while keeping only the semantic facts later compiler decisions still need.`,
 
   m3: `Why is reuse hard in a compiler?
 
