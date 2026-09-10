@@ -29,7 +29,7 @@
     if (!slide || slide.querySelector('.slice-demo')) return;
     slide.classList.add('vertical-slice-enhanced');
 
-    const layers = slide.querySelector('.layers');
+    const panel = slide.querySelector('.panel');
     const demo = document.createElement('div');
     demo.className = 'slice-demo';
     demo.innerHTML = `
@@ -44,7 +44,9 @@
       </div>
       <p class="slice-caption">One reusable capability may own a vertical slice, not just one parser hook.</p>
     `;
-    layers?.insertAdjacentElement('afterend', demo);
+    // Keep the original layer list and explanatory panel side-by-side. The
+    // compact vertical-slice witness becomes the full-width row underneath.
+    panel?.insertAdjacentElement('afterend', demo);
   }
 
   function markFastPassSlides() {
