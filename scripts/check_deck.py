@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / 'CONTENT_NARRATIVE_CONTRACT.json'
 RESEARCH_DECK = 'deck-research-update.js'
 RESEARCH_SPEAKER = 'speaker-script-research-update.js'
+CONFERENCE_DECK_PATCH = 'deck-non-destructive-patches.js'
+CONFERENCE_SPEAKER_OVERRIDE = 'speaker-script-conference-overrides.js'
 REQUIRED_MILESTONE_IDS = {
     'monolith-baseline',
     'extensibility-motivation',
@@ -142,11 +144,25 @@ def main() -> None:
     script_load_order = re.findall(r'<script\s+src="([^"]+)"', index)
     deck_assets = [name for name in script_load_order if name.startswith('deck-') and name != 'deck.js']
     speaker_assets = [name for name in script_load_order if re.fullmatch(r'speaker-script-.*\.js', name)]
-    expected_deck_assets = ['deck-main.js', RESEARCH_DECK, 'deck-appendix.js']
-    expected_speaker_assets = [contract['speaker_owner'], RESEARCH_SPEAKER]
+    expected_deck_assets = [
+        'deck-main.js',
+        RESEARCH_DECK,
+        'deck-appendix.js',
+        CONFERENCE_DECK_PATCH,
+    ]
+    expected_speaker_assets = [
+        contract['speaker_owner'],
+        RESEARCH_SPEAKER,
+        CONFERENCE_SPEAKER_OVERRIDE,
+    ]
     assert deck_assets == expected_deck_assets, f'unexpected deck load order: {deck_assets}'
     assert speaker_assets == expected_speaker_assets, f'canonical/additive speaker ownership mismatch: {speaker_assets}'
-    assert script_load_order.index(contract['speaker_owner']) < script_load_order.index(RESEARCH_SPEAKER) < script_load_order.index('deck.js')
+    assert (
+        script_load_order.index(contract['speaker_owner'])
+        < script_load_order.index(RESEARCH_SPEAKER)
+        < script_load_order.index(CONFERENCE_SPEAKER_OVERRIDE)
+        < script_load_order.index('deck.js')
+    ), 'speaker runtime overlay order is invalid'
     assert not any(name.startswith('speaker-notes-') for name in script_load_order), 'legacy notes still participate in runtime ownership'
 
     expected_qa = contract['runtime_qa_contract']
@@ -156,7 +172,7 @@ def main() -> None:
     assert f"const DECK_QA_CONTRACT = '{expected_qa}';" in deck_runtime, 'deck.js runtime QA contract mismatch'
 
     # The Phase-04 semantic contract remains bound to the original authored files.
-    # The additive research layer has its own protected-content/order validator.
+    # Additive research and conference runtime overlays are validated separately.
     slides = parse_slides(['deck-main.js', 'deck-appendix.js'])
     main_keys, appendix_keys = validate_contract(contract, slides)
     expected_keys = main_keys + appendix_keys
@@ -179,8 +195,10 @@ def main() -> None:
         ROOT / 'deck-main.js',
         ROOT / RESEARCH_DECK,
         ROOT / 'deck-appendix.js',
+        ROOT / CONFERENCE_DECK_PATCH,
         ROOT / contract['speaker_owner'],
         ROOT / RESEARCH_SPEAKER,
+        ROOT / CONFERENCE_SPEAKER_OVERRIDE,
         ROOT / 'claims.md',
         ROOT / 'README.md',
         ROOT / 'index.html',
@@ -201,7 +219,7 @@ def main() -> None:
         f"authored {len(main_keys)} main + {len(appendix_keys)} appendix; "
         f"{len(REQUIRED_MILESTONE_IDS)} stable milestones; causal DAG, evidence categories, "
         f"semantic ownership and original canonical speaker coverage verified ({contract['contract_id']}); "
-        'additive research layer delegated to check_research_insertion.py'
+        'additive research and conference runtime overlays registered explicitly'
     )
 
 
