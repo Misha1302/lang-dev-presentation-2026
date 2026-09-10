@@ -32,31 +32,65 @@ body.presenter-mode .presenter-slide-memory {
   opacity: .92;
 }
 
-/* Slide 3: make the spoken "arrays cut through layers" example visible. */
+/* Slide 3: make the spoken "arrays cut through layers" example visible while
+   keeping the original layer list and explanatory panel in the deck. */
 [data-note-key="m3"].vertical-slice-enhanced {
-  --slice-gap: clamp(.35rem, .65vw, .8rem);
+  --slice-gap: clamp(.3rem, .55vw, .65rem);
+  row-gap: clamp(.7rem, 1.4vh, 1rem);
+  column-gap: 3vw;
+  align-items: center;
+}
+
+[data-note-key="m3"].vertical-slice-enhanced .layers {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(.3rem, .55vw, .55rem);
+  align-self: center;
+}
+
+[data-note-key="m3"].vertical-slice-enhanced .layers > span {
+  padding: .42rem .5rem;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  background: rgba(255,255,255,.045);
+  text-align: center;
+  font-size: clamp(.78rem, .9vw, 1rem);
+  line-height: 1.15;
+}
+
+[data-note-key="m3"].vertical-slice-enhanced > .panel {
+  padding: clamp(.75rem, 1.05vw, 1rem);
+}
+
+[data-note-key="m3"].vertical-slice-enhanced > .panel .bigq {
+  margin-top: 0;
+  font-size: clamp(1.15rem, 1.7vw, 1.65rem);
+}
+
+[data-note-key="m3"].vertical-slice-enhanced > .panel p:not(.bigq) {
+  margin-top: .45rem;
+  font-size: clamp(.82rem, 1vw, 1rem);
 }
 
 [data-note-key="m3"] .slice-demo {
   grid-column: 1 / -1;
-  margin-top: clamp(.8rem, 1.4vw, 1.5rem);
+  margin-top: 0;
   display: grid;
-  grid-template-columns: minmax(150px, .55fr) 1.45fr;
-  gap: clamp(.7rem, 1.2vw, 1.2rem);
+  grid-template-columns: minmax(130px, .42fr) 1.58fr;
+  gap: clamp(.55rem, .9vw, .9rem);
   align-items: stretch;
 }
 
 [data-note-key="m3"] .slice-feature {
   border: 1px solid rgba(255,255,255,.22);
-  border-radius: 24px;
-  padding: clamp(.75rem, 1.2vw, 1.2rem);
+  border-radius: 18px;
+  padding: clamp(.45rem, .8vw, .75rem);
   background: rgba(255,255,255,.07);
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
   font-weight: 800;
-  font-size: clamp(1.4rem, 2vw, 2.15rem);
+  font-size: clamp(1.15rem, 1.65vw, 1.8rem);
 }
 
 [data-note-key="m3"] .slice-track {
@@ -68,24 +102,29 @@ body.presenter-mode .presenter-slide-memory {
 
 [data-note-key="m3"] .slice-track span {
   border: 1px solid rgba(255,255,255,.2);
-  border-radius: 18px;
-  padding: clamp(.55rem, .9vw, .9rem) clamp(.35rem, .65vw, .65rem);
+  border-radius: 14px;
+  padding: clamp(.38rem, .65vw, .6rem) clamp(.25rem, .45vw, .45rem);
   background: rgba(255,255,255,.055);
-  min-height: 70px;
+  min-height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   font-weight: 650;
-  font-size: clamp(.86rem, 1.05vw, 1.14rem);
+  font-size: clamp(.72rem, .88vw, .95rem);
+  line-height: 1.05;
+}
+
+[data-note-key="m3"] .slice-track small {
+  font-size: .82em;
 }
 
 [data-note-key="m3"] .slice-caption {
   grid-column: 1 / -1;
-  margin: .35rem 0 0;
+  margin: .15rem 0 0;
   opacity: .82;
   text-align: center;
-  font-size: clamp(1rem, 1.25vw, 1.3rem);
+  font-size: clamp(.82rem, 1vw, 1.05rem);
 }
 
 /* Detail slides kept in the main deck can be clearly marked as fast-pass
