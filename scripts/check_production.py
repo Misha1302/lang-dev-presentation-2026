@@ -24,7 +24,12 @@ sha = os.environ.get('GITHUB_SHA', 'unknown')
 contract = json.loads((ROOT / 'CONTENT_NARRATIVE_CONTRACT.json').read_text(encoding='utf-8'))
 index = (ROOT / 'index.html').read_text(encoding='utf-8')
 load_order = re.findall(r'<script\s+src="([^"]+)"', index)
+DECK_FRAGMENT_ASSETS = ['deck-main.js', 'deck-research-update.js', 'deck-appendix.js']
+DECK_RUNTIME_PATCHES = ['deck-non-destructive-patches.js']
+expected_deck_load_order = DECK_FRAGMENT_ASSETS + DECK_RUNTIME_PATCHES
 deck_assets = [name for name in load_order if name.startswith('deck-') and name != 'deck.js']
+if deck_assets != expected_deck_load_order:
+    raise RuntimeError(f'unexpected production deck load order: {deck_assets}')
 RESEARCH_KEYS = [f'r{i}' for i in range(1, 8)]
 RESEARCH_EDGES = [
     ('r1', 'm3'),
@@ -99,7 +104,9 @@ def validate_semantic_owners(slides: list[dict[str, str]]) -> list[str]:
     return note_keys
 
 
-local_slides = parse_slide_meta('\n'.join(fragment_text(ROOT / name) for name in deck_assets))
+# Only authored String.raw fragments own slide identity. Runtime patch scripts may
+# mutate presentation copy/markup but are deliberately not reparsed as fragments.
+local_slides = parse_slide_meta('\n'.join(fragment_text(ROOT / name) for name in DECK_FRAGMENT_ASSETS))
 local_slides = apply_runtime_research_order(local_slides)
 local_note_keys = validate_semantic_owners(local_slides)
 main_keys = [slide['data-note-key'] for slide in local_slides if slide.get('data-kind') == 'main']
@@ -118,15 +125,23 @@ assets = [
     'deck-main.js',
     'deck-research-update.js',
     'deck-appendix.js',
+    'deck-non-destructive-patches.js',
     contract['speaker_owner'],
     'speaker-script-research-update.js',
+    'speaker-script-conference-overrides.js',
     'deck.js',
+    'presenter-cues.js',
     'presenter.css',
+    'presenter-cues.css',
     'speaker-script.css',
     'foundation.css',
     'styles.css',
     'visual-balance.css',
+    'conference-polish.css',
 ]
+missing_assets = [name for name in assets if not (ROOT / name).is_file()]
+if missing_assets:
+    raise RuntimeError(f'local production assets missing: {missing_assets}')
 local_hashes = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in assets}
 deadline = time.time() + 360
 last = ''
@@ -238,6 +253,6 @@ if failures:
         print(' - ' + failure)
     sys.exit(1)
 print(
-    'Production check OK: exact asset hashes including additive research layer, semantic narrative contract and speaker scripts match Pages; '
+    'Production check OK: exact asset hashes including additive research and conference runtime overlays match Pages; '
     f'{len(main_keys)} main + {len(appendix_keys)} appendix; semantic owner/order, navigation, audience and presenter states PASS'
 )
