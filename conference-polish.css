@@ -1,0 +1,109 @@
+/* Non-destructive conference polish layer.
+   This file fixes audience-visible presenter cues and adds visual support for
+   the title, vertical-slice, and final-synthesis slides without removing or
+   moving any existing slide content. */
+
+/* Presenter memory cues are useful in presenter mode, but must never leak into
+   the audience deck. The runtime may still update their hidden state; audience
+   CSS wins. */
+body:not(.presenter-mode) .presenter-topic-memory,
+body:not(.presenter-mode) .presenter-slide-memory {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Keep presenter cues away from title/content collision in presenter mode. */
+body.presenter-mode .presenter-topic-memory,
+body.presenter-mode .presenter-slide-memory {
+  z-index: 30;
+}
+
+/* Slide 1: restore the accepted title while keeping the existing thesis line. */
+[data-note-key="m1"] .hero .memory {
+  letter-spacing: .14em;
+}
+
+[data-note-key="m1"] .talk-thesis {
+  margin-top: 1.1rem;
+  max-width: 1180px;
+  font-size: clamp(1.35rem, 2.05vw, 2.2rem);
+  line-height: 1.18;
+  opacity: .92;
+}
+
+/* Slide 3: make the spoken "arrays cut through layers" example visible. */
+[data-note-key="m3"].vertical-slice-enhanced {
+  --slice-gap: clamp(.35rem, .65vw, .8rem);
+}
+
+[data-note-key="m3"] .slice-demo {
+  grid-column: 1 / -1;
+  margin-top: clamp(.8rem, 1.4vw, 1.5rem);
+  display: grid;
+  grid-template-columns: minmax(150px, .55fr) 1.45fr;
+  gap: clamp(.7rem, 1.2vw, 1.2rem);
+  align-items: stretch;
+}
+
+[data-note-key="m3"] .slice-feature {
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 24px;
+  padding: clamp(.75rem, 1.2vw, 1.2rem);
+  background: rgba(255,255,255,.07);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  font-weight: 800;
+  font-size: clamp(1.4rem, 2vw, 2.15rem);
+}
+
+[data-note-key="m3"] .slice-track {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--slice-gap);
+  align-items: stretch;
+}
+
+[data-note-key="m3"] .slice-track span {
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 18px;
+  padding: clamp(.55rem, .9vw, .9rem) clamp(.35rem, .65vw, .65rem);
+  background: rgba(255,255,255,.055);
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 650;
+  font-size: clamp(.86rem, 1.05vw, 1.14rem);
+}
+
+[data-note-key="m3"] .slice-caption {
+  grid-column: 1 / -1;
+  margin: .35rem 0 0;
+  opacity: .82;
+  text-align: center;
+  font-size: clamp(1rem, 1.25vw, 1.3rem);
+}
+
+/* Detail slides kept in the main deck can be clearly marked as fast-pass
+   continuation slides rather than new chapters. */
+.slide[data-pace="fast-pass"] .eyebrow::after {
+  content: " · fast continuation";
+  opacity: .7;
+}
+
+.slide[data-pace="supporting-detail"] .eyebrow::after {
+  content: " · supporting detail";
+  opacity: .7;
+}
+
+/* Final slide: keep synthesis crisp and prevent the word "extensibility" from
+   implying that the abstraction itself must survive. */
+[data-note-key="m52"] .final-precision-note {
+  margin-top: .9rem;
+  font-size: clamp(1.05rem, 1.35vw, 1.45rem);
+  opacity: .82;
+}
