@@ -35,12 +35,25 @@ for child, anchor in [
 ]:
     runtime_main_keys.insert(runtime_main_keys.index(anchor) + 1, child)
 
+override_raw = (ROOT / 'speaker-script-conference-overrides.js').read_text(encoding='utf-8')
+override_pairs = re.findall(
+    r'^\s*([mr]\d+):\s*`(.*?)`\s*,?\s*$',
+    override_raw,
+    re.MULTILINE | re.DOTALL,
+)
+override_speech = dict(override_pairs)
+assert override_speech, 'conference speaker override layer is empty or unparsable'
+unknown_overrides = set(override_speech) - set(runtime_main_keys)
+assert not unknown_overrides, f'conference speaker overrides unknown runtime keys: {sorted(unknown_overrides)}'
+speech.update(override_speech)
+
 word_counts = [len(re.findall(r"[\w'-]+", speech[key])) for key in runtime_main_keys]
 seconds = [round(words / 130 * 60) for words in word_counts]
 total = sum(seconds)
 print(f'main slides: {len(runtime_main_keys)} (32 authored + 7 additive research)')
+print(f'conference speaker overrides: {len(override_speech)}')
 print(f'main spoken words: {sum(word_counts)}')
 print(f'rehearsal estimate at 130 wpm: {total // 60:02d}:{total % 60:02d}')
 print(f'per-slide spoken range: {min(seconds)}-{max(seconds)} s')
 assert 25 * 60 <= total <= 27 * 60, f'timing contract outside 25-27 min: {total // 60:02d}:{total % 60:02d}'
-print('Timing audit PASS: runtime main script stays inside the 25-27 minute rehearsal envelope at 130 wpm')
+print('Timing audit PASS: effective runtime main script stays inside the 25-27 minute rehearsal envelope at 130 wpm')
