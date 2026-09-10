@@ -55,5 +55,8 @@ print(f'conference speaker overrides: {len(override_speech)}')
 print(f'main spoken words: {sum(word_counts)}')
 print(f'rehearsal estimate at 130 wpm: {total // 60:02d}:{total % 60:02d}')
 print(f'per-slide spoken range: {min(seconds)}-{max(seconds)} s')
-assert 25 * 60 <= total <= 27 * 60, f'timing contract outside 25-27 min: {total // 60:02d}:{total % 60:02d}'
-print('Timing audit PASS: effective runtime main script stays inside the 25-27 minute rehearsal envelope at 130 wpm')
+# LangDev gives 25 minutes for the talk. Keep roughly 1-3 minutes of real-stage
+# headroom for pauses, transitions and audience reaction instead of filling the
+# entire slot with uninterrupted 130-wpm speech.
+assert 22 * 60 <= total <= 24 * 60, f'timing contract outside 22-24 min: {total // 60:02d}:{total % 60:02d}'
+print('Timing audit PASS: effective runtime main script stays inside the 22-24 minute rehearsal envelope for a 25-minute talk')
