@@ -13,33 +13,33 @@ A feature such as arrays is not just syntax. It can touch types, analysis, IR, l
 
 So the reusable unit has to be able to span layers, not just attach to one small hook.`,
 
-  r1: `First, why pay for any of this? Languages evolve in practice, so variation is real. But that does not prove a reusable architecture is worth its ceremony. It only gives us a reason to measure the trade-off.`,
+  r1: `First, why pay for any of this? Languages evolve in practice, so variation is real. But that does not prove a reusable architecture is worth its ceremony. It only gives us a reason to measure the trade-off. Notice the burden of proof: the monolith stays the default until repeated variation makes the reuse cost worth paying.`,
 
-  r2: `Clone-and-own is the strongest simple baseline. It is cheap at the beginning and easy to explain. A reusable platform only wins if later variants become cheaper enough to repay the upfront cost.`,
+  r2: `Clone-and-own is the strongest simple baseline. It is cheap at the beginning and easy to explain. A reusable platform only wins if later variants become cheaper enough to repay the upfront cost. So the question is not whether extensibility feels elegant; it is whether the next concrete language becomes materially cheaper or safer to build.`,
 
-  r3: `So we froze one pricing-language workload and implemented related variants both ways: clone-and-own and UniversalToolchain composition. The important part is that a negative result was allowed. If composition did not pay back, the architecture should not pretend that it did.`,
+  r3: `So we froze one pricing-language workload and implemented related variants both ways: clone-and-own and UniversalToolchain composition. The important part is that a negative result was allowed. If composition did not pay back, the architecture should not pretend that it did. This keeps the next architectural claims bounded: I am not selling extensibility as a universal good. I am showing where the trade-off starts to change.`,
 
   m26: `The local example worked because all required facts were nearby. Many useful optimizations are not like that. The code pattern may be local, but the proof that the transformation is legal may live in a loop, another block, alias facts or another analysis.
 
-That is the bridge: disappearing machinery is easy locally; preserving useful meaning becomes hard when legality is non-local.`,
+That is the bridge: disappearing machinery is easy locally; preserving useful meaning becomes hard when legality is non-local. From this point on, the running question is not “can we optimize this one pattern?” The question is “how can independently developed compiler components share the proof-relevant facts without private wiring?”`,
 
   m30: `Keep the bounds-check example in mind. The consumer question is SafeIndex(a, i). I do not want true and false to be the only states, because unsupported, unknown, established, refuted and contradictory lead to different compiler behavior.
 
-The safety rule is simple: uncertainty is not permission to optimize.`,
+The safety rule is simple: uncertainty is not permission to optimize. This is the same fail-closed discipline as before: structural planning rejected impossible routes, and semantic optimization must reject insufficient evidence.`,
 
   m31: `Still on the same example: range and extent are useful only if their assumptions line up. They must refer to the same subject, context and program revision, and no later mutation may invalidate the fact.
 
-So the issue is not just evidence. It is current-valid evidence here and now.`,
+So the issue is not just evidence. It is current-valid evidence here and now. The fact must still describe the program point where the optimizer wants to act.`,
 
-  m32: `This is the same independence problem we had for language capabilities. A consumer should not learn every producer's private API. It should ask a published semantic question and receive evidence through that contract.`,
+  m32: `This is the same independence problem we had for language capabilities. A consumer should not learn every producer's private API. It should ask a published semantic question and receive evidence through that contract. The analogy is intentional: published language contracts help authors compose capabilities; published evidence contracts may help analyses compose facts.`,
 
   m33: `Now the strongest baseline is not a naive compiler. LLVM and MLIR already have serious local mechanisms: analysis managers, invalidation, interfaces, effects, data-flow and conversion legality.
 
-Any shared evidence lifecycle has to beat those plus explicit local adapters.`,
+Any shared evidence lifecycle has to beat those plus explicit local adapters. If it cannot beat that baseline, the correct engineering answer is not to add the layer.`,
 
   m34: `So the hypothesis is narrower than “make a universal semantic layer”. The possible reusable boundary is the lifecycle of evidence: typed result, identity, context, revision, assumptions and provenance.
 
-This is still a hypothesis, not a result.`,
+This is still a hypothesis, not a result. It is useful only if it reduces coupling without weakening correctness or precision.`,
 
   m35: `A useful modularity test is: add a new producer and change zero existing consumers.
 
@@ -61,13 +61,15 @@ A producer can provide evidence, but it cannot quietly weaken the transformation
 
   m48: `This is the falsification test. Compare the shared lifecycle against the best local baseline: explicit adapters, existing invalidation, existing interfaces and local proof obligations.
 
-If the shared layer does not reduce coupling or verification burden at equal precision and safety, we should not keep it.`,
+If the shared layer does not reduce coupling or verification burden at equal precision and safety, we should not keep it. That negative answer would still be useful, because it would tell us to keep the abstraction local.`,
 
   m52: `Let me finish with the three words from the beginning.
 
 AUTHOR: build reusable language capabilities against shared contracts. RESOLVE: turn one profile into one concrete, structurally feasible compiler plan. OPTIMIZE: erase machinery when it is no longer needed.
 
 But not all meaning should disappear with the machinery. Some current-valid semantic knowledge may still be needed by later decisions. The open research question is whether a shared evidence lifecycle earns its complexity against strong LLVM, MLIR and local-adapter baselines.
+
+So the conservative takeaway is this: do not keep abstraction for its own sake. Keep it only while it owns a real decision. Once the decision is resolved, make the compiler concrete again; if a later pass still needs meaning, preserve the smallest valid semantic fact, not the whole machinery.
 
 Thank you.`
 });
