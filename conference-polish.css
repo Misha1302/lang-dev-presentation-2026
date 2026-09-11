@@ -139,6 +139,38 @@ body.presenter-mode .presenter-slide-memory {
   opacity: .7;
 }
 
+/* Keep long non-deleted sequences from reading as a new chapter on every slide.
+   The content remains present; hierarchy and pacing signal that these are
+   continuation/detail screens. */
+.slide[data-pace="fast-pass"] .slidehead,
+.slide[data-pace="supporting-detail"] .slidehead {
+  margin-bottom: clamp(.35rem, .9vh, .7rem);
+}
+
+.slide[data-pace="fast-pass"] h2,
+.slide[data-pace="supporting-detail"] h2 {
+  font-size: clamp(29px, 3.15vw, 50px);
+  line-height: 1.03;
+}
+
+.slide[data-pace="fast-pass"] .panel,
+.slide[data-pace="supporting-detail"] .panel,
+.slide[data-pace="fast-pass"] .role,
+.slide[data-pace="supporting-detail"] .role {
+  box-shadow: 0 16px 48px rgba(0,0,0,.2);
+}
+
+.slide[data-pace="fast-pass"] .bigq,
+.slide[data-pace="supporting-detail"] .bigq {
+  font-size: clamp(20px, 2vw, 30px);
+}
+
+.slide[data-pace="supporting-detail"] .boundary,
+.slide[data-pace="fast-pass"] .caption,
+.slide[data-pace="supporting-detail"] .caption {
+  opacity: .82;
+}
+
 /* Final slide: keep synthesis crisp and prevent the word "extensibility" from
    implying that the abstraction itself must survive. */
 [data-note-key="m52"] .final-precision-note {
