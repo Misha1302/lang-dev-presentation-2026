@@ -165,15 +165,64 @@ else:
 
 common = [browser, '--headless=new', '--disable-gpu', '--disable-dev-shm-usage', '--no-sandbox', '--no-first-run']
 failures: list[str] = []
+
+
+def _extract_dataset_value(dom: str, name: str) -> str | None:
+    marker = f'{name}="'
+    start = dom.find(marker)
+    if start < 0:
+        return None
+    start += len(marker)
+    end = dom.find('"', start)
+    if end < 0:
+        return None
+    return dom[start:end]
+
+
+def _run_dom(url: str, width: int = 1366, height: int = 768, timeout: int = 35) -> subprocess.CompletedProcess[str] | None:
+    for attempt in range(2):
+        try:
+            result = subprocess.run(
+                common + [f'--window-size={width},{height}', '--dump-dom', url],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+        except subprocess.TimeoutExpired:
+            if attempt == 0:
+                time.sleep(.5)
+                continue
+            return None
+        if result.returncode == 0:
+            return result
+        if attempt == 0:
+            time.sleep(.5)
+    return result
+
+
+def _visual_failure(prefix: str, result: subprocess.CompletedProcess[str] | None) -> str:
+    if result is None:
+        return f'{prefix}: browser timeout after retry'
+    if result.returncode != 0:
+        stderr = result.stderr.strip().splitlines()[-1] if result.stderr.strip() else 'no stderr'
+        return f'{prefix}: browser exit {result.returncode}: {stderr}'
+    status = _extract_dataset_value(result.stdout, 'data-visual-check')
+    detail = _extract_dataset_value(result.stdout, 'data-visual-errors')
+    if status is None:
+        return f'{prefix}: visual status missing'
+    if status != 'ok':
+        return f'{prefix}: visual-check failed: {detail or "no data-visual-errors"}'
+    return f'{prefix}: visual-check unexpectedly reported ok'
+
+
 nav_url = f'{PRODUCTION}?nav-check=1&qa={quote(sha)}#1'
-try:
-    nav = subprocess.run(common + ['--window-size=1366,768', '--dump-dom', nav_url], capture_output=True, text=True, timeout=35)
-except subprocess.TimeoutExpired:
-    failures.append('production navigation: browser timeout')
-    nav = None
-if nav:
-    if nav.returncode != 0 or 'data-nav-check="ok"' not in nav.stdout:
-        failures.append('production navigation: nav-check did not pass')
+nav = _run_dom(nav_url)
+if nav is None:
+    failures.append('production navigation: browser timeout after retry')
+elif nav.returncode != 0 or 'data-nav-check="ok"' not in nav.stdout:
+    detail = _extract_dataset_value(nav.stdout, 'data-nav-errors') if nav.returncode == 0 else nav.stderr.strip()
+    failures.append(f'production navigation: nav-check did not pass: {detail or "no detail"}')
+else:
     if f'data-deck-qa-contract="{contract["runtime_qa_contract"]}"' not in nav.stdout:
         failures.append('production DOM runtime QA contract marker mismatch')
     try:
@@ -196,13 +245,9 @@ for key in [main_keys[0], main_keys[-1], appendix_keys[0], appendix_keys[-1]]:
 
 for target in representative:
     url = f'{PRODUCTION}?visual-check=1&qa={quote(sha)}{target}'
-    try:
-        result = subprocess.run(common + ['--window-size=1366,768', '--dump-dom', url], capture_output=True, text=True, timeout=35)
-    except subprocess.TimeoutExpired:
-        failures.append(f'production {target}: browser timeout')
-        continue
-    if result.returncode != 0 or 'data-visual-check="ok"' not in result.stdout:
-        failures.append(f'production {target}: visual-check failed')
+    result = _run_dom(url)
+    if result is None or result.returncode != 0 or 'data-visual-check="ok"' not in result.stdout:
+        failures.append(_visual_failure(f'production {target}', result))
         continue
     output = ARTIFACTS / f'1366x768-{target[1:]}.png'
     shot_url = f'{PRODUCTION}?qa={quote(sha)}{target}'
@@ -236,13 +281,9 @@ for milestone_id in presenter_ids:
         presenter_representative.append(target)
 for target in presenter_representative:
     url = f'{PRODUCTION}?presenter=1&visual-check=1&qa={quote(sha)}{target}'
-    try:
-        result = subprocess.run(common + ['--window-size=1366,768', '--dump-dom', url], capture_output=True, text=True, timeout=35)
-    except subprocess.TimeoutExpired:
-        failures.append(f'production presenter {target}: browser timeout')
-        continue
-    if result.returncode != 0 or 'data-visual-check="ok"' not in result.stdout:
-        failures.append(f'production presenter {target}: visual/canonical-script check failed')
+    result = _run_dom(url)
+    if result is None or result.returncode != 0 or 'data-visual-check="ok"' not in result.stdout:
+        failures.append(_visual_failure(f'production presenter {target}', result))
         continue
     if f'data-canonical-owner="{contract["speaker_owner"]}"' not in result.stdout:
         failures.append(f'production presenter {target}: canonical owner marker missing')
