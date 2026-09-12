@@ -16,6 +16,8 @@ PRIOR_ART_SPEAKER = 'speaker-script-prior-art-matrix.js'
 SAFE_INDEX_DECK = 'deck-safe-index-case.js'
 SAFE_INDEX_SPEAKER = 'speaker-script-safe-index-case.js'
 CONFERENCE_DECK_PATCH = 'deck-non-destructive-patches.js'
+NARRATIVE_DECK = 'deck-narrative-reframe.js'
+NARRATIVE_SPEAKER = 'speaker-script-narrative-reframe.js'
 CONFERENCE_SPEAKER_OVERRIDE = 'speaker-script-conference-overrides.js'
 REQUIRED_MILESTONE_IDS = {
     'monolith-baseline',
@@ -155,6 +157,7 @@ def main() -> None:
         SAFE_INDEX_DECK,
         'deck-appendix.js',
         CONFERENCE_DECK_PATCH,
+        NARRATIVE_DECK,
     ]
     expected_speaker_assets = [
         contract['speaker_owner'],
@@ -162,6 +165,7 @@ def main() -> None:
         PRIOR_ART_SPEAKER,
         SAFE_INDEX_SPEAKER,
         CONFERENCE_SPEAKER_OVERRIDE,
+        NARRATIVE_SPEAKER,
     ]
     assert deck_assets == expected_deck_assets, f'unexpected deck load order: {deck_assets}'
     assert speaker_assets == expected_speaker_assets, f'canonical/additive speaker ownership mismatch: {speaker_assets}'
@@ -171,6 +175,7 @@ def main() -> None:
         < script_load_order.index(PRIOR_ART_SPEAKER)
         < script_load_order.index(SAFE_INDEX_SPEAKER)
         < script_load_order.index(CONFERENCE_SPEAKER_OVERRIDE)
+        < script_load_order.index(NARRATIVE_SPEAKER)
         < script_load_order.index('deck.js')
     ), 'speaker runtime overlay order is invalid'
     assert not any(name.startswith('speaker-notes-') for name in script_load_order), 'legacy notes still participate in runtime ownership'
@@ -206,9 +211,11 @@ def main() -> None:
         ROOT / RESEARCH_DECK,
         ROOT / 'deck-appendix.js',
         ROOT / CONFERENCE_DECK_PATCH,
+        ROOT / NARRATIVE_DECK,
         ROOT / contract['speaker_owner'],
         ROOT / RESEARCH_SPEAKER,
         ROOT / CONFERENCE_SPEAKER_OVERRIDE,
+        ROOT / NARRATIVE_SPEAKER,
         ROOT / 'claims.md',
         ROOT / 'README.md',
         ROOT / 'index.html',

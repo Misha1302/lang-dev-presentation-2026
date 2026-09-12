@@ -74,11 +74,11 @@
 .pa-system small { color: #91a2c7; font-size: clamp(8.5px,.58vw,10.5px); line-height: 1.08; }
 
 .pa-system[data-system="mlir"] { box-shadow: inset 3px 0 0 var(--accent); }
-.pa-system[data-system="spoofax"] { box-shadow: inset 3px 0 0 var(--accent2); }
 .pa-system[data-system="mps"] { box-shadow: inset 3px 0 0 #fb7185; }
 .pa-system[data-system="neverlang"] { box-shadow: inset 3px 0 0 var(--ok); }
-.pa-system[data-system="ablec"] { box-shadow: inset 3px 0 0 var(--warn); }
 .pa-system[data-system="gemoc"] { box-shadow: inset 3px 0 0 #f0abfc; }
+.pa-system[data-system="graal"] { box-shadow: inset 3px 0 0 var(--accent2); }
+.pa-system[data-system="rascal"] { box-shadow: inset 3px 0 0 #a7f3d0; }
 .pa-system[data-system="ut"] { box-shadow: inset 3px 0 0 #f0abfc; }
 
 .pa-cell[data-fit="core"] { background: rgba(134,239,172,.075); color: #eaffef; }

@@ -61,7 +61,7 @@
   <div class="ownerflow">
     <div class="role"><b>MLIR / LLVM</b><span>interfaces · dataflow · legality · invalidation</span></div>
     <i>+</i>
-    <div class="role"><b>ableC / JastAdd / Neverlang</b><span>modular language semantics and feature composition</span></div>
+    <div class="role"><b>JastAdd / Neverlang</b><span>modular language semantics and feature composition</span></div>
     <i>+</i>
     <div class="role"><b>Abstract interpretation</b><span>analysis combination / reduced products</span></div>
   </div>
