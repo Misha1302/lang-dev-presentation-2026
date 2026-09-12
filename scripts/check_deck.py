@@ -11,6 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / 'CONTENT_NARRATIVE_CONTRACT.json'
 RESEARCH_DECK = 'deck-research-update.js'
 RESEARCH_SPEAKER = 'speaker-script-research-update.js'
+PRIOR_ART_DECK = 'deck-prior-art-matrix.js'
+PRIOR_ART_SPEAKER = 'speaker-script-prior-art-matrix.js'
+SAFE_INDEX_DECK = 'deck-safe-index-case.js'
+SAFE_INDEX_SPEAKER = 'speaker-script-safe-index-case.js'
 CONFERENCE_DECK_PATCH = 'deck-non-destructive-patches.js'
 CONFERENCE_SPEAKER_OVERRIDE = 'speaker-script-conference-overrides.js'
 REQUIRED_MILESTONE_IDS = {
@@ -147,12 +151,16 @@ def main() -> None:
     expected_deck_assets = [
         'deck-main.js',
         RESEARCH_DECK,
+        PRIOR_ART_DECK,
+        SAFE_INDEX_DECK,
         'deck-appendix.js',
         CONFERENCE_DECK_PATCH,
     ]
     expected_speaker_assets = [
         contract['speaker_owner'],
         RESEARCH_SPEAKER,
+        PRIOR_ART_SPEAKER,
+        SAFE_INDEX_SPEAKER,
         CONFERENCE_SPEAKER_OVERRIDE,
     ]
     assert deck_assets == expected_deck_assets, f'unexpected deck load order: {deck_assets}'
@@ -160,6 +168,8 @@ def main() -> None:
     assert (
         script_load_order.index(contract['speaker_owner'])
         < script_load_order.index(RESEARCH_SPEAKER)
+        < script_load_order.index(PRIOR_ART_SPEAKER)
+        < script_load_order.index(SAFE_INDEX_SPEAKER)
         < script_load_order.index(CONFERENCE_SPEAKER_OVERRIDE)
         < script_load_order.index('deck.js')
     ), 'speaker runtime overlay order is invalid'
