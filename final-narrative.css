@@ -1,0 +1,176 @@
+/* Final narrative system: equal semantic roles get equal visual treatment. */
+.fn-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: .28rem .55rem;
+  border-radius: 999px;
+  font-size: clamp(10px,.72vw,13px);
+  font-weight: 850;
+  letter-spacing: .055em;
+  line-height: 1;
+}
+.fn-current, .fn-measured { background: rgba(134,239,172,.13); color: #b9f7ca; border: 1px solid rgba(134,239,172,.32); }
+.fn-design { background: rgba(125,211,252,.12); color: #c7efff; border: 1px solid rgba(125,211,252,.3); }
+.fn-hypothesis { background: rgba(196,181,253,.13); color: #e7ddff; border: 1px solid rgba(196,181,253,.32); }
+
+.fn-balanced-pair > .panel.fn-equal-card {
+  min-height: 255px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+  gap: .7rem;
+  padding: clamp(1rem,1.4vw,1.45rem);
+}
+.fn-balanced-pair > .panel.fn-equal-card h3 {
+  margin: 0;
+  font-size: clamp(20px,1.45vw,27px);
+  line-height: 1.05;
+}
+.fn-balanced-pair > .panel.fn-equal-card p {
+  margin: 0;
+  font-size: clamp(17px,1.18vw,22px);
+  line-height: 1.27;
+}
+.fn-card-lead {
+  font-size: clamp(21px,1.55vw,29px) !important;
+  font-weight: 800;
+  color: var(--fg);
+}
+.fn-number-line {
+  width: 100%;
+  font-size: clamp(25px,2vw,37px) !important;
+  font-variant-numeric: tabular-nums;
+}
+.fn-number-line b { display: inline-block; min-width: 11ch; font-size: .55em; opacity: .78; text-transform: uppercase; letter-spacing: .04em; }
+
+.fn-solution-grid,
+.fn-benchmark-grid,
+.fn-study-grid,
+.fn-rq-grid {
+  display: grid;
+  gap: clamp(.7rem,1.15vw,1rem);
+  width: 100%;
+  min-height: 0;
+}
+.fn-solution-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.fn-benchmark-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.fn-study-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.fn-rq-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.fn-solution-card,
+.fn-benchmark-card,
+.fn-study-grid > .panel,
+.fn-rq-grid > .panel,
+.fn-overview-cards > .panel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: .55rem;
+  text-align: left;
+}
+.fn-solution-card h3,
+.fn-benchmark-card h3,
+.fn-study-grid h3,
+.fn-rq-grid h3,
+.fn-overview-cards h3 { margin: 0; font-size: clamp(18px,1.3vw,25px); line-height: 1.05; }
+.fn-solution-card p,
+.fn-benchmark-card p,
+.fn-study-grid p,
+.fn-rq-grid p,
+.fn-overview-cards p { margin: 0; font-size: clamp(14px,.98vw,18px); line-height: 1.28; }
+
+.fn-matrix {
+  display: grid;
+  grid-template-columns: minmax(130px,.72fr) minmax(235px,1.2fr) minmax(300px,1.45fr) minmax(260px,1.35fr);
+  width: 100%;
+  min-height: 0;
+  border: 1px solid rgba(238,244,255,.2);
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(6,10,22,.54);
+}
+.fn-matrix-cell {
+  min-height: 70px;
+  padding: clamp(.5rem,.75vw,.75rem);
+  border-right: 1px solid rgba(238,244,255,.11);
+  border-bottom: 1px solid rgba(238,244,255,.11);
+  display: flex;
+  align-items: center;
+  font-size: clamp(13px,.95vw,17px);
+  line-height: 1.22;
+}
+.fn-matrix-cell:nth-child(4n) { border-right: 0; }
+.fn-matrix-cell:nth-last-child(-n + 4) { border-bottom: 0; }
+.fn-matrix .fn-head { min-height: 52px; justify-content: center; text-align: center; font-weight: 850; background: rgba(255,255,255,.075); }
+.fn-matrix .fn-system { font-weight: 850; color: var(--fg); background: rgba(255,255,255,.04); }
+.fn-matrix .fn-strong { background: rgba(125,211,252,.055); }
+.fn-matrix .fn-ut { background: rgba(196,181,253,.085); }
+
+.fn-bench-number {
+  font-size: clamp(28px,2.45vw,43px) !important;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+.fn-vs { opacity: .55; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; }
+
+.fn-slice-track {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr auto 1fr;
+  align-items: stretch;
+  gap: clamp(.35rem,.7vw,.7rem);
+  width: 100%;
+}
+.fn-slice-track > div {
+  min-height: 175px;
+  border: 1px solid rgba(238,244,255,.16);
+  border-radius: 20px;
+  background: rgba(255,255,255,.05);
+  padding: .9rem .7rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: .7rem;
+  text-align: center;
+}
+.fn-slice-track > div b { font-size: clamp(17px,1.22vw,23px); }
+.fn-slice-track > div span { font-size: clamp(13px,.95vw,17px); line-height: 1.22; }
+.fn-slice-track > i { align-self: center; color: var(--accent); font-style: normal; font-size: clamp(22px,1.7vw,31px); font-weight: 900; }
+
+.fn-record-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: clamp(.8rem,1.3vw,1.15rem);
+  width: 100%;
+}
+.fn-record-grid > .panel {
+  min-height: 185px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: .45rem;
+}
+.fn-record-grid h3 { margin: 0; font-size: clamp(16px,1.05vw,19px); letter-spacing: .08em; opacity: .72; }
+.fn-record-grid p { margin: 0; font-size: clamp(22px,1.7vw,31px); font-weight: 800; }
+.fn-record-grid small { font-size: clamp(13px,.9vw,16px); opacity: .72; }
+
+.fn-rq-grid > .panel { min-height: 290px; }
+.fn-rq-grid h3 { font-size: clamp(18px,1.28vw,24px); }
+.fn-rq-grid p { font-size: clamp(15px,1.02vw,19px); }
+
+.fn-external-bench .sourcebar,
+.fn-economics-slide .sourcebar { margin-bottom: 0; }
+
+@media (max-width: 1350px) {
+  .fn-solution-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .fn-matrix { grid-template-columns: 115px 1fr 1.25fr 1.15fr; }
+  .fn-matrix-cell { min-height: 60px; font-size: 12px; }
+  .fn-slice-track > div { min-height: 145px; }
+  .fn-benchmark-grid, .fn-rq-grid { gap: .55rem; }
+  .fn-benchmark-card p, .fn-rq-grid p { font-size: 13px; }
+}
