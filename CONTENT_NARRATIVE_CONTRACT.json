@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "contract_id": "langdev-2026-narrative-v2",
+  "contract_id": "langdev-2026-causal-rq-spine-v3",
   "runtime_qa_contract": "architecture-story-v3",
   "speaker_owner": "speaker-script-canonical.js",
   "allowed_evidence_categories": [
@@ -8,12 +8,14 @@
     "GENERAL_DESIGN",
     "RESEARCH_HYPOTHESIS",
     "PRIOR_ART",
-    "VERIFIED_PRIOR_ART"
+    "VERIFIED_PRIOR_ART",
+    "MEASURED_RESULT"
   ],
   "required_evidence_categories": [
     "IMPLEMENTED_WITNESS",
     "GENERAL_DESIGN",
-    "RESEARCH_HYPOTHESIS"
+    "RESEARCH_HYPOTHESIS",
+    "MEASURED_RESULT"
   ],
   "milestones": {
     "monolith-baseline": {
@@ -21,97 +23,122 @@
       "kind": "main",
       "evidence_category": "GENERAL_DESIGN"
     },
-    "extensibility-motivation": {
+    "concrete-vertical-feature": {
       "owner": "m3",
       "kind": "main",
       "evidence_category": "GENERAL_DESIGN"
     },
-    "capability-profile-distinction": {
+    "capability": {
+      "owner": "m5",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "two-couplings": {
+      "owner": "nProblem",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "research-questions": {
       "owner": "m7",
       "kind": "main",
       "evidence_category": "GENERAL_DESIGN"
     },
-    "independent-authorship": {
-      "owner": "m11",
+    "prior-art-boundaries": {
+      "owner": "nSolutions",
       "kind": "main",
       "evidence_category": "PRIOR_ART"
     },
-    "what-how": {
+    "current-vs-target": {
+      "owner": "pa4",
+      "kind": "main",
+      "evidence_category": "IMPLEMENTED_WITNESS"
+    },
+    "profile": {
+      "owner": "m11",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "global-resolution": {
       "owner": "m12",
       "kind": "main",
       "evidence_category": "GENERAL_DESIGN"
+    },
+    "feasible-plan": {
+      "owner": "m19",
+      "kind": "main",
+      "evidence_category": "IMPLEMENTED_WITNESS"
     },
     "feasibility-before-preference": {
       "owner": "m20",
       "kind": "main",
       "evidence_category": "GENERAL_DESIGN"
     },
-    "resolved-plan-freeze": {
-      "owner": "m21",
+    "composition-economics": {
+      "owner": "r4",
       "kind": "main",
-      "evidence_category": "GENERAL_DESIGN"
+      "evidence_category": "MEASURED_RESULT"
     },
     "local-deabstraction": {
       "owner": "m25",
       "kind": "main",
       "evidence_category": "IMPLEMENTED_WITNESS"
     },
-    "local-nonlocal-bridge": {
+    "nonlocal-legality": {
       "owner": "m26",
       "kind": "main",
       "evidence_category": "GENERAL_DESIGN"
     },
-    "safeindex": {
+    "safe-index": {
+      "owner": "m28",
+      "kind": "main",
+      "evidence_category": "GENERAL_DESIGN"
+    },
+    "independent-producers": {
+      "owner": "m29",
+      "kind": "main",
+      "evidence_category": "RESEARCH_HYPOTHESIS"
+    },
+    "semantic-contract": {
+      "owner": "m30",
+      "kind": "main",
+      "evidence_category": "RESEARCH_HYPOTHESIS"
+    },
+    "validity": {
       "owner": "m31",
       "kind": "main",
       "evidence_category": "RESEARCH_HYPOTHESIS"
     },
-    "semantic-producer-independence": {
-      "owner": "m32",
-      "kind": "main",
-      "evidence_category": "RESEARCH_HYPOTHESIS"
-    },
-    "modularity-vs-soundness": {
-      "owner": "m35",
-      "kind": "main",
-      "evidence_category": "RESEARCH_HYPOTHESIS"
-    },
-    "second-semantic-domain": {
-      "owner": "m36",
-      "kind": "main",
-      "evidence_category": "GENERAL_DESIGN"
-    },
-    "validity": {
+    "evidence-record": {
       "owner": "m40",
       "kind": "main",
       "evidence_category": "RESEARCH_HYPOTHESIS"
     },
-    "obligation": {
-      "owner": "m41",
+    "llvm-mlir-baseline": {
+      "owner": "m33",
+      "kind": "main",
+      "evidence_category": "VERIFIED_PRIOR_ART"
+    },
+    "cross-representation-hypothesis": {
+      "owner": "m34",
       "kind": "main",
       "evidence_category": "RESEARCH_HYPOTHESIS"
-    },
-    "cross-representation-correspondence": {
-      "owner": "m45",
-      "kind": "main",
-      "evidence_category": "RESEARCH_HYPOTHESIS"
-    },
-    "prior-art": {
-      "owner": "m48",
-      "kind": "main",
-      "evidence_category": "PRIOR_ART"
     },
     "strongest-alternative": {
       "owner": "m49",
       "kind": "main",
-      "evidence_category": "RESEARCH_HYPOTHESIS"
+      "evidence_category": "PRIOR_ART"
     },
-    "falsification": {
+    "falsification-experiment": {
       "owner": "m50",
       "kind": "main",
       "evidence_category": "RESEARCH_HYPOTHESIS"
     },
-    "author-resolve-optimize-conclusion": {
+    "final-rq-answers": {
+      "owner": "nRQ",
+      "kind": "main",
+      "evidence_category": "MEASURED_RESULT"
+    },
+    "conclusion": {
       "owner": "m52",
       "kind": "main",
       "evidence_category": "GENERAL_DESIGN"
@@ -120,79 +147,103 @@
   "causal_edges": [
     [
       "monolith-baseline",
-      "extensibility-motivation"
+      "concrete-vertical-feature"
     ],
     [
-      "extensibility-motivation",
-      "capability-profile-distinction"
+      "concrete-vertical-feature",
+      "capability"
     ],
     [
-      "capability-profile-distinction",
-      "independent-authorship"
+      "capability",
+      "two-couplings"
     ],
     [
-      "independent-authorship",
-      "what-how"
+      "two-couplings",
+      "research-questions"
     ],
     [
-      "what-how",
+      "research-questions",
+      "prior-art-boundaries"
+    ],
+    [
+      "prior-art-boundaries",
+      "current-vs-target"
+    ],
+    [
+      "capability",
+      "profile"
+    ],
+    [
+      "profile",
+      "global-resolution"
+    ],
+    [
+      "global-resolution",
+      "feasible-plan"
+    ],
+    [
+      "feasible-plan",
       "feasibility-before-preference"
     ],
     [
-      "feasibility-before-preference",
-      "resolved-plan-freeze"
+      "global-resolution",
+      "composition-economics"
     ],
     [
-      "resolved-plan-freeze",
+      "feasibility-before-preference",
+      "local-deabstraction"
+    ],
+    [
+      "composition-economics",
       "local-deabstraction"
     ],
     [
       "local-deabstraction",
-      "local-nonlocal-bridge"
+      "nonlocal-legality"
     ],
     [
-      "local-nonlocal-bridge",
-      "safeindex"
+      "nonlocal-legality",
+      "safe-index"
     ],
     [
-      "safeindex",
-      "semantic-producer-independence"
+      "safe-index",
+      "independent-producers"
     ],
     [
-      "semantic-producer-independence",
-      "modularity-vs-soundness"
+      "independent-producers",
+      "semantic-contract"
     ],
     [
-      "modularity-vs-soundness",
-      "second-semantic-domain"
-    ],
-    [
-      "second-semantic-domain",
+      "semantic-contract",
       "validity"
     ],
     [
       "validity",
-      "obligation"
+      "evidence-record"
     ],
     [
-      "obligation",
-      "cross-representation-correspondence"
+      "evidence-record",
+      "llvm-mlir-baseline"
     ],
     [
-      "cross-representation-correspondence",
-      "prior-art"
+      "llvm-mlir-baseline",
+      "cross-representation-hypothesis"
     ],
     [
-      "prior-art",
+      "cross-representation-hypothesis",
       "strongest-alternative"
     ],
     [
       "strongest-alternative",
-      "falsification"
+      "falsification-experiment"
     ],
     [
-      "falsification",
-      "author-resolve-optimize-conclusion"
+      "falsification-experiment",
+      "final-rq-answers"
+    ],
+    [
+      "final-rq-answers",
+      "conclusion"
     ]
   ]
 }
