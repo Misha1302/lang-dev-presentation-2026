@@ -246,19 +246,15 @@ try:
         if shot.returncode != 0 or not output.exists():
             failures.append(f'production screenshot {target}: failed')
 
-    presenter_ids = [
-        'monolith-baseline', 'independent-authorship', 'what-how',
-        'feasibility-before-preference', 'local-deabstraction', 'safeindex',
-        'semantic-producer-independence', 'validity', 'obligation',
-        'cross-representation-correspondence', 'strongest-alternative',
-        'author-resolve-optimize-conclusion',
-    ]
+    # Presenter-state validation follows the active causal contract instead of
+    # hard-coding legacy milestone identifiers from an older narrative order.
     presenter_representative: list[str] = []
-    for milestone_id in presenter_ids:
-        owner = contract['milestones'][milestone_id]['owner']
-        target = note_target[owner]
-        if target not in presenter_representative:
-            presenter_representative.append(target)
+    for spec in contract['milestones'].values():
+        owner = spec['owner']
+        if owner in note_target:
+            target = note_target[owner]
+            if target not in presenter_representative:
+                presenter_representative.append(target)
     for target in presenter_representative:
         result = run_dom(f'{PRODUCTION}?presenter=1&visual-check=1&qa={quote(sha)}{target}')
         if result is None or result.returncode != 0 or 'data-visual-check="ok"' not in result.stdout:

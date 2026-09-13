@@ -20,26 +20,13 @@ NARRATIVE_DECK = 'deck-narrative-reframe.js'
 NARRATIVE_SPEAKER = 'speaker-script-narrative-reframe.js'
 CONFERENCE_SPEAKER_OVERRIDE = 'speaker-script-conference-overrides.js'
 REQUIRED_MILESTONE_IDS = {
-    'monolith-baseline',
-    'extensibility-motivation',
-    'capability-profile-distinction',
-    'independent-authorship',
-    'what-how',
-    'feasibility-before-preference',
-    'resolved-plan-freeze',
-    'local-deabstraction',
-    'local-nonlocal-bridge',
-    'safeindex',
-    'semantic-producer-independence',
-    'modularity-vs-soundness',
-    'second-semantic-domain',
-    'validity',
-    'obligation',
-    'cross-representation-correspondence',
-    'prior-art',
-    'strongest-alternative',
-    'falsification',
-    'author-resolve-optimize-conclusion',
+    'monolith-baseline', 'concrete-vertical-feature', 'capability', 'two-couplings',
+    'research-questions', 'prior-art-boundaries', 'current-vs-target', 'profile',
+    'global-resolution', 'feasible-plan', 'feasibility-before-preference',
+    'composition-economics', 'local-deabstraction', 'nonlocal-legality', 'safe-index',
+    'independent-producers', 'semantic-contract', 'validity', 'evidence-record',
+    'llvm-mlir-baseline', 'cross-representation-hypothesis', 'strongest-alternative',
+    'falsification-experiment', 'final-rq-answers', 'conclusion',
 }
 
 
@@ -186,11 +173,38 @@ def main() -> None:
     deck_runtime = (ROOT / 'deck.js').read_text(encoding='utf-8')
     assert f"const DECK_QA_CONTRACT = '{expected_qa}';" in deck_runtime, 'deck.js runtime QA contract mismatch'
 
-    # The Phase-04 semantic contract remains bound to the original authored files.
-    # Additive research and conference runtime overlays are validated separately.
-    slides = parse_slides(['deck-main.js', 'deck-appendix.js'])
+    # Validate the semantic contract against the final runtime narrative, not the
+    # historical authored order. Render validation independently proves DOM execution.
+    narrative_raw = (ROOT / NARRATIVE_DECK).read_text(encoding='utf-8')
+    order_match = re.search(r'const FINAL_MAIN_ORDER = Object\.freeze\(\[(.*?)\]\);', narrative_raw, re.S)
+    assert order_match, 'cannot parse FINAL_MAIN_ORDER from final narrative owner'
+    final_main_keys = re.findall(r"'([^']+)'", order_match.group(1))
+    assert len(final_main_keys) == len(set(final_main_keys)), 'duplicate key in FINAL_MAIN_ORDER'
+
+    all_runtime_keys: list[str] = []
+    appendix_literal_keys: list[str] = []
+    for asset in deck_assets:
+        raw = (ROOT / asset).read_text(encoding='utf-8')
+        for key in re.findall(r'data-note-key=["\']([^"\']+)["\']', raw):
+            if key not in all_runtime_keys:
+                all_runtime_keys.append(key)
+        for key in re.findall(r'<section[^>]*data-kind=["\']appendix["\'][^>]*data-note-key=["\']([^"\']+)["\']', raw):
+            if key not in appendix_literal_keys:
+                appendix_literal_keys.append(key)
+    unknown_main = [key for key in final_main_keys if key not in all_runtime_keys]
+    assert not unknown_main, f'FINAL_MAIN_ORDER contains unknown keys: {unknown_main}'
+    appendix_match = re.search(r'FINAL_APPENDIX_KEYS = Object\.freeze\(\[(.*?)\]\);', narrative_raw, re.S)
+    assert appendix_match, 'cannot parse FINAL_APPENDIX_KEYS from final narrative owner'
+    explicit_appendix_keys = re.findall(r"'([^']+)'", appendix_match.group(1))
+    final_appendix_keys = list(dict.fromkeys(appendix_literal_keys + explicit_appendix_keys))
+    slides = ([{'data-note-key': key, 'data-kind': 'main'} for key in final_main_keys] +
+              [{'data-note-key': key, 'data-kind': 'appendix'} for key in final_appendix_keys])
     main_keys, appendix_keys = validate_contract(contract, slides)
-    expected_keys = main_keys + appendix_keys
+
+    authored_slides = parse_slides(['deck-main.js', 'deck-appendix.js'])
+    authored_main_keys = [slide['data-note-key'] for slide in authored_slides if slide.get('data-kind') == 'main']
+    authored_appendix_keys = [slide['data-note-key'] for slide in authored_slides if slide.get('data-kind') == 'appendix']
+    expected_keys = authored_main_keys + authored_appendix_keys
 
     script_raw = (ROOT / contract['speaker_owner']).read_text(encoding='utf-8')
     speech_match = re.search(r'window\.SPEAKER_SCRIPT\s*=\s*Object\.freeze\((\{.*\})\);\s*$', script_raw, re.S)
@@ -233,7 +247,7 @@ def main() -> None:
 
     print(
         'Deck semantic contract PASS: '
-        f"authored {len(main_keys)} main + {len(appendix_keys)} appendix; "
+        f"runtime {len(main_keys)} main + {len(appendix_keys)} appendix; "
         f"{len(REQUIRED_MILESTONE_IDS)} stable milestones; causal DAG, evidence categories, "
         f"semantic ownership and original canonical speaker coverage verified ({contract['contract_id']}); "
         'additive research and conference runtime overlays registered explicitly'

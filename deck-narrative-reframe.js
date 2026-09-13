@@ -67,33 +67,10 @@
 </section>`);
 
   addSlide('nSolutions', `
-<section class="slide stack fn-solutions-compact" data-kind="main" data-note-key="nSolutions">
-  <div class="slidehead">
-    <div class="eyebrow">Existing solutions</div>
-    <h2>The ingredients already exist — but at different boundaries.</h2>
-  </div>
-  <div class="cards3 fn-overview-cards">
-    <div class="panel"><span class="boundary analogy">MLIR</span><h3>Inside one extensible IR world</h3><p>dialects · external models · data-flow · conversion</p></div>
-    <div class="panel"><span class="boundary analogy">MPS / Neverlang</span><h3>Language composition</h3><p>generation plans · modules · slices · language products</p></div>
-    <div class="panel"><span class="boundary analogy">LLVM / Graal</span><h3>Lifecycle and protocol baselines</h3><p>analysis invalidation · common runtime interop</p></div>
-  </div>
-  <p class="caption centertext">UT must explain a gap between these boundaries, not rename mechanisms they already provide.</p>
-</section>`);
+<section class="slide stack fn-solutions-compact" data-kind="main" data-note-key="nSolutions"><div class="slidehead"><div class="eyebrow">External baseline / prior art</div><h2>The ingredients already exist at strong but different boundaries.</h2></div><div class="cards3 fn-overview-cards"><div class="panel"><span class="boundary analogy">MPS / Neverlang</span><h3>Language composition</h3><p>global generation planning / ordering · modular vertical slices · language products</p></div><div class="panel good"><span class="boundary analogy">LLVM / MLIR</span><h3>Analysis knowledge and IR semantics</h3><p>analysis preservation / invalidation · dialects · interfaces · external models · effects · data-flow · conversion</p></div><div class="panel"><span class="boundary analogy">Graal / Truffle</span><h3>Specialization / deabstraction</h3><p>runtime specialization is a strong precedent for making abstractions disappear under evidence.</p></div></div><p class="caption centertext">The research question is where these boundaries stop composing cleanly—not whether these mechanisms exist.</p></section>`);
 
   addSlide('nMatrix', `
-<section class="slide stack fn-matrix-slide" data-kind="main" data-note-key="nMatrix">
-  <div class="slidehead">
-    <div class="eyebrow">Comparison matrix</div>
-    <h2>The hard cell is not “extensible IR”; it is cross-representation evidence.</h2>
-  </div>
-  <div class="fn-matrix" role="table" aria-label="Boundary comparison for UT research target">
-    <div class="fn-matrix-cell fn-head">System</div><div class="fn-matrix-cell fn-head">Composes language pieces</div><div class="fn-matrix-cell fn-head">Composes analysis knowledge</div><div class="fn-matrix-cell fn-head">Across non-shared representations?</div>
-    <div class="fn-matrix-cell fn-system">MPS / Neverlang</div><div class="fn-matrix-cell fn-strong">strong</div><div class="fn-matrix-cell">framework-specific</div><div class="fn-matrix-cell">through their substrate</div>
-    <div class="fn-matrix-cell fn-system">LLVM</div><div class="fn-matrix-cell">no</div><div class="fn-matrix-cell fn-strong">analysis manager</div><div class="fn-matrix-cell">LLVM IR boundary</div>
-    <div class="fn-matrix-cell fn-system">MLIR</div><div class="fn-matrix-cell">dialects</div><div class="fn-matrix-cell fn-strong">interfaces + data-flow</div><div class="fn-matrix-cell">requires MLIR model / adapters</div>
-    <div class="fn-matrix-cell fn-system fn-ut">Ideal UT</div><div class="fn-matrix-cell fn-ut">target</div><div class="fn-matrix-cell fn-ut">hypothesis</div><div class="fn-matrix-cell fn-ut"><b>the experiment to justify</b></div>
-  </div>
-</section>`);
+<section class="slide stack fn-matrix-slide" data-kind="main" data-note-key="nMatrix"><div class="slidehead"><div class="eyebrow">Prior-art boundary map</div><h2>Different systems answer different parts of the three research questions.</h2></div><div class="fn-matrix" role="table" aria-label="Boundary comparison for the UT research target"><div class="fn-matrix-cell fn-head">System</div><div class="fn-matrix-cell fn-head">Language pieces</div><div class="fn-matrix-cell fn-head">Analysis knowledge</div><div class="fn-matrix-cell fn-head">Non-shared representations</div><div class="fn-matrix-cell fn-system">MPS / Neverlang</div><div class="fn-matrix-cell fn-strong">strong</div><div class="fn-matrix-cell">framework-specific</div><div class="fn-matrix-cell">through their substrate</div><div class="fn-matrix-cell fn-system">LLVM</div><div class="fn-matrix-cell">not its goal</div><div class="fn-matrix-cell fn-strong">cache · preservation · invalidation</div><div class="fn-matrix-cell">LLVM IR boundary</div><div class="fn-matrix-cell fn-system">MLIR</div><div class="fn-matrix-cell">dialects</div><div class="fn-matrix-cell fn-strong">interfaces · effects · data-flow · conversion</div><div class="fn-matrix-cell">MLIR model or explicit adapters</div><div class="fn-matrix-cell fn-system fn-ut">RESEARCH TARGET</div><div class="fn-matrix-cell fn-ut">whole-language plan</div><div class="fn-matrix-cell fn-ut">open lifecycle hypothesis</div><div class="fn-matrix-cell fn-ut"><b>must beat explicit adapters</b></div></div></section>`);
 
   addSlide('nExternalBench', `
 <section class="slide stack fn-external-bench" data-kind="main" data-note-key="nExternalBench">
@@ -124,18 +101,7 @@
 </section>`);
 
   replaceSlide('m7', `
-<section class="slide stack fn-status-slide" data-kind="main" data-note-key="m7">
-  <div class="slidehead">
-    <div class="eyebrow">Research status</div>
-    <h2>This is a research program, not a finished theorem.</h2>
-  </div>
-  <div class="cards3 fn-overview-cards">
-    <div class="panel good"><span class="fn-status fn-current">CURRENT UT</span><h3>Implemented witnesses</h3><p>artifact routes · LanguagePlan · planner regression · bounded local deabstraction</p></div>
-    <div class="panel"><span class="fn-status fn-measured">MEASURED</span><h3>Small DSL-evolution study</h3><p>mixed engineering-work result · negative propagation result · shared-pipeline control</p></div>
-    <div class="panel"><span class="fn-status fn-hypothesis">OPEN</span><h3>Main research question</h3><p>cross-component semantic evidence across heterogeneous representations, including cost and correctness</p></div>
-  </div>
-  <p class="caption centertext">Every later claim is marked by one of these boundaries.</p>
-</section>`);
+<section class="slide stack fn-rq-slide" data-kind="main" data-note-key="m7"><div class="slidehead"><div class="eyebrow">Research contract</div><h2>Three questions organize the rest of the talk.</h2></div><div class="fn-rq-grid"><div class="panel"><span class="fn-status fn-measured">MEASURED / MIXED</span><h3>RQ1 · Does reusable composition reduce engineering work enough to justify its infrastructure?</h3><p>The small DSL-evolution study measures this directly; a win is not assumed.</p></div><div class="panel good"><span class="fn-status fn-current">CURRENT / BOUNDED WITNESS</span><h3>RQ2 · Can independently authored language pieces resolve into one structurally valid compiler plan?</h3><p>Current UT has an inspectable LanguagePlan and a bounded planner witness.</p></div><div class="panel"><span class="fn-status fn-hypothesis">OPEN</span><h3>RQ3 · Can independent compiler components exchange semantic knowledge safely across representation boundaries?</h3><p>This is the open research target, not a solved feature.</p></div></div><p class="memory">AUTHOR → RESOLVE → PROVE / OPTIMIZE</p></section>`);
 
   replaceSlide('r2', `
 <section class="slide two fn-balanced-pair" data-kind="main" data-note-key="r2">
@@ -276,33 +242,38 @@
   <p class="caption centertext"><span class="fn-status fn-hypothesis">RESEARCH MODEL</span> The formal model may call this complete evidence record a <code>Judgement</code>; the noun is not needed to understand the mechanism.</p>
 </section>`);
 
+  replaceSlide('m13', `
+<section class="slide two" data-kind="main" data-note-key="m13"><div class="slidehead"><div class="eyebrow">External baseline / prior art · MLIR</div><h2>Why not just MLIR?</h2></div><div class="panel"><span class="boundary analogy">MLIR ALREADY DOES</span><p><b>dialects · interfaces · external models</b><br/>effects · data-flow · legality / conversion · pass pipelines</p></div><div class="panel good"><span class="boundary target">CURRENT UT QUESTION</span><p class="bigq">Whole-language resolution.</p><p>Which capabilities, providers, conflicts, routes, ordering constraints and backends become one inspectable LanguagePlan?</p></div><p class="caption span2 centertext">MLIR can be inside that plan. This is a responsibility boundary, not an incapability claim.</p></section>`);
+
+  replaceSlide('r7', `
+<section class="slide two" data-kind="main" data-note-key="r7"><div class="slidehead"><div class="eyebrow">Evidence boundary</div><h2>RQ1 is measured and mixed. RQ2 has a bounded witness. RQ3 starts here.</h2></div><div class="panel good"><span class="boundary current">MEASURED RESULT</span><h3>Composition economics</h3><p>small study · lower E2 marginal work · higher cumulative work · no E3 maintenance win</p></div><div class="panel"><span class="boundary hypothesis">RESEARCH TARGET / OPEN</span><h3>Semantic evidence lifecycle</h3><p>independent producers · current-valid evidence · cross-representation reuse · conservative invalidation</p></div><p class="memory span2">LOCAL PROOF WAS EASY; THE HARD CASE STARTS WHEN THE PROOF LIVES ELSEWHERE.</p></section>`);
+
+  replaceSlide('m30', `
+<section class="slide two" data-kind="main" data-note-key="m30"><div class="slidehead"><div class="eyebrow">Semantic query</div><h2>Why can’t a semantic query simply return bool?</h2></div><div class="panel code bigcode">SafeIndex(a, i)
+
+unsupported
+unknown
+established(P)
+refuted(P)
+contradictory</div><div class="panel"><p class="bigq">Different failures mean different things.</p><p>The transformation owns proposition <code>P</code>; independent producers contribute evidence through the published query contract.</p></div></section>`);
+
+  replaceSlide('m41', `
+<section class="slide stack" data-kind="main" data-note-key="m41"><div class="slidehead"><div class="eyebrow">Legality requirement</div><h2>The transformation owns the condition that must hold before its rewrite is legal.</h2></div><div class="timeline"><div><b>TRANSFORMATION</b><span>states proposition <code>P</code></span></div><i>→</i><div class="good"><b>LEGALITY REQUIREMENT</b><span>current-valid suitable evidence must establish <code>P</code></span></div><i>→</i><div><b>DISCHARGE / FAIL CLOSED</b><span>producers cannot redefine the precondition</span></div><i>→</i><div><b>LEGAL CANDIDATE</b><span>only then may preference rank it</span></div></div><p class="caption centertext">A formal model may call this requirement an <b>Obligation</b>; the talk keeps the plain-language term primary.</p></section>`);
+
+  replaceSlide('m33', `
+<section class="slide two" data-kind="main" data-note-key="m33"><div class="slidehead"><div class="eyebrow">Strongest existing baseline</div><h2>LLVM and MLIR already manage analysis knowledge seriously.</h2></div><div class="panel"><span class="boundary analogy">LLVM</span><p><code>AnalysisManager</code><br/><code>PreservedAnalyses</code><br/>cache · preservation · invalidation · pass/plugin extension points</p></div><div class="panel good"><span class="boundary analogy">MLIR</span><p>dialects · interfaces / external models<br/>effects/resources · data-flow · conversion legality</p></div><p class="caption span2 centertext">Any shared lifecycle must beat these mechanisms plus explicit adapters; generic queries and invalidation are not the novelty.</p></section>`);
+
+  replaceSlide('m34', `
+<section class="slide stack" data-kind="main" data-note-key="m34"><div class="slidehead"><div class="eyebrow">Research hypothesis</div><h2>The candidate reusable boundary is the lifecycle of semantic evidence.</h2></div><div class="ownerflow"><div class="role"><b>producer</b><span>derives evidence</span></div><i>→</i><div class="role good"><b>published lifecycle</b><span>typed state · semantic identity · validity scope · assumptions · provenance</span></div><i>→</i><div class="role"><b>consumer</b><span>asks its own semantic query</span></div></div><p class="caption centertext"><span class="boundary hypothesis">RESEARCH TARGET / OPEN</span> The claim to test is whether this lifecycle reduces cross-component integration cost without weakening correctness across non-shared representations.</p></section>`);
+
+  replaceSlide('m49', `
+<section class="slide two" data-kind="main" data-note-key="m49"><div class="slidehead"><div class="eyebrow">Strongest alternative</div><h2>Maybe the shared evidence lifecycle should not exist.</h2></div><div class="panel"><span class="boundary analogy">EXPLICIT-ADAPTER BASELINE</span><p>LLVM-style analysis manager<br/>MLIR interfaces + external models<br/>domain-specific analyses<br/>explicit local adapters<br/>local invalidation / re-analysis</p></div><div class="panel good"><p class="bigq">If this solves the same coupling problem with less machinery, use it.</p><p>The shared lifecycle earns its complexity only through measurable integration or verification benefit.</p></div></section>`);
+
   replaceSlide('m50', `
-<section class="slide stack fn-research-plan" data-kind="main" data-note-key="m50">
-  <div class="slidehead">
-    <div class="eyebrow">Planned study · before making stronger claims</div>
-    <h2>Compare the shared evidence layer against the strongest ordinary baseline.</h2>
-  </div>
-  <div class="fn-study-grid">
-    <div class="panel"><h3>Baseline</h3><p>MLIR / LLVM-style interfaces + domain analyses + explicit adapters + local invalidation</p></div>
-    <div class="panel good"><h3>Intervention</h3><p>independent producers publish evidence through the shared lifecycle; existing consumers stay unchanged</p></div>
-    <div class="panel"><h3>Correctness controls</h3><p>stale evidence · contradiction · mutation · representation change must never discharge an obligation</p></div>
-    <div class="panel"><h3>Measure</h3><p>consumer edits · adapters · precision · false discharges · compile time · memory · invalidation / re-analysis · schema burden</p></div>
-  </div>
-  <p class="memory">If explicit adapters win on cost, precision and safety, remove the meta-layer.</p>
-</section>`);
+<section class="slide stack fn-research-plan" data-kind="main" data-note-key="m50"><div class="slidehead"><div class="eyebrow">Planned study · before stronger claims</div><h2>Compare the shared evidence lifecycle against the strongest ordinary baseline.</h2></div><div class="fn-study-grid"><div class="panel"><h3>Baseline</h3><p>MLIR / LLVM-style interfaces + domain analyses + explicit adapters + local invalidation</p></div><div class="panel good"><h3>Intervention</h3><p>Independent producers publish evidence through the shared lifecycle; existing consumers stay unchanged.</p></div><div class="panel"><h3>Correctness controls</h3><p>Stale evidence, contradiction, mutation or representation change must never satisfy a legality requirement.</p></div><div class="panel"><h3>Measure</h3><p>consumer edits · adapters · precision · false discharges · compile time · memory · invalidation / re-analysis · schema burden</p></div></div><p class="memory">If explicit adapters win on cost, precision and safety, remove the meta-layer.</p></section>`);
 
   addSlide('nRQ', `
-<section class="slide stack fn-rq-slide" data-kind="main" data-note-key="nRQ">
-  <div class="slidehead">
-    <div class="eyebrow">What did this work actually answer?</div>
-    <h2>Three research questions — three different answer states.</h2>
-  </div>
-  <div class="fn-rq-grid">
-    <div class="panel"><span class="fn-status fn-measured">PARTIAL</span><h3>RQ1 · Does composition reduce extension work?</h3><p><b>Sometimes in the micro-study.</b> The second extension was smaller, but total implementation stayed larger and the maintenance win did not appear.</p></div>
-    <div class="panel good"><span class="fn-status fn-current">BOUNDED YES</span><h3>RQ2 · Can one resolver choose a structurally valid compiler plan?</h3><p><b>Yes for the tested route/order case.</b> Hard feasibility beats cheaper invalid routes. This is not a semantic-correctness theorem.</p></div>
-    <div class="panel"><span class="fn-status fn-hypothesis">OPEN</span><h3>RQ3 · Can independent modules share semantic evidence safely and profitably?</h3><p><b>Not answered yet.</b> The mechanism and falsification experiment are defined; the comparative study still has to be run.</p></div>
-  </div>
-</section>`);
+<section class="slide stack fn-rq-slide" data-kind="main" data-note-key="nRQ"><div class="slidehead"><div class="eyebrow">Answers</div><h2>Return to the same three research questions.</h2></div><div class="fn-rq-grid"><div class="panel"><span class="fn-status fn-measured">PARTIAL / MIXED</span><h3>RQ1 · Does reusable composition reduce engineering work?</h3><p><b>Mixed in the small measured study.</b> E2 marginal work was lower for UT, cumulative work remained higher, and the E3 maintenance advantage did not appear.</p></div><div class="panel good"><span class="fn-status fn-current">BOUNDED YES</span><h3>RQ2 · Can independent pieces resolve into one structurally valid compiler plan?</h3><p><b>Yes for the tested route/order case.</b> LanguagePlan is implemented and inspectable; this is not a semantic-correctness theorem.</p></div><div class="panel"><span class="fn-status fn-hypothesis">OPEN</span><h3>RQ3 · Can independent components share semantic knowledge safely across representation boundaries?</h3><p><b>Not answered yet.</b> The hypothesis and falsification experiment are defined; the comparative study remains to be run.</p></div></div></section>`);
 
   replaceSlide('m52', `
 <section class="slide center fn-final" data-kind="main" data-note-key="m52">
@@ -318,12 +289,7 @@
 
 
   replaceSlide('pa4', `
-<section class="slide two fn-balanced-pair ut-current-target-slide" data-kind="main" data-note-key="pa4">
-  <div class="slidehead"><div class="eyebrow">Current witness vs target</div><h2>Current Wist AIR is evidence of one provider — not the architecture.</h2></div>
-  <div class="panel fn-equal-card"><span class="boundary current">CURRENT</span><h3>Stack-oriented AIR exists</h3><p>Good implementation witness: bytecode → AIR → verifier / interpreter / CIL path.</p></div>
-  <div class="panel fn-equal-card good"><span class="boundary target">TARGET</span><h3>No mandatory program IR</h3><p>StackIR, SSA, MLIR or a domain graph should be selectable providers inside one plan.</p></div>
-  <p class="caption span2 centertext">If UT core needs Push, Drop, Block or Value semantics, the representation-neutral claim fails.</p>
-</section>`);
+<section class="slide two fn-balanced-pair ut-current-target-slide" data-kind="main" data-note-key="pa4"><div class="slidehead"><div class="eyebrow">Identity boundary</div><h2>Current Wist/UT witness is not the required universal architecture.</h2></div><div class="panel fn-equal-card"><span class="boundary current">CURRENT WIST/UT WITNESS</span><h3>Stack-oriented AIR exists</h3><p>Bytecode → AIR → verifier / interpreter / CIL is a useful implementation witness.</p></div><div class="panel fn-equal-card good"><span class="boundary target">RESEARCH TARGET / OPEN</span><h3>No mandatory program IR</h3><p>StackIR, SSA, MLIR or a domain graph should remain selectable providers inside one LanguagePlan.</p></div><p class="caption span2 centertext">If the framework core requires Push, Drop, Block or Value semantics, the representation-neutral target has failed.</p></section>`);
 
   replaceSlide('pa5', `
 <section class="slide stack ut-meta-kernel-slide" data-kind="main" data-note-key="pa5">
@@ -348,25 +314,12 @@
 </section>`);
 
   replaceSlide('pa2', `
-<section class="slide two fn-balanced-pair mlir-ut-slide" data-kind="main" data-note-key="pa2">
-  <div class="slidehead"><div class="eyebrow">Strongest baseline · MLIR</div><h2>MLIR already gives extensible semantics inside one IR world.</h2></div>
-  <div class="panel fn-equal-card"><span class="boundary analogy">MLIR</span><h3>Do not understate it</h3><p>dialects · interfaces · external models · effects · conversion legality · composable data-flow analyses</p></div>
-  <div class="panel fn-equal-card good"><span class="boundary target">UT QUESTION</span><h3>What remains?</h3><p>Can evidence stay useful when not every participant shares MLIR's Operation / Region / Value world?</p></div>
-  <p class="caption span2 centertext">MLIR can be inside a UT plan. The research target is whether a framework-level lifecycle beats explicit adapters across heterogeneous representations.</p>
-</section>`);
+<section class="slide two fn-balanced-pair mlir-ut-slide" data-kind="main" data-note-key="pa2"><div class="slidehead"><div class="eyebrow">External baseline / prior art · MLIR</div><h2>MLIR already composes extensible semantics inside one program model.</h2></div><div class="panel fn-equal-card"><span class="boundary analogy">MLIR</span><h3>Strong baseline</h3><p>dialects · interfaces · external models · effects · conversion legality · composable data-flow analyses</p></div><div class="panel fn-equal-card good"><span class="boundary target">RESEARCH TARGET / OPEN</span><h3>Remaining question</h3><p>Does a useful evidence lifecycle survive when participants do not all share MLIR's Operation / Region / Value model?</p></div><p class="caption span2 centertext">Novelty is not queries, interfaces or invalidation. The comparison is a shared lifecycle across heterogeneous representations versus explicit adapters.</p></section>`);
 
   replaceSlide('pa8', `
-<section class="slide stack ut-falsification-slide" data-kind="main" data-note-key="pa8">
-  <div class="slidehead"><div class="eyebrow">Make the claim falsifiable</div><h2>The shared layer loses if explicit adapters are simpler and equally safe.</h2></div>
-  <div class="cards3 fn-overview-cards">
-    <div class="panel"><h3>Positive case</h3><p>new producer strengthens unchanged consumer across a representation boundary.</p></div>
-    <div class="panel broken"><h3>Negative controls</h3><p>stale, contradictory, wrong-path or unmapped evidence never removes a check.</p></div>
-    <div class="panel good"><h3>Decision rule</h3><p>measure adapters, edits, precision, compile time, memory and schema burden.</p></div>
-  </div>
-  <p class="memory">If adapters win on cost, precision and safety, delete the meta-layer.</p>
-</section>`);
+<section class="slide stack ut-falsification-slide" data-kind="main" data-note-key="pa8"><div class="slidehead"><div class="eyebrow">Falsifier</div><h2>The shared layer should be deleted if explicit adapters are simpler and equally safe.</h2></div><div class="cards3 fn-overview-cards"><div class="panel"><h3>Positive case</h3><p>A new producer strengthens an unchanged consumer across a representation boundary.</p></div><div class="panel broken"><h3>Negative controls</h3><p>Stale, contradictory, wrong-path or unmapped evidence never satisfies a legality requirement.</p></div><div class="panel good"><h3>Decision rule</h3><p>Compare adapters, consumer edits, precision, false discharges, compile time, memory and schema burden.</p></div></div><p class="memory">If explicit adapters win on cost, precision and safety, delete the meta-layer.</p></section>`);
 
-  const FINAL_APPENDIX_KEYS = Object.freeze(['pa1', 'pa3', 'pa6']);
+  const FINAL_APPENDIX_KEYS = Object.freeze(['pa1', 'pa3', 'pa6', 'nOverview', 'm36', 'pa5', 'pa7', 'nExternalBench']);
   for (const key of FINAL_APPENDIX_KEYS) {
     const slide = byKey(key);
     if (!slide) throw new Error(`Final narrative: missing appendix-demotion slide ${key}`);
@@ -374,12 +327,15 @@
   }
 
   const FINAL_MAIN_ORDER = Object.freeze([
-    'm1', 'm2', 'nProblem', 'nSolutions', 'nMatrix', 'nOverview', 'm7',
+    'm1', 'm2', 'm3', 'm5', 'nProblem',
+    'm7', 'nSolutions', 'nMatrix', 'pa4',
+    'm11', 'm12', 'm13', 'm15', 'm19', 'm20', 'm21',
     'r1', 'r2', 'r3', 'r4', 'r5', 'r6',
-    'm3', 'm5', 'm11', 'm12', 'm13', 'm15', 'm19', 'm20', 'm21', 'm25',
-    'r7', 'm26', 'm28', 'm29', 'm32', 'safe1', 'm30', 'm41', 'safe2', 'm31',
-    'm39', 'm40', 'm33', 'm34', 'm35', 'm36', 'm43', 'm45', 'm48', 'm49',
-    'pa4', 'pa5', 'pa7', 'pa2', 'pa8', 'nExternalBench', 'm50', 'nRQ', 'm52'
+    'm25', 'r7',
+    'm26', 'm28', 'm29', 'm32', 'safe1', 'm30', 'm41', 'safe2', 'm31', 'm39', 'm40',
+    'm33', 'pa2', 'm34', 'm35', 'm43', 'm45',
+    'm48', 'm49', 'pa8', 'm50',
+    'nRQ', 'm52'
   ]);
 
   const actualMain = [...deck.querySelectorAll('.slide[data-kind="main"]')]
@@ -396,5 +352,5 @@
 
   window.FINAL_MAIN_ORDER = FINAL_MAIN_ORDER;
   window.FINAL_APPENDIX_KEYS = FINAL_APPENDIX_KEYS;
-  deck.dataset.finalNarrative = 'two-anchor-v1';
+  deck.dataset.finalNarrative = 'causal-rq-spine-v1';
 })();

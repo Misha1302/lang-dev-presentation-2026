@@ -38,7 +38,10 @@ jobs:
           def clone_fixture() -> Path:
               temp = Path(tempfile.mkdtemp(prefix='semantic-contract-'))
               for name in [
-                  'index.html', 'deck-main.js', 'deck-appendix.js', 'deck.js',
+                  'index.html', 'deck-main.js', 'deck-research-update.js',
+                  'deck-prior-art-matrix.js', 'deck-safe-index-case.js',
+                  'deck-appendix.js', 'deck-non-destructive-patches.js',
+                  'deck-narrative-reframe.js', 'deck.js',
                   'speaker-script-canonical.js', 'CONTENT_NARRATIVE_CONTRACT.json',
                   'claims.md', 'README.md'
               ]:
