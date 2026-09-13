@@ -16,38 +16,49 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACTS = ROOT / 'production-artifacts'
-if ARTIFACTS.exists():
-    shutil.rmtree(ARTIFACTS)
-ARTIFACTS.mkdir()
 PRODUCTION = 'https://misha1302.github.io/lang-dev-presentation-2026/'
+PORT = '8880'
 sha = os.environ.get('GITHUB_SHA', 'unknown')
 contract = json.loads((ROOT / 'CONTENT_NARRATIVE_CONTRACT.json').read_text(encoding='utf-8'))
 index = (ROOT / 'index.html').read_text(encoding='utf-8')
-load_order = re.findall(r'<script\s+src="([^"]+)"', index)
-DECK_FRAGMENT_ASSETS = ['deck-main.js', 'deck-research-update.js', 'deck-appendix.js']
-DECK_RUNTIME_PATCHES = ['deck-non-destructive-patches.js']
-expected_deck_load_order = DECK_FRAGMENT_ASSETS + DECK_RUNTIME_PATCHES
-deck_assets = [name for name in load_order if name.startswith('deck-') and name != 'deck.js']
-if deck_assets != expected_deck_load_order:
-    raise RuntimeError(f'unexpected production deck load order: {deck_assets}')
-RESEARCH_KEYS = [f'r{i}' for i in range(1, 8)]
-RESEARCH_EDGES = [
-    ('r1', 'm3'),
-    ('r2', 'r1'),
-    ('r3', 'r2'),
-    ('r4', 'r3'),
-    ('r5', 'r4'),
-    ('r6', 'm12'),
-    ('r7', 'm25'),
-]
+
+if ARTIFACTS.exists():
+    shutil.rmtree(ARTIFACTS)
+ARTIFACTS.mkdir()
 
 
-def fragment_text(path: Path) -> str:
-    raw = path.read_text(encoding='utf-8')
-    match = re.search(r'String\.raw`(.*?)`\);', raw, re.S)
-    if not match:
-        raise RuntimeError(f'cannot parse {path.name}')
-    return match.group(1)
+def unique(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result
+
+
+script_assets = re.findall(r'<script\s+src="([^"]+)"', index)
+style_assets = re.findall(r'<link\b[^>]*\bhref="([^"]+)"', index)
+# presenter.css is injected dynamically by deck.js, so it is part of production
+# even though it is intentionally absent from index.html.
+assets = unique([
+    'index.html',
+    'CONTENT_NARRATIVE_CONTRACT.json',
+    *style_assets,
+    *script_assets,
+    'presenter.css',
+])
+missing_assets = [name for name in assets if not (ROOT / name).is_file()]
+if missing_assets:
+    raise RuntimeError(f'local production assets missing: {missing_assets}')
+
+browser = next((name for name in [
+    'google-chrome-stable', 'google-chrome', 'chromium-browser', 'chromium', 'chrome'
+] if shutil.which(name)), None)
+if browser is None:
+    print('Production check FAILED: Chrome/Chromium was not found')
+    sys.exit(1)
+common = [browser, '--headless=new', '--disable-gpu', '--disable-dev-shm-usage', '--no-sandbox', '--no-first-run']
 
 
 class SlideMetaParser(HTMLParser):
@@ -69,117 +80,40 @@ def parse_slide_meta(raw: str) -> list[dict[str, str]]:
     return parser.slides
 
 
-def apply_runtime_research_order(slides: list[dict[str, str]]) -> list[dict[str, str]]:
-    main = [slide for slide in slides if slide.get('data-kind') == 'main']
-    appendix = [slide for slide in slides if slide.get('data-kind') == 'appendix']
-    by_key = {slide.get('data-note-key', ''): slide for slide in main}
-    if not all(key in by_key for key in RESEARCH_KEYS):
-        return slides
-    main = [slide for slide in main if slide.get('data-note-key') not in RESEARCH_KEYS]
-    for child, anchor in RESEARCH_EDGES:
-        anchor_index = next(i for i, slide in enumerate(main) if slide.get('data-note-key') == anchor)
-        main.insert(anchor_index + 1, by_key[child])
-    return main + appendix
+def normalized_kind(slide: dict[str, str]) -> str:
+    return 'appendix' if slide.get('data-kind') == 'appendix' else 'main'
 
 
-def validate_semantic_owners(slides: list[dict[str, str]]) -> list[str]:
+def validate_semantic_owners(slides: list[dict[str, str]]) -> tuple[list[str], list[str], list[str]]:
     note_keys = [slide.get('data-note-key', '').strip() for slide in slides]
-    if not all(note_keys) or len(note_keys) != len(set(note_keys)):
-        raise RuntimeError('production DOM slide identity is missing or duplicated')
+    if not note_keys or not all(note_keys) or len(note_keys) != len(set(note_keys)):
+        raise RuntimeError('runtime slide identity is missing or duplicated')
     by_key = {slide['data-note-key']: slide for slide in slides}
-    main_keys = [slide['data-note-key'] for slide in slides if slide.get('data-kind') == 'main']
+    main_keys = [slide['data-note-key'] for slide in slides if normalized_kind(slide) == 'main']
+    appendix_keys = [slide['data-note-key'] for slide in slides if normalized_kind(slide) == 'appendix']
     main_position = {key: idx for idx, key in enumerate(main_keys)}
     milestones = contract['milestones']
     for milestone_id, spec in milestones.items():
         owner = spec['owner']
         if owner not in by_key:
-            raise RuntimeError(f'production semantic owner missing: {milestone_id}:{owner}')
-        if by_key[owner].get('data-kind') != spec['kind']:
-            raise RuntimeError(f'production semantic owner kind mismatch: {milestone_id}')
+            raise RuntimeError(f'semantic owner missing: {milestone_id}:{owner}')
+        if normalized_kind(by_key[owner]) != spec['kind']:
+            raise RuntimeError(f'semantic owner kind mismatch: {milestone_id}')
     for before, after in contract['causal_edges']:
         a = milestones[before]
         b = milestones[after]
         if a['kind'] == b['kind'] == 'main' and main_position[a['owner']] > main_position[b['owner']]:
-            raise RuntimeError(f'production causal order violated: {before}>{after}')
-    return note_keys
+            raise RuntimeError(f'causal order violated: {before}>{after}')
+    return note_keys, main_keys, appendix_keys
 
 
-# Only authored String.raw fragments own slide identity. Runtime patch scripts may
-# mutate presentation copy/markup but are deliberately not reparsed as fragments.
-local_slides = parse_slide_meta('\n'.join(fragment_text(ROOT / name) for name in DECK_FRAGMENT_ASSETS))
-local_slides = apply_runtime_research_order(local_slides)
-local_note_keys = validate_semantic_owners(local_slides)
-main_keys = [slide['data-note-key'] for slide in local_slides if slide.get('data-kind') == 'main']
-appendix_keys = [slide['data-note-key'] for slide in local_slides if slide.get('data-kind') == 'appendix']
-note_target = {key: f'#{i + 1}' for i, key in enumerate(main_keys)}
-note_target.update({key: f'#a{i + 1}' for i, key in enumerate(appendix_keys)})
-
-browser = next((name for name in ['google-chrome-stable', 'google-chrome', 'chromium-browser', 'chromium'] if shutil.which(name)), None)
-if browser is None:
-    print('Production check FAILED: Chrome/Chromium was not found')
-    sys.exit(1)
-
-assets = [
-    'index.html',
-    'CONTENT_NARRATIVE_CONTRACT.json',
-    'deck-main.js',
-    'deck-research-update.js',
-    'deck-appendix.js',
-    'deck-non-destructive-patches.js',
-    contract['speaker_owner'],
-    'speaker-script-research-update.js',
-    'speaker-script-conference-overrides.js',
-    'deck.js',
-    'presenter-cues.js',
-    'presenter.css',
-    'presenter-cues.css',
-    'speaker-script.css',
-    'foundation.css',
-    'styles.css',
-    'visual-balance.css',
-    'conference-polish.css',
-]
-missing_assets = [name for name in assets if not (ROOT / name).is_file()]
-if missing_assets:
-    raise RuntimeError(f'local production assets missing: {missing_assets}')
-local_hashes = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in assets}
-deadline = time.time() + 360
-last = ''
-while time.time() < deadline:
-    stale = []
-    for name, expected in local_hashes.items():
-        try:
-            body = urlopen(f'{PRODUCTION}{name}?qa={quote(sha)}', timeout=15).read()
-            actual = hashlib.sha256(body).hexdigest()
-            if actual != expected:
-                stale.append(f'{name}:{actual[:12]}!=local:{expected[:12]}')
-        except Exception as exc:
-            stale.append(f'{name}:{exc}')
-    if not stale:
-        break
-    last = '; '.join(stale)
-    time.sleep(5)
-else:
-    print(f'Production check FAILED: Pages did not reach exact final assets: {last}')
-    sys.exit(1)
-
-common = [browser, '--headless=new', '--disable-gpu', '--disable-dev-shm-usage', '--no-sandbox', '--no-first-run']
-failures: list[str] = []
+def dataset_value(dom: str, name: str) -> str | None:
+    match = re.search(rf'\bdata-{re.escape(name)}="([^"]*)"', dom)
+    return None if match is None else match.group(1)
 
 
-def _extract_dataset_value(dom: str, name: str) -> str | None:
-    marker = f'{name}="'
-    start = dom.find(marker)
-    if start < 0:
-        return None
-    start += len(marker)
-    end = dom.find('"', start)
-    if end < 0:
-        return None
-    return dom[start:end]
-
-
-def _run_dom(url: str, width: int = 1366, height: int = 768, timeout: int = 35) -> subprocess.CompletedProcess[str] | None:
+def run_dom(url: str, width: int = 1366, height: int = 768, timeout: int = 45) -> subprocess.CompletedProcess[str] | None:
+    result: subprocess.CompletedProcess[str] | None = None
     for attempt in range(2):
         try:
             result = subprocess.run(
@@ -200,100 +134,153 @@ def _run_dom(url: str, width: int = 1366, height: int = 768, timeout: int = 35) 
     return result
 
 
-def _visual_failure(prefix: str, result: subprocess.CompletedProcess[str] | None) -> str:
+def require_runtime_dom(result: subprocess.CompletedProcess[str] | None, label: str) -> tuple[list[str], list[str], list[str]]:
+    if result is None:
+        raise RuntimeError(f'{label}: browser timeout')
+    if result.returncode != 0:
+        raise RuntimeError(f'{label}: browser exit {result.returncode}: {result.stderr[-400:]}')
+    if 'data-nav-check="ok"' not in result.stdout:
+        raise RuntimeError(f'{label}: navigation QA did not pass: {dataset_value(result.stdout, "nav-errors") or "no detail"}')
+    expected_qa = contract['runtime_qa_contract']
+    if f'data-deck-qa-contract="{expected_qa}"' not in result.stdout:
+        raise RuntimeError(f'{label}: runtime QA contract marker mismatch')
+    note_keys, main_keys, appendix_keys = validate_semantic_owners(parse_slide_meta(result.stdout))
+    declared_main = dataset_value(result.stdout, 'runtime-main-count')
+    declared_appendix = dataset_value(result.stdout, 'runtime-appendix-count')
+    missing_speech = dataset_value(result.stdout, 'runtime-speech-missing')
+    if declared_main is not None and int(declared_main) != len(main_keys):
+        raise RuntimeError(f'{label}: runtime main count mismatch {declared_main}!={len(main_keys)}')
+    if declared_appendix is not None and int(declared_appendix) != len(appendix_keys):
+        raise RuntimeError(f'{label}: runtime appendix count mismatch {declared_appendix}!={len(appendix_keys)}')
+    if missing_speech:
+        raise RuntimeError(f'{label}: missing canonical speech for {missing_speech}')
+    return note_keys, main_keys, appendix_keys
+
+
+def visual_failure(prefix: str, result: subprocess.CompletedProcess[str] | None) -> str:
     if result is None:
         return f'{prefix}: browser timeout after retry'
     if result.returncode != 0:
         stderr = result.stderr.strip().splitlines()[-1] if result.stderr.strip() else 'no stderr'
         return f'{prefix}: browser exit {result.returncode}: {stderr}'
-    status = _extract_dataset_value(result.stdout, 'data-visual-check')
-    detail = _extract_dataset_value(result.stdout, 'data-visual-errors')
+    status = dataset_value(result.stdout, 'visual-check')
+    detail = dataset_value(result.stdout, 'visual-errors')
     if status is None:
         return f'{prefix}: visual status missing'
-    if status != 'ok':
-        return f'{prefix}: visual-check failed: {detail or "no data-visual-errors"}'
-    return f'{prefix}: visual-check unexpectedly reported ok'
+    return f'{prefix}: visual-check failed: {detail or "no data-visual-errors"}'
 
 
-nav_url = f'{PRODUCTION}?nav-check=1&qa={quote(sha)}#1'
-nav = _run_dom(nav_url)
-if nav is None:
-    failures.append('production navigation: browser timeout after retry')
-elif nav.returncode != 0 or 'data-nav-check="ok"' not in nav.stdout:
-    detail = _extract_dataset_value(nav.stdout, 'data-nav-errors') if nav.returncode == 0 else nav.stderr.strip()
-    failures.append(f'production navigation: nav-check did not pass: {detail or "no detail"}')
-else:
-    if f'data-deck-qa-contract="{contract["runtime_qa_contract"]}"' not in nav.stdout:
-        failures.append('production DOM runtime QA contract marker mismatch')
-    try:
-        deployed_note_keys = validate_semantic_owners(parse_slide_meta(nav.stdout))
-        if deployed_note_keys != local_note_keys:
-            failures.append('production semantic slide identity/order differs from local candidate')
-    except Exception as exc:
-        failures.append(f'production semantic contract: {exc}')
-
-milestone_owner_keys = []
-for milestone_id in contract['milestones']:
-    key = contract['milestones'][milestone_id]['owner']
-    if key not in milestone_owner_keys:
-        milestone_owner_keys.append(key)
-representative = [note_target[key] for key in milestone_owner_keys if key in note_target]
-for key in [main_keys[0], main_keys[-1], appendix_keys[0], appendix_keys[-1]]:
-    target = note_target[key]
-    if target not in representative:
-        representative.append(target)
-
-for target in representative:
-    url = f'{PRODUCTION}?visual-check=1&qa={quote(sha)}{target}'
-    result = _run_dom(url)
-    if result is None or result.returncode != 0 or 'data-visual-check="ok"' not in result.stdout:
-        failures.append(_visual_failure(f'production {target}', result))
-        continue
-    output = ARTIFACTS / f'1366x768-{target[1:]}.png'
-    shot_url = f'{PRODUCTION}?qa={quote(sha)}{target}'
-    try:
-        shot = subprocess.run(common + ['--window-size=1366,768', '--hide-scrollbars', f'--screenshot={output}', shot_url], capture_output=True, text=True, timeout=35)
-    except subprocess.TimeoutExpired:
-        failures.append(f'production screenshot {target}: timeout')
-        continue
-    if shot.returncode != 0 or not output.exists():
-        failures.append(f'production screenshot {target}: failed')
-
-presenter_ids = [
-    'monolith-baseline',
-    'independent-authorship',
-    'what-how',
-    'feasibility-before-preference',
-    'local-deabstraction',
-    'safeindex',
-    'semantic-producer-independence',
-    'validity',
-    'obligation',
-    'cross-representation-correspondence',
-    'strongest-alternative',
-    'author-resolve-optimize-conclusion',
-]
-presenter_representative = []
-for milestone_id in presenter_ids:
-    owner = contract['milestones'][milestone_id]['owner']
-    target = note_target[owner]
-    if target not in presenter_representative:
-        presenter_representative.append(target)
-for target in presenter_representative:
-    url = f'{PRODUCTION}?presenter=1&visual-check=1&qa={quote(sha)}{target}'
-    result = _run_dom(url)
-    if result is None or result.returncode != 0 or 'data-visual-check="ok"' not in result.stdout:
-        failures.append(_visual_failure(f'production presenter {target}', result))
-        continue
-    if f'data-canonical-owner="{contract["speaker_owner"]}"' not in result.stdout:
-        failures.append(f'production presenter {target}: canonical owner marker missing')
-
-if failures:
-    print('Production check FAILED:')
-    for failure in failures:
-        print(' - ' + failure)
-    sys.exit(1)
-print(
-    'Production check OK: exact asset hashes including additive research and conference runtime overlays match Pages; '
-    f'{len(main_keys)} main + {len(appendix_keys)} appendix; semantic owner/order, navigation, audience and presenter states PASS'
+server = subprocess.Popen(
+    [sys.executable, '-m', 'http.server', PORT, '--bind', '127.0.0.1'],
+    cwd=ROOT,
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL,
 )
+
+try:
+    time.sleep(.8)
+    local_nav = run_dom(f'http://127.0.0.1:{PORT}/?nav-check=1#1')
+    local_note_keys, main_keys, appendix_keys = require_runtime_dom(local_nav, 'local runtime')
+    note_target = {key: f'#{i + 1}' for i, key in enumerate(main_keys)}
+    note_target.update({key: f'#a{i + 1}' for i, key in enumerate(appendix_keys)})
+
+    local_hashes = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in assets}
+    deadline = time.time() + 360
+    last = ''
+    while time.time() < deadline:
+        stale: list[str] = []
+        for name, expected in local_hashes.items():
+            try:
+                body = urlopen(f'{PRODUCTION}{name}?qa={quote(sha)}', timeout=15).read()
+                actual = hashlib.sha256(body).hexdigest()
+                if actual != expected:
+                    stale.append(f'{name}:{actual[:12]}!=local:{expected[:12]}')
+            except Exception as exc:
+                stale.append(f'{name}:{exc}')
+        if not stale:
+            break
+        last = '; '.join(stale)
+        time.sleep(5)
+    else:
+        print(f'Production check FAILED: Pages did not reach exact final assets: {last}')
+        sys.exit(1)
+
+    failures: list[str] = []
+    deployed_nav = run_dom(f'{PRODUCTION}?nav-check=1&qa={quote(sha)}#1')
+    try:
+        deployed_note_keys, deployed_main, deployed_appendix = require_runtime_dom(deployed_nav, 'production runtime')
+        if deployed_note_keys != local_note_keys:
+            failures.append('production final DOM slide identity/order differs from local candidate')
+        if deployed_main != main_keys or deployed_appendix != appendix_keys:
+            failures.append('production main/appendix runtime partition differs from local candidate')
+    except Exception as exc:
+        failures.append(str(exc))
+
+    milestone_owner_keys: list[str] = []
+    for milestone_id in contract['milestones']:
+        key = contract['milestones'][milestone_id]['owner']
+        if key not in milestone_owner_keys:
+            milestone_owner_keys.append(key)
+    representative = [note_target[key] for key in milestone_owner_keys if key in note_target]
+    for key in [main_keys[0], main_keys[-1], appendix_keys[0], appendix_keys[-1]]:
+        target = note_target[key]
+        if target not in representative:
+            representative.append(target)
+
+    for target in representative:
+        result = run_dom(f'{PRODUCTION}?visual-check=1&qa={quote(sha)}{target}')
+        if result is None or result.returncode != 0 or 'data-visual-check="ok"' not in result.stdout:
+            failures.append(visual_failure(f'production {target}', result))
+            continue
+        output = ARTIFACTS / f'1366x768-{target[1:]}.png'
+        try:
+            shot = subprocess.run(
+                common + ['--window-size=1366,768', '--hide-scrollbars', f'--screenshot={output}', f'{PRODUCTION}?qa={quote(sha)}{target}'],
+                capture_output=True,
+                text=True,
+                timeout=35,
+            )
+        except subprocess.TimeoutExpired:
+            failures.append(f'production screenshot {target}: timeout')
+            continue
+        if shot.returncode != 0 or not output.exists():
+            failures.append(f'production screenshot {target}: failed')
+
+    presenter_ids = [
+        'monolith-baseline', 'independent-authorship', 'what-how',
+        'feasibility-before-preference', 'local-deabstraction', 'safeindex',
+        'semantic-producer-independence', 'validity', 'obligation',
+        'cross-representation-correspondence', 'strongest-alternative',
+        'author-resolve-optimize-conclusion',
+    ]
+    presenter_representative: list[str] = []
+    for milestone_id in presenter_ids:
+        owner = contract['milestones'][milestone_id]['owner']
+        target = note_target[owner]
+        if target not in presenter_representative:
+            presenter_representative.append(target)
+    for target in presenter_representative:
+        result = run_dom(f'{PRODUCTION}?presenter=1&visual-check=1&qa={quote(sha)}{target}')
+        if result is None or result.returncode != 0 or 'data-visual-check="ok"' not in result.stdout:
+            failures.append(visual_failure(f'production presenter {target}', result))
+            continue
+        if f'data-canonical-owner="{contract["speaker_owner"]}"' not in result.stdout:
+            failures.append(f'production presenter {target}: canonical owner marker missing')
+
+    if failures:
+        print('Production check FAILED:')
+        for failure in failures:
+            print(' - ' + failure)
+        sys.exit(1)
+
+    print(
+        'Production check OK: exact runtime asset hashes match Pages; '
+        f'{len(main_keys)} main + {len(appendix_keys)} appendix; '
+        'final DOM identity/order, navigation, audience and presenter states PASS'
+    )
+finally:
+    server.terminate()
+    try:
+        server.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        server.kill()
