@@ -302,6 +302,57 @@
   <p class="caption centertext"><span class="fn-status fn-hypothesis">RESEARCH MODEL</span> The formal model may call this complete evidence record a <code>Judgement</code>; the noun is not needed to understand the mechanism.</p>
 </section>`);
 
+
+  replaceSlide('pa4', `
+<section class="slide stack fn-current-target-lite" data-kind="main" data-note-key="pa4">
+  <div class="slidehead"><div class="eyebrow">Current witness vs target architecture</div><h2>Do not sell Wist AIR as the architecture.</h2></div>
+  <div class="fn-contrast-row">
+    <div class="panel"><span class="fn-status fn-current">CURRENT WITNESS</span><h3>Wist AIR exists</h3><p>stack-oriented operations · verifier · interpreter/CIL route</p></div>
+    <div class="panel"><span class="fn-status fn-design">GENERIC SDK</span><h3>Routes generalize it</h3><p>LanguageDefinition → providers → artifact routes → LanguagePlan</p></div>
+    <div class="panel good"><span class="fn-status fn-hypothesis">TARGET</span><h3>No mandatory program IR</h3><p>StackIR, SSA, MLIR or a domain graph can be selected packages.</p></div>
+  </div>
+  <p class="memory">AIR is evidence that we can build a pipeline — not the universal substrate.</p>
+</section>`);
+
+  replaceSlide('pa5', `
+<section class="slide stack fn-meta-core-lite" data-kind="main" data-note-key="pa5">
+  <div class="slidehead"><div class="eyebrow">Representation-neutral core</div><h2>The core coordinates routes and evidence; packages own program semantics.</h2></div>
+  <div class="fn-core-map">
+    <div class="panel"><h3>Packages own</h3><p>AST shape · StackIR ops · SSA blocks · MLIR dialects · domain graphs</p></div>
+    <div class="panel good"><h3>UT core owns</h3><p>identity · artifact contracts · providers · constraints · route selection · evidence validity</p></div>
+    <div class="panel"><h3>Failure signal</h3><p>if the core learns <code>Push</code>, <code>Value</code>, <code>Block</code> or dialect semantics, it is no longer representation-neutral</p></div>
+  </div>
+</section>`);
+
+  replaceSlide('pa7', `
+<section class="slide two fn-balanced-pair" data-kind="main" data-note-key="pa7">
+  <div class="slidehead"><div class="eyebrow">Consequence for architecture</div><h2>Stack, SSA and MLIR become selectable packages, not universal assumptions.</h2></div>
+  <div class="panel fn-equal-card"><h3>Representation package</h3><p class="fn-card-lead">owns semantics</p><p>ops or nodes, verifier, analyses, lowering and execution hooks.</p></div>
+  <div class="panel fn-equal-card good"><h3>Compiler plan</h3><p class="fn-card-lead">chooses connections</p><p>which packages exist for this profile, in which route, with which evidence obligations.</p></div>
+  <p class="caption span2 centertext">This is the architectural boundary that must beat explicit adapters.</p>
+</section>`);
+
+  replaceSlide('pa2', `
+<section class="slide stack fn-mlir-baseline" data-kind="main" data-note-key="pa2">
+  <div class="slidehead"><div class="eyebrow">Strongest baseline · MLIR</div><h2>MLIR already solves a lot inside one extensible IR world.</h2></div>
+  <div class="fn-mlir-row">
+    <div class="panel"><h3>Already there</h3><p>dialects · interfaces · external models · data-flow · effects · Transform dialect · conversion legality</p></div>
+    <div class="panel good"><h3>UT claim must be narrower</h3><p>selecting heterogeneous representations and carrying valid evidence across boundaries that do not all share MLIR's object model.</p></div>
+  </div>
+  <p class="memory">“Producer helps consumer” is not enough; MLIR already has serious mechanisms for that.</p>
+</section>`);
+
+  replaceSlide('pa8', `
+<section class="slide stack fn-falsify-lite" data-kind="main" data-note-key="pa8">
+  <div class="slidehead"><div class="eyebrow">Make the claim falsifiable</div><h2>Delete the UT meta-layer if explicit adapters win.</h2></div>
+  <div class="fn-falsify-grid">
+    <div class="panel"><h3>1 · Non-MLIR route</h3><p>new provider only; no core knowledge of its instructions</p></div>
+    <div class="panel"><h3>2 · Cross-representation SafeIndex</h3><p>facts survive only through valid subject mapping, re-analysis or invalidation</p></div>
+    <div class="panel good"><h3>3 · Strong ordinary baseline</h3><p>compare against MLIR/LLVM mechanisms plus explicit adapters</p></div>
+  </div>
+  <p class="memory">Win condition: lower coupling at comparable precision, safety, compile time and memory.</p>
+</section>`);
+
   replaceSlide('m50', `
 <section class="slide stack fn-research-plan" data-kind="main" data-note-key="m50">
   <div class="slidehead">
@@ -349,12 +400,12 @@
   }
 
   const FINAL_MAIN_ORDER = Object.freeze([
-    'm1', 'm2', 'nProblem', 'nSolutions', 'nMatrix', 'nExternalBench', 'nOverview', 'm7',
+    'm1', 'm2', 'nProblem', 'nSolutions', 'nMatrix', 'nOverview', 'm7',
     'r1', 'r2', 'r3', 'r4', 'r5', 'r6',
     'm3', 'm5', 'm11', 'm12', 'm13', 'm15', 'm19', 'm20', 'm21', 'm25',
     'r7', 'm26', 'm28', 'm29', 'm32', 'safe1', 'm30', 'm41', 'safe2', 'm31',
     'm39', 'm40', 'm33', 'm34', 'm35', 'm36', 'm43', 'm45', 'm48', 'm49',
-    'pa4', 'pa5', 'pa7', 'pa2', 'pa8', 'm50', 'nRQ', 'm52'
+    'nExternalBench', 'pa4', 'pa5', 'pa7', 'pa2', 'pa8', 'm50', 'nRQ', 'm52'
   ]);
 
   const actualMain = [...deck.querySelectorAll('.slide[data-kind="main"]')]

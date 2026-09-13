@@ -174,3 +174,46 @@
   .fn-benchmark-grid, .fn-rq-grid { gap: .55rem; }
   .fn-benchmark-card p, .fn-rq-grid p { font-size: 13px; }
 }
+
+
+.fn-contrast-row,
+.fn-core-map,
+.fn-mlir-row,
+.fn-falsify-grid {
+  display: grid;
+  gap: clamp(.75rem,1.2vw,1.05rem);
+  width: 100%;
+  min-height: 0;
+}
+.fn-contrast-row,
+.fn-core-map,
+.fn-falsify-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.fn-mlir-row { grid-template-columns: 1fr 1fr; }
+.fn-contrast-row > .panel,
+.fn-core-map > .panel,
+.fn-mlir-row > .panel,
+.fn-falsify-grid > .panel {
+  min-height: 245px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: .65rem;
+}
+.fn-contrast-row h3,
+.fn-core-map h3,
+.fn-mlir-row h3,
+.fn-falsify-grid h3 { margin: 0; font-size: clamp(21px,1.5vw,28px); line-height: 1.05; }
+.fn-contrast-row p,
+.fn-core-map p,
+.fn-mlir-row p,
+.fn-falsify-grid p { margin: 0; font-size: clamp(16px,1.1vw,21px); line-height: 1.25; }
+.fn-meta-core-lite code { font-size: .9em; color: var(--accent); }
+@media (max-width: 1350px) {
+  .fn-contrast-row > .panel,
+  .fn-core-map > .panel,
+  .fn-falsify-grid > .panel { min-height: 220px; }
+  .fn-contrast-row p,
+  .fn-core-map p,
+  .fn-mlir-row p,
+  .fn-falsify-grid p { font-size: 13px; }
+}

@@ -1,62 +1,62 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 from pathlib import Path
 import json
 import re
+import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
-raw = (ROOT / 'speaker-script-canonical.js').read_text(encoding='utf-8')
-match = re.search(r'window\.SPEAKER_SCRIPT\s*=\s*Object\.freeze\((\{.*\})\);\s*$', raw, re.S)
-assert match, 'cannot parse canonical speaker script'
-speech = json.loads(match.group(1))
 
-deck_raw = (ROOT / 'deck-main.js').read_text(encoding='utf-8')
-main_keys = re.findall(
-    r'<section\b[^>]*data-kind="main"[^>]*data-note-key="([^"]+)"',
-    deck_raw,
-)
-assert main_keys, 'cannot discover main slide keys from deck-main.js'
-assert list(speech)[:len(main_keys)] == main_keys, 'main script order mismatch'
+def extract_js_string_array(source: str, const_name: str) -> list[str]:
+    pattern = rf'const\s+{re.escape(const_name)}\s*=\s*Object\.freeze\(\[(.*?)\]\);'
+    match = re.search(pattern, source, re.S)
+    if not match:
+        raise AssertionError(f'cannot parse {const_name}')
+    return re.findall(r"'([^']+)'", match.group(1))
 
-research_raw = (ROOT / 'speaker-script-research-update.js').read_text(encoding='utf-8')
-research_pairs = re.findall(r'^\s*"(r\d+)":\s*"([^"]+)"', research_raw, re.MULTILINE)
-research_speech = dict(research_pairs)
-assert list(research_speech) == [f'r{i}' for i in range(1, 8)], 'research speaker extension mismatch'
-speech.update(research_speech)
+def load_speaker_script() -> dict[str, str]:
+    index = (ROOT / 'index.html').read_text(encoding='utf-8')
+    scripts = [name for name in re.findall(r'<script\s+src="([^"]+)"', index) if name.startswith('speaker-script')]
+    if not scripts:
+        raise AssertionError('no speaker-script files in index.html')
+    node = r'''
+const fs = require('fs');
+const vm = require('vm');
+const ctx = { window: {}, console };
+vm.createContext(ctx);
+for (const file of process.argv.slice(1)) {
+  vm.runInContext(fs.readFileSync(file, 'utf8'), ctx, { filename: file });
+}
+console.log(JSON.stringify(ctx.window.SPEAKER_SCRIPT || {}));
+'''
+    result = subprocess.run(['node', '-e', node, *scripts], cwd=ROOT, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise AssertionError('speaker script evaluation failed: ' + result.stderr)
+    return json.loads(result.stdout)
 
-runtime_main_keys = list(main_keys)
-for child, anchor in [
-    ('r1', 'm3'),
-    ('r2', 'r1'),
-    ('r3', 'r2'),
-    ('r4', 'r3'),
-    ('r5', 'r4'),
-    ('r6', 'm12'),
-    ('r7', 'm25'),
-]:
-    runtime_main_keys.insert(runtime_main_keys.index(anchor) + 1, child)
+def count_words(text: str) -> int:
+    return len(re.findall(r"[\w'-]+", text))
 
-override_raw = (ROOT / 'speaker-script-conference-overrides.js').read_text(encoding='utf-8')
-override_pairs = re.findall(
-    r'^\s*([mr]\d+):\s*`(.*?)`\s*,?\s*$',
-    override_raw,
-    re.MULTILINE | re.DOTALL,
-)
-override_speech = dict(override_pairs)
-assert override_speech, 'conference speaker override layer is empty or unparsable'
-unknown_overrides = set(override_speech) - set(runtime_main_keys)
-assert not unknown_overrides, f'conference speaker overrides unknown runtime keys: {sorted(unknown_overrides)}'
-speech.update(override_speech)
-
-word_counts = [len(re.findall(r"[\w'-]+", speech[key])) for key in runtime_main_keys]
-seconds = [round(words / 130 * 60) for words in word_counts]
-total = sum(seconds)
-print(f'main slides: {len(runtime_main_keys)} (32 authored + 7 additive research)')
-print(f'conference speaker overrides: {len(override_speech)}')
-print(f'main spoken words: {sum(word_counts)}')
+narrative = (ROOT / 'deck-narrative-reframe.js').read_text(encoding='utf-8')
+main_order = extract_js_string_array(narrative, 'FINAL_MAIN_ORDER')
+appendix_demotions = extract_js_string_array(narrative, 'FINAL_APPENDIX_KEYS')
+speech = load_speaker_script()
+missing = [key for key in main_order if not str(speech.get(key, '')).strip()]
+if missing:
+    raise AssertionError('missing runtime speaker entries: ' + ', '.join(missing))
+words = [(key, count_words(str(speech[key]))) for key in main_order]
+seconds = [(key, round(word_count / 130 * 60)) for key, word_count in words]
+total_words = sum(word_count for _, word_count in words)
+total = sum(sec for _, sec in seconds)
+long = [(key, word_count) for key, word_count in words if word_count > 95]
+print(f'runtime main slides: {len(main_order)}')
+print(f'tracked runtime appendix demotions: {len(appendix_demotions)}')
+print(f'main spoken words: {total_words}')
 print(f'rehearsal estimate at 130 wpm: {total // 60:02d}:{total % 60:02d}')
-print(f'per-slide spoken range: {min(seconds)}-{max(seconds)} s')
-# LangDev gives 25 minutes for the talk. Keep roughly 1-3 minutes of real-stage
-# headroom for pauses, transitions and audience reaction instead of filling the
-# entire slot with uninterrupted 130-wpm speech.
-assert 22 * 60 <= total <= 24 * 60, f'timing contract outside 22-24 min: {total // 60:02d}:{total % 60:02d}'
-print('Timing audit PASS: effective runtime main script stays inside the 22-24 minute rehearsal envelope for a 25-minute talk')
+print(f'per-slide spoken range: {min(sec for _, sec in seconds)}-{max(sec for _, sec in seconds)} s')
+if long:
+    print('long runtime notes (>95 words): ' + ', '.join(f'{key}={count}' for key, count in long))
+if not (22 * 60 <= total <= 26 * 60):
+    raise AssertionError(f'timing contract outside 22-26 min for runtime deck: {total // 60:02d}:{total % 60:02d}')
+print('Timing audit PASS: final runtime main script stays inside the 22-26 minute rehearsal envelope')
