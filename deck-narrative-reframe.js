@@ -67,71 +67,45 @@
 </section>`);
 
   addSlide('nSolutions', `
-<section class="slide stack" data-kind="main" data-note-key="nSolutions">
+<section class="slide stack fn-solutions-compact" data-kind="main" data-note-key="nSolutions">
   <div class="slidehead">
     <div class="eyebrow">Existing solutions</div>
-    <h2>Most of the ingredients already exist — in different architecture boundaries.</h2>
+    <h2>The ingredients already exist — but at different boundaries.</h2>
   </div>
-  <div class="fn-solution-grid">
-    <div class="panel fn-solution-card"><span class="boundary analogy">MLIR</span><h3>Extensible IR world</h3><p>dialects · interfaces · data-flow · effects · conversion legality</p></div>
-    <div class="panel fn-solution-card"><span class="boundary analogy">MPS / Neverlang</span><h3>Language composition</h3><p>language modules · generators · global ordering / products</p></div>
-    <div class="panel fn-solution-card"><span class="boundary analogy">LLVM New PM</span><h3>Analysis lifecycle</h3><p>cached analyses · preservation · invalidation · pass pipelines</p></div>
-    <div class="panel fn-solution-card"><span class="boundary analogy">Graal / Truffle</span><h3>Interop + specialization</h3><p>common runtime protocol · self-specializing language implementations</p></div>
+  <div class="cards3 fn-overview-cards">
+    <div class="panel"><span class="boundary analogy">MLIR</span><h3>Inside one extensible IR world</h3><p>dialects · external models · data-flow · conversion</p></div>
+    <div class="panel"><span class="boundary analogy">MPS / Neverlang</span><h3>Language composition</h3><p>generation plans · modules · slices · language products</p></div>
+    <div class="panel"><span class="boundary analogy">LLVM / Graal</span><h3>Lifecycle and protocol baselines</h3><p>analysis invalidation · common runtime interop</p></div>
   </div>
-  <p class="caption centertext">UT must justify the gap between these boundaries — not rename mechanisms that already exist.</p>
+  <p class="caption centertext">UT must explain a gap between these boundaries, not rename mechanisms they already provide.</p>
 </section>`);
 
   addSlide('nMatrix', `
 <section class="slide stack fn-matrix-slide" data-kind="main" data-note-key="nMatrix">
   <div class="slidehead">
     <div class="eyebrow">Comparison matrix</div>
-    <h2>Compare systems by the boundary they make first-class.</h2>
+    <h2>The hard cell is not “extensible IR”; it is cross-representation evidence.</h2>
   </div>
-  <div class="fn-matrix" role="table" aria-label="Comparison of related compiler and language systems">
-    <div class="fn-matrix-cell fn-head">System</div>
-    <div class="fn-matrix-cell fn-head">Solves well</div>
-    <div class="fn-matrix-cell fn-head">Boundary / limitation for this problem</div>
-    <div class="fn-matrix-cell fn-head">Role in this talk</div>
-
-    <div class="fn-matrix-cell fn-system">MLIR</div>
-    <div class="fn-matrix-cell">extensible IR, interfaces, transformations</div>
-    <div class="fn-matrix-cell">all participating program IR lives in the MLIR object model</div>
-    <div class="fn-matrix-cell fn-strong">strongest in-IR baseline</div>
-
-    <div class="fn-matrix-cell fn-system">MPS / Neverlang</div>
-    <div class="fn-matrix-cell">language modules, products, generator planning</div>
-    <div class="fn-matrix-cell">framework-specific language / model substrate</div>
-    <div class="fn-matrix-cell fn-strong">strongest language-composition baseline</div>
-
-    <div class="fn-matrix-cell fn-system">LLVM New PM</div>
-    <div class="fn-matrix-cell">analysis lookup, preservation, invalidation</div>
-    <div class="fn-matrix-cell">analysis lifecycle inside one LLVM-IR ecosystem</div>
-    <div class="fn-matrix-cell fn-strong">strongest local evidence baseline</div>
-
-    <div class="fn-matrix-cell fn-system">Graal / Truffle</div>
-    <div class="fn-matrix-cell">common runtime interop + specialization</div>
-    <div class="fn-matrix-cell">runtime values and execution, not compile-time proof evidence</div>
-    <div class="fn-matrix-cell">useful common-protocol analogy</div>
-
-    <div class="fn-matrix-cell fn-system fn-ut">Ideal UT</div>
-    <div class="fn-matrix-cell fn-ut">whole compiler plan + cross-representation evidence</div>
-    <div class="fn-matrix-cell fn-ut">research hypothesis; no result yet</div>
-    <div class="fn-matrix-cell fn-ut"><b>must beat explicit adapters without weakening correctness</b></div>
+  <div class="fn-matrix" role="table" aria-label="Boundary comparison for UT research target">
+    <div class="fn-matrix-cell fn-head">System</div><div class="fn-matrix-cell fn-head">Composes language pieces</div><div class="fn-matrix-cell fn-head">Composes analysis knowledge</div><div class="fn-matrix-cell fn-head">Across non-shared representations?</div>
+    <div class="fn-matrix-cell fn-system">MPS / Neverlang</div><div class="fn-matrix-cell fn-strong">strong</div><div class="fn-matrix-cell">framework-specific</div><div class="fn-matrix-cell">through their substrate</div>
+    <div class="fn-matrix-cell fn-system">LLVM</div><div class="fn-matrix-cell">no</div><div class="fn-matrix-cell fn-strong">analysis manager</div><div class="fn-matrix-cell">LLVM IR boundary</div>
+    <div class="fn-matrix-cell fn-system">MLIR</div><div class="fn-matrix-cell">dialects</div><div class="fn-matrix-cell fn-strong">interfaces + data-flow</div><div class="fn-matrix-cell">requires MLIR model / adapters</div>
+    <div class="fn-matrix-cell fn-system fn-ut">Ideal UT</div><div class="fn-matrix-cell fn-ut">target</div><div class="fn-matrix-cell fn-ut">hypothesis</div><div class="fn-matrix-cell fn-ut"><b>the experiment to justify</b></div>
   </div>
 </section>`);
 
   addSlide('nExternalBench', `
 <section class="slide stack fn-external-bench" data-kind="main" data-note-key="nExternalBench">
   <div class="slidehead">
-    <div class="eyebrow">External benchmark · EuroLLVM 2024</div>
-    <h2>Extensibility has measurable compiler-side overhead — so “zero cost” must be measured, not assumed.</h2>
+    <div class="eyebrow">Cost baseline · EuroLLVM 2024</div>
+    <h2>Abstraction overhead must be measured, not assumed away.</h2>
   </div>
-  <div class="fn-benchmark-grid">
-    <div class="panel fn-benchmark-card"><h3>IR traversal</h3><p class="fn-bench-number">0.35 ns/op</p><p>flat <code>std::vector</code></p><p class="fn-vs">vs</p><p class="fn-bench-number">6.11 ns/op</p><p>MLIR <code>walk</code>, no regions</p></div>
-    <div class="panel fn-benchmark-card"><h3>Interface lookup</h3><p class="fn-bench-number">2.16 ns/op</p><p>operation <code>dyn_cast</code></p><p class="fn-vs">vs</p><p class="fn-bench-number">9.68 ns/op</p><p>successful interface <code>dyn_cast</code></p></div>
-    <div class="panel fn-benchmark-card good"><h3>What this tells us</h3><p class="fn-card-lead">Abstraction cost is real.</p><p>UT must measure compile-time and memory overhead as well as engineering reuse.</p></div>
+  <div class="cards3 fn-overview-cards">
+    <div class="panel"><h3>Compiler-side cost exists</h3><p>Amini &amp; Niu measured MLIR traversal and interface-dispatch costs as microbenchmarks.</p></div>
+    <div class="panel good"><h3>Use the lesson narrowly</h3><p>This is not a UT-vs-MLIR benchmark. It is a warning against unmeasured “zero-cost” claims.</p></div>
+    <div class="panel"><h3>What UT must report</h3><p>compile time · memory · adapters · precision · false discharges · schema burden</p></div>
   </div>
-  <p class="caption centertext"><b>Amini &amp; Niu, “How Slow is MLIR?”, EuroLLVM 2024.</b> Their slides explicitly frame these as microbenchmarks for intuition; this is not a UT-vs-MLIR performance comparison.</p>
   <div class="sourcebar"><a href="https://llvm.org/devmtg/2024-04/slides/Keynote/Amini-Niu-HowSlowIsMLIR.pdf" rel="noreferrer" target="_blank">LLVM Foundation / EuroLLVM slides</a></div>
 </section>`);
 
@@ -341,6 +315,57 @@
   <p class="memory">And if the shared layer does not beat explicit adapters — delete it.</p>
 </section>`);
 
+
+
+  replaceSlide('pa4', `
+<section class="slide two fn-balanced-pair ut-current-target-slide" data-kind="main" data-note-key="pa4">
+  <div class="slidehead"><div class="eyebrow">Current witness vs target</div><h2>Current Wist AIR is evidence of one provider — not the architecture.</h2></div>
+  <div class="panel fn-equal-card"><span class="boundary current">CURRENT</span><h3>Stack-oriented AIR exists</h3><p>Good implementation witness: bytecode → AIR → verifier / interpreter / CIL path.</p></div>
+  <div class="panel fn-equal-card good"><span class="boundary target">TARGET</span><h3>No mandatory program IR</h3><p>StackIR, SSA, MLIR or a domain graph should be selectable providers inside one plan.</p></div>
+  <p class="caption span2 centertext">If UT core needs Push, Drop, Block or Value semantics, the representation-neutral claim fails.</p>
+</section>`);
+
+  replaceSlide('pa5', `
+<section class="slide stack ut-meta-kernel-slide" data-kind="main" data-note-key="pa5">
+  <div class="slidehead"><div class="eyebrow">Representation-neutral target</div><h2>UT should coordinate routes and evidence, not define a universal IR.</h2></div>
+  <div class="cards3 fn-overview-cards">
+    <div class="panel"><h3>Packages define semantics</h3><p>syntax · types · effects · domain concepts · representation-specific invariants</p></div>
+    <div class="panel good"><h3>UT coordinates</h3><p>identity · artifact contracts · providers · constraints · obligations · validity-scoped evidence</p></div>
+    <div class="panel"><h3>Plans select engines</h3><p>AST interpreter · StackIR · SSA · MLIR / LLVM · custom domain graph</p></div>
+  </div>
+  <p class="memory">No required Operation/Value model. No required AST shape. No required VM opcode set.</p>
+</section>`);
+
+  replaceSlide('pa7', `
+<section class="slide stack representation-packs-slide" data-kind="main" data-note-key="pa7">
+  <div class="slidehead"><div class="eyebrow">Consequence</div><h2>Representation packs own their own semantics.</h2></div>
+  <div class="cards3 fn-overview-cards">
+    <div class="panel"><h3>StackIR pack</h3><p>owns stack typing, Push/Drop and stack-specific lowering.</p></div>
+    <div class="panel"><h3>SSA / MLIR pack</h3><p>owns values, blocks, dominance, dialect legality and pass integration.</p></div>
+    <div class="panel good"><h3>UT core</h3><p>owns only the contract boundary: how this pack participates in a compiler plan.</p></div>
+  </div>
+  <p class="caption centertext">The same concept may lower to stack ops, SSA ops, MLIR ops, CIL instructions, runtime calls or GPU operations.</p>
+</section>`);
+
+  replaceSlide('pa2', `
+<section class="slide two fn-balanced-pair mlir-ut-slide" data-kind="main" data-note-key="pa2">
+  <div class="slidehead"><div class="eyebrow">Strongest baseline · MLIR</div><h2>MLIR already gives extensible semantics inside one IR world.</h2></div>
+  <div class="panel fn-equal-card"><span class="boundary analogy">MLIR</span><h3>Do not understate it</h3><p>dialects · interfaces · external models · effects · conversion legality · composable data-flow analyses</p></div>
+  <div class="panel fn-equal-card good"><span class="boundary target">UT QUESTION</span><h3>What remains?</h3><p>Can evidence stay useful when not every participant shares MLIR's Operation / Region / Value world?</p></div>
+  <p class="caption span2 centertext">MLIR can be inside a UT plan. The research target is whether a framework-level lifecycle beats explicit adapters across heterogeneous representations.</p>
+</section>`);
+
+  replaceSlide('pa8', `
+<section class="slide stack ut-falsification-slide" data-kind="main" data-note-key="pa8">
+  <div class="slidehead"><div class="eyebrow">Make the claim falsifiable</div><h2>The shared layer loses if explicit adapters are simpler and equally safe.</h2></div>
+  <div class="cards3 fn-overview-cards">
+    <div class="panel"><h3>Positive case</h3><p>new producer strengthens unchanged consumer across a representation boundary.</p></div>
+    <div class="panel broken"><h3>Negative controls</h3><p>stale, contradictory, wrong-path or unmapped evidence never removes a check.</p></div>
+    <div class="panel good"><h3>Decision rule</h3><p>measure adapters, edits, precision, compile time, memory and schema burden.</p></div>
+  </div>
+  <p class="memory">If adapters win on cost, precision and safety, delete the meta-layer.</p>
+</section>`);
+
   const FINAL_APPENDIX_KEYS = Object.freeze(['pa1', 'pa3', 'pa6']);
   for (const key of FINAL_APPENDIX_KEYS) {
     const slide = byKey(key);
@@ -349,12 +374,12 @@
   }
 
   const FINAL_MAIN_ORDER = Object.freeze([
-    'm1', 'm2', 'nProblem', 'nSolutions', 'nMatrix', 'nExternalBench', 'nOverview', 'm7',
+    'm1', 'm2', 'nProblem', 'nSolutions', 'nMatrix', 'nOverview', 'm7',
     'r1', 'r2', 'r3', 'r4', 'r5', 'r6',
     'm3', 'm5', 'm11', 'm12', 'm13', 'm15', 'm19', 'm20', 'm21', 'm25',
     'r7', 'm26', 'm28', 'm29', 'm32', 'safe1', 'm30', 'm41', 'safe2', 'm31',
     'm39', 'm40', 'm33', 'm34', 'm35', 'm36', 'm43', 'm45', 'm48', 'm49',
-    'pa4', 'pa5', 'pa7', 'pa2', 'pa8', 'm50', 'nRQ', 'm52'
+    'pa4', 'pa5', 'pa7', 'pa2', 'pa8', 'nExternalBench', 'm50', 'nRQ', 'm52'
   ]);
 
   const actualMain = [...deck.querySelectorAll('.slide[data-kind="main"]')]
