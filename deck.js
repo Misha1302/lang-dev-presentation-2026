@@ -57,6 +57,23 @@ function canonicalSpeech(slide) {
   const key = slide?.dataset.noteKey || '';
   return String(window.SPEAKER_SCRIPT?.[key] || '').trim();
 }
+function runtimeWordCount(text) {
+  return (String(text || '').match(/[\w'-]+/g) || []).length;
+}
+function publishRuntimeManifest() {
+  const mainKeys = mainSlides.map(slide => slide.dataset.noteKey || '');
+  const appendixKeys = appendixSlides.map(slide => slide.dataset.noteKey || '');
+  const missingSpeech = mainKeys.filter(key => !String(window.SPEAKER_SCRIPT?.[key] || '').trim());
+  const mainWords = mainKeys.reduce((sum, key) => sum + runtimeWordCount(window.SPEAKER_SCRIPT?.[key] || ''), 0);
+  const root = document.documentElement.dataset;
+  root.runtimeMainCount = String(mainKeys.length);
+  root.runtimeAppendixCount = String(appendixKeys.length);
+  root.runtimeMainKeys = mainKeys.join(',');
+  root.runtimeAppendixKeys = appendixKeys.join(',');
+  root.runtimeSpeechMissing = missingSpeech.join(',');
+  root.runtimeMainSpeechWords = String(mainWords);
+  root.runtimeMainSpeechSeconds130 = String(Math.round(mainWords / 130 * 60));
+}
 function renderPresenterSpeech() {
   const slide = slides[i];
   if (!slide) return;
@@ -281,8 +298,10 @@ function runNavigationDiagnostics() {
   document.documentElement.dataset.navErrors = errors.join('|');
 }
 
+publishRuntimeManifest();
 refresh(readHash());
 setPresenterMode(presenterRequested(), {syncUrl: false});
+publishRuntimeManifest();
 runNavigationDiagnostics();
 presenterStyles.addEventListener('load', () => {
   document.documentElement.dataset.presenterStyles = 'ready';

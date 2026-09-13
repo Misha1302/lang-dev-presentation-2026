@@ -174,3 +174,31 @@
   .fn-benchmark-grid, .fn-rq-grid { gap: .55rem; }
   .fn-benchmark-card p, .fn-rq-grid p { font-size: 13px; }
 }
+
+
+/* 2026-09-13 runtime/research polish: keep late architecture slides readable. */
+.fn-solutions-compact .cards3,
+.ut-meta-kernel-slide .cards3,
+.representation-packs-slide .cards3,
+.ut-falsification-slide .cards3 {
+  align-items: stretch;
+}
+.fn-solutions-compact .panel,
+.ut-meta-kernel-slide .panel,
+.representation-packs-slide .panel,
+.ut-falsification-slide .panel {
+  min-height: 210px;
+}
+.fn-matrix-slide .fn-matrix {
+  grid-template-columns: 1.05fr .9fr 1fr 1.2fr;
+}
+.mlir-ut-slide .fn-equal-card p,
+.ut-current-target-slide .fn-equal-card p {
+  font-size: clamp(1.02rem, 1.45vw, 1.42rem);
+  line-height: 1.35;
+}
+.fn-external-bench .panel p,
+.ut-falsification-slide .panel p {
+  font-size: clamp(.98rem, 1.32vw, 1.3rem);
+  line-height: 1.35;
+}

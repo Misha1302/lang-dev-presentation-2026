@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import html
 import re
 import shutil
 import subprocess
@@ -14,18 +15,7 @@ if ARTIFACTS.exists():
     shutil.rmtree(ARTIFACTS)
 ARTIFACTS.mkdir()
 
-index = (ROOT / 'index.html').read_text(encoding='utf-8')
-load_order = re.findall(r'<script\s+src="([^"]+)"', index)
-deck_assets = [name for name in load_order if name.startswith('deck-') and name != 'deck.js']
-raw = '\n'.join((ROOT / name).read_text(encoding='utf-8') for name in deck_assets)
-main_count = len(re.findall(r'data-kind="main"', raw))
-appendix_count = len(re.findall(r'data-kind="appendix"', raw))
-if main_count < 1 or appendix_count < 1:
-    print(f'Render check FAILED: discovered {main_count} main + {appendix_count} appendix')
-    sys.exit(1)
-
-targets = [f'#{i}' for i in range(1, main_count + 1)] + [f'#a{i}' for i in range(1, appendix_count + 1)]
-browser = next((name for name in ['google-chrome-stable', 'google-chrome', 'chromium-browser', 'chromium'] if shutil.which(name)), None)
+browser = next((name for name in ['google-chrome-stable', 'google-chrome', 'chromium-browser', 'chromium', 'chrome'] if shutil.which(name)), None)
 if browser is None:
     print('Render check FAILED: Chrome/Chromium was not found')
     sys.exit(1)
@@ -41,6 +31,47 @@ audience_geometry = [(1920, 1080), (1536, 864), (1366, 768), (1280, 720)]
 audience_screenshots = [(1920, 1080), (1366, 768), (1280, 720)]
 presenter_geometry = [(1920, 1080), (1366, 768), (1280, 720)]
 presenter_screenshot = (1366, 768)
+
+
+def dump_dom(width: int, height: int, url: str, timeout: int = 30) -> tuple[int, str, str]:
+    result = subprocess.run(
+        common + [f'--window-size={width},{height}', '--dump-dom', url],
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+    )
+    return result.returncode, result.stdout, result.stderr
+
+
+def data_attr(dom: str, name: str) -> str | None:
+    match = re.search(rf'\bdata-{re.escape(name)}="([^"]*)"', dom)
+    if not match:
+        return None
+    return html.unescape(match.group(1))
+
+
+def runtime_manifest() -> tuple[list[str], list[str]]:
+    url = 'http://127.0.0.1:8878/?runtime-manifest=1#1'
+    last = ''
+    for attempt in range(3):
+        code, out, err = dump_dom(1366, 768, url, timeout=35)
+        last = out + err
+        if code == 0:
+            main_keys = data_attr(out, 'runtime-main-keys')
+            appendix_keys = data_attr(out, 'runtime-appendix-keys')
+            missing = data_attr(out, 'runtime-speech-missing')
+            if main_keys is not None and appendix_keys is not None and missing is not None:
+                main = [key for key in main_keys.split(',') if key]
+                appendix = [key for key in appendix_keys.split(',') if key]
+                if missing:
+                    raise AssertionError(f'missing canonical speech for runtime keys: {missing}')
+                if len(main) != len(set(main)) or len(appendix) != len(set(appendix)):
+                    raise AssertionError('runtime slide keys are not unique')
+                if len(main) < 1 or len(appendix) < 1:
+                    raise AssertionError(f'invalid runtime counts: {len(main)} main + {len(appendix)} appendix')
+                return main, appendix
+        time.sleep(.7)
+    raise AssertionError('runtime manifest attributes missing or browser failed: ' + last[:500])
 
 
 def inspect(width: int, height: int, target: str, presenter: bool = False) -> str | None:
@@ -81,6 +112,13 @@ def inspect(width: int, height: int, target: str, presenter: bool = False) -> st
 try:
     time.sleep(.7)
     failures: list[str] = []
+    try:
+        main_keys, appendix_keys = runtime_manifest()
+    except Exception as exc:
+        print(f'Render check FAILED: {exc}')
+        sys.exit(1)
+    targets = [f'#{i}' for i in range(1, len(main_keys) + 1)] + [f'#a{i}' for i in range(1, len(appendix_keys) + 1)]
+
     for width, height in audience_geometry:
         for target in targets:
             detail = inspect(width, height, target)
@@ -141,7 +179,7 @@ try:
             print(' - ' + failure)
         sys.exit(1)
     geometry = len(targets) * (len(audience_geometry) + len(presenter_geometry))
-    print(f'Render check OK: {main_count} main + {appendix_count} appendix; {expected} screenshots; {geometry} audience/presenter geometry states; navigation + canonical presenter sync PASS')
+    print(f'Render check OK: {len(main_keys)} runtime main + {len(appendix_keys)} runtime appendix; {expected} screenshots; {geometry} audience/presenter geometry states; navigation + canonical presenter sync PASS')
 finally:
     server.terminate()
     try:
