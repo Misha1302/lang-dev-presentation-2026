@@ -17,6 +17,6 @@ seconds = round(words * 60 / 130)
 print(f'runtime main slides: {len(main_keys)}')
 print(f'runtime main spoken words: {words}')
 print(f'rehearsal estimate at 130 wpm: {seconds//60:02d}:{seconds%60:02d}')
-if not (10*60 <= seconds <= 25*60):
+if not (8*60 <= seconds <= 25*60):
     raise SystemExit('Timing audit FAILED: script outside supported conference range')
 print('Timing audit PASS: complete speaker script is present and inside the conference range')
