@@ -3,12 +3,12 @@
 ## What is now production
 
 - `index.html` now routes the default presentation entrypoint to `rebuild-2026-09-17/delegates-rebuild-deck.html`.
-- The PR no longer claims that absent files such as `rebuild-deck.js`, `speaker-script-canonical.js`, or `scripts/validate-rebuild.mjs` were checked.
+- The validation record now describes only files that exist in this PR and checks that are actually wired into repository CI.
 - The self-contained deck remains the Delegates × multiple type-semantics rebuild with a complete `speaker-script-conference.md` and explicit TARGET / RESEARCH HYPOTHESIS boundaries.
 
 ## Repository checks on this branch
 
-- `python3 scripts/check_deck.py` — validates the production route, required narrative moments, slide/script coverage, evidence boundaries, and the validation record.
+- `python3 scripts/check_deck.py` — validates the production route, required narrative moments, slide/script coverage, evidence boundaries, and this validation record.
 - `node --check deck.js` and `node --check deck-*.js speaker-script-*.js` — verifies retained JS assets remain syntactically valid.
 - `python3 scripts/timing_audit.py` — verifies the complete speaker script is present and within a concise conference range.
 - `python3 scripts/check_render.py` — parses the deck and captures Chrome smoke screenshots when Chromium is available.
