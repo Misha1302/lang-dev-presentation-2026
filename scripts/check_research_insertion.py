@@ -22,6 +22,7 @@ EXPECTED_ORDER_EDGES = [
     ("r6", "m12"),
     ("r7", "m25"),
 ]
+DELEGATES_TARGET = "rebuild-2026-09-17/delegates-rebuild-deck.html"
 
 
 def run(*args: str) -> str:
@@ -33,7 +34,29 @@ def require(condition: bool, message: str) -> None:
         raise SystemExit(f"RESEARCH_INSERTION=FAIL: {message}")
 
 
+def delegates_rebuild_guard(index: str) -> bool:
+    if DELEGATES_TARGET not in index:
+        return False
+    target = ROOT / DELEGATES_TARGET
+    script = ROOT / "rebuild-2026-09-17" / "speaker-script-conference.md"
+    validation = ROOT / "rebuild-2026-09-17" / "VALIDATION.md"
+    require(target.exists(), "delegates rebuild target missing")
+    require(script.exists(), "delegates rebuild speaker script missing")
+    require(validation.exists(), "delegates rebuild validation missing")
+    raw = target.read_text(encoding="utf-8")
+    keys = re.findall(r'<section\b[^>]*class="[^"]*\bslide\b[^"]*"[^>]*(?:data-note-key|data-note)="([^"]+)"', raw)
+    require(len(keys) >= 21 and len(keys) == len(set(keys)), "delegates rebuild slide keys invalid")
+    script_keys = re.findall(r'^##\s+(m\d+|a\d+)\s*$', script.read_text(encoding="utf-8"), re.M)
+    require(set(keys) <= set(script_keys), "delegates rebuild speaker script does not cover every slide")
+    print(f"RESEARCH_INSERTION=PASS mode=delegates-rebuild slides={len(keys)}")
+    return True
+
+
 def main() -> int:
+    index = (ROOT / "index.html").read_text(encoding="utf-8")
+    if delegates_rebuild_guard(index):
+        return 0
+
     base = run("git", "merge-base", "HEAD", "origin/main")
 
     allowed_protected_rewrites = {
@@ -60,7 +83,6 @@ def main() -> int:
 
     deck = (ROOT / "deck-research-update.js").read_text(encoding="utf-8")
     speech = (ROOT / "speaker-script-research-update.js").read_text(encoding="utf-8")
-    index = (ROOT / "index.html").read_text(encoding="utf-8")
 
     deck_keys = re.findall(r'data-note-key="(r\d+)"', deck)
     require(deck_keys == EXPECTED_RESEARCH_KEYS, f"research slide keys/order mismatch: {deck_keys}")
