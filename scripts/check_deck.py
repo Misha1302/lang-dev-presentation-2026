@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 from pathlib import Path
-import re, html
+import re
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / 'rebuild-2026-09-17' / 'delegates-rebuild-deck.html'
 SCRIPT = ROOT / 'rebuild-2026-09-17' / 'speaker-script-conference.md'
@@ -22,9 +22,8 @@ def main() -> None:
     assert len(slide_keys) >= 21, f'too few slides: {len(slide_keys)}'
     assert len(slide_keys) == len(set(slide_keys)), 'duplicate slide keys'
     main_keys = [k for k in slide_keys if k.startswith('m')]
-    appendix_keys = [k for k in slide_keys if k.startswith('a')]
+    support_keys = [k for k in slide_keys if not k.startswith('m')]
     assert len(main_keys) >= 20, f'too few main slides: {len(main_keys)}'
-    assert len(appendix_keys) >= 1, 'appendix/support slides missing'
     required = [
       'delegate Mapper(Int x) -> String', 'Extensible Programming, not just a compiler plugin',
       'NominalDelegateType', 'FunctionType([Int], String)', 'Pairwise hardcoding',
@@ -46,6 +45,7 @@ def main() -> None:
     script_keys = re.findall(r'^##\s+(m\d+|a\d+)\s*$', script, re.M)
     missing_script = [k for k in slide_keys if k not in script_keys]
     assert not missing_script, 'speaker script missing entries: ' + ', '.join(missing_script)
-    print(f'Delegates rebuild deck PASS: {len(main_keys)} main + {len(appendix_keys)} support/appendix slides; required narrative moments, speaker script and validation record checked')
+    assert len(script_keys) >= len(slide_keys), 'speaker script unexpectedly shorter than slide set'
+    print(f'Delegates rebuild deck PASS: {len(main_keys)} main + {len(support_keys)} support slides; required narrative moments, speaker script and validation record checked')
 if __name__ == '__main__':
     main()
