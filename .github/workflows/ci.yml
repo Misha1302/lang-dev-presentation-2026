@@ -23,6 +23,53 @@ jobs:
       - name: Validate rebuilt narrative, script coverage and evidence boundaries
         run: python3 scripts/check_deck.py
 
+      - name: Probe rebuild contract invariants
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+          import subprocess
+          import tempfile
+
+          root = Path.cwd()
+
+          def fixture():
+              temp = Path(tempfile.mkdtemp(prefix='delegates-rebuild-contract-'))
+              shutil.copy2(root / 'index.html', temp / 'index.html')
+              shutil.copytree(root / 'rebuild-2026-09-17', temp / 'rebuild-2026-09-17')
+              (temp / 'scripts').mkdir()
+              shutil.copy2(root / 'scripts/check_deck.py', temp / 'scripts/check_deck.py')
+              return temp
+
+          def run(path):
+              return subprocess.run(['python3', 'scripts/check_deck.py'], cwd=path, capture_output=True, text=True)
+
+          baseline = fixture()
+          result = run(baseline)
+          assert result.returncode == 0, result.stderr + result.stdout
+
+          narrative = fixture()
+          deck = narrative / 'rebuild-2026-09-17' / 'delegates-rebuild-deck.html'
+          text = deck.read_text(encoding='utf-8')
+          marker = 'Structural composition is not semantic correctness'
+          assert marker in text
+          deck.write_text(text.replace(marker, 'Structural assembly is enough', 1), encoding='utf-8')
+          result = run(narrative)
+          assert result.returncode != 0, 'missing semantic-correctness boundary was not rejected'
+
+          speech = fixture()
+          script = speech / 'rebuild-2026-09-17' / 'speaker-script-conference.md'
+          text = script.read_text(encoding='utf-8')
+          start = text.index('## m21')
+          end = text.index('## a1', start)
+          script.write_text(text[:start] + text[end:], encoding='utf-8')
+          result = run(speech)
+          assert result.returncode != 0, 'missing speaker entry was not rejected'
+
+          print('Rebuild contract probes PASS: baseline, narrative-boundary rejection, speaker-coverage rejection')
+          PY
+
       - name: Check retained JavaScript syntax
         run: |
           set -euo pipefail
