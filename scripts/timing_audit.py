@@ -2,6 +2,7 @@
 from __future__ import annotations
 from pathlib import Path
 import re
+
 ROOT = Path(__file__).resolve().parents[1]
 DECK = ROOT / 'rebuild-2026-09-17' / 'delegates-rebuild-deck.html'
 SCRIPT = ROOT / 'rebuild-2026-09-17' / 'speaker-script-conference.md'
@@ -17,6 +18,6 @@ seconds = round(words * 60 / 130)
 print(f'runtime main slides: {len(main_keys)}')
 print(f'runtime main spoken words: {words}')
 print(f'rehearsal estimate at 130 wpm: {seconds//60:02d}:{seconds%60:02d}')
-if not (8*60 <= seconds <= 25*60):
-    raise SystemExit('Timing audit FAILED: script outside supported conference range')
-print('Timing audit PASS: complete speaker script is present and inside the conference range')
+if not (22*60 <= seconds <= 25*60):
+    raise SystemExit('Timing audit FAILED: script outside 22-25 minute conference range')
+print('Timing audit PASS: complete speaker script is inside the 22-25 minute conference range')
