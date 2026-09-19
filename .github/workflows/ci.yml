@@ -16,21 +16,95 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Validate delegates rebuild narrative and validation record
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Validate rebuilt narrative, script coverage and evidence boundaries
         run: python3 scripts/check_deck.py
-      - name: Check JavaScript syntax for retained runtime assets
+
+      - name: Check retained JavaScript syntax
         run: |
           set -euo pipefail
           node --check deck.js
-          for file in deck-*.js speaker-script-*.js; do node --check "$file"; done
-      - name: Audit spoken timing
+          for file in deck-*.js speaker-script-*.js; do
+            node --check "$file"
+          done
+
+      - name: Audit stage-ready spoken timing
         run: python3 scripts/timing_audit.py
-      - name: Render smoke check
+
+      - name: Checkout current UniversalToolchain witness
+        uses: actions/checkout@v4
+        with:
+          repository: Misha1302/UniversalToolchain
+          ref: master
+          path: _deps/UniversalToolchain
+
+      - name: Record resolved UniversalToolchain witness revision
+        working-directory: _deps/UniversalToolchain
+        run: |
+          set -euo pipefail
+          UT_SHA="$(git rev-parse HEAD)"
+          echo "UniversalToolchain master witness: $UT_SHA"
+          printf '%s\n' "$UT_SHA" > "$GITHUB_WORKSPACE/ut-witness-sha.txt"
+
+      - name: Verify UT benchmark claim boundary without treating smoke as performance evidence
+        run: |
+          set -euo pipefail
+          test -f _deps/UniversalToolchain/UniversalToolchain/Benchmarks/UniversalToolchain.Benchmarks/FormulaHotPathBenchmarks.cs
+          grep -Fq 'Steady-state invocation of already prepared formula artifacts' _deps/UniversalToolchain/UniversalToolchain/Benchmarks/UniversalToolchain.Benchmarks/README.md
+          grep -Fq 'Treat the `Dry` job as discovery/runtime smoke only, never as performance evidence.' _deps/UniversalToolchain/docs/reference/benchmark-methodology.md
+
+      - name: Run current pricing and cross-backend parity witness
+        run: |
+          ./demo/run-demo.sh "$GITHUB_WORKSPACE/_deps/UniversalToolchain" | tee demo-source-output.txt
+          grep -Fq '[language] pricing-restricted dialect' demo-source-output.txt
+          grep -Fq '[pricing:interpreter] result=95' demo-source-output.txt
+          grep -Fq '[pricing:cil] result=95' demo-source-output.txt
+          grep -Fq '[parity] shadowing regression PASS' demo-source-output.txt
+
+      - name: Re-run conference demo without build or restore
+        run: |
+          DEMO_NO_BUILD=1 ./demo/run-demo.sh "$GITHUB_WORKSPACE/_deps/UniversalToolchain" | tee demo-stage-output.txt
+          grep -Fq '[pricing:interpreter] result=95' demo-stage-output.txt
+          grep -Fq '[pricing:cil] result=95' demo-stage-output.txt
+          grep -Fq '[parity] shadowing regression PASS' demo-stage-output.txt
+
+      - name: Verify local 3-to-1 deabstraction witness on current master
+        working-directory: _deps/UniversalToolchain
+        run: |
+          dotnet test UniversalToolchain/UniversalToolchain.Modules.Tests/UniversalToolchain.Modules.Tests.csproj \
+            -c Release \
+            --filter 'FullyQualifiedName~TypedIntrinsicEmitterOptimizerTests' \
+            --verbosity minimal
+
+      - name: Verify route-order feasibility witness on current master
+        working-directory: _deps/UniversalToolchain
+        run: |
+          dotnet test UniversalToolchain/UniversalToolchain.LanguageSdk.Tests/UniversalToolchain.LanguageSdk.Tests.csproj \
+            -c Release \
+            --filter 'FullyQualifiedName~PlannerPolicyControlTests.RouteSearch_ShouldChooseMoreExpensiveRoute_WhenCheaperRouteViolatesDescriptorOrder' \
+            --verbosity minimal
+
+      - name: Render-check every rebuilt slide
         run: python3 scripts/check_render.py
+
+      - name: Re-open deployed GitHub Pages and compare exact production assets
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: python3 scripts/check_production.py
+
       - name: Upload validation evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: delegates-rebuild-validation-evidence
-          path: render-artifacts/*.png
+          name: presentation-validation-evidence
+          path: |
+            render-artifacts/*.png
+            production-artifacts/*.png
+            demo-source-output.txt
+            demo-stage-output.txt
+            ut-witness-sha.txt
           if-no-files-found: ignore
