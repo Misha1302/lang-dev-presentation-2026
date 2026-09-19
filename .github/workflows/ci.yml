@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  deck-contract:
+  delegates-rebuild-contract:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,79 +20,60 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Validate semantic narrative and canonical speaker ownership
+      - name: Validate rebuilt narrative, script coverage and evidence boundaries
         run: python3 scripts/check_deck.py
 
-      - name: Probe semantic contract invariants
+      - name: Probe rebuild contract invariants
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import json
           import shutil
           import subprocess
           import tempfile
 
           root = Path.cwd()
 
-          def clone_fixture() -> Path:
-              temp = Path(tempfile.mkdtemp(prefix='semantic-contract-'))
-              for name in [
-                  'index.html', 'deck-main.js', 'deck-research-update.js',
-                  'deck-prior-art-matrix.js', 'deck-safe-index-case.js',
-                  'deck-appendix.js', 'deck-non-destructive-patches.js',
-                  'deck-narrative-reframe.js', 'deck.js',
-                  'speaker-script-canonical.js', 'CONTENT_NARRATIVE_CONTRACT.json',
-                  'claims.md', 'README.md'
-              ]:
-                  shutil.copy2(root / name, temp / name)
+          def fixture():
+              temp = Path(tempfile.mkdtemp(prefix='delegates-rebuild-contract-'))
+              shutil.copy2(root / 'index.html', temp / 'index.html')
+              shutil.copytree(root / 'rebuild-2026-09-17', temp / 'rebuild-2026-09-17')
               (temp / 'scripts').mkdir()
               shutil.copy2(root / 'scripts/check_deck.py', temp / 'scripts/check_deck.py')
               return temp
 
-          def run_check(path: Path) -> subprocess.CompletedProcess[str]:
-              return subprocess.run(
-                  ['python3', 'scripts/check_deck.py'],
-                  cwd=path,
-                  capture_output=True,
-                  text=True,
-              )
+          def run(path):
+              return subprocess.run(['python3', 'scripts/check_deck.py'], cwd=path, capture_output=True, text=True)
 
-          wording = clone_fixture()
-          deck = wording / 'deck-main.js'
+          baseline = fixture()
+          result = run(baseline)
+          assert result.returncode == 0, result.stderr + result.stdout
+
+          narrative = fixture()
+          deck = narrative / 'rebuild-2026-09-17' / 'delegates-rebuild-deck.html'
           text = deck.read_text(encoding='utf-8')
-          old = 'A monolithic compiler is often the right answer'
-          assert old in text
-          deck.write_text(text.replace(old, 'A monolith remains the baseline for one-owner languages', 1), encoding='utf-8')
-          result = run_check(wording)
-          assert result.returncode == 0, 'visible wording rename unexpectedly changed narrative truth: ' + result.stderr + result.stdout
+          marker = 'Structural composition is not semantic correctness'
+          assert marker in text
+          deck.write_text(text.replace(marker, 'Structural assembly is enough', 1), encoding='utf-8')
+          result = run(narrative)
+          assert result.returncode != 0, 'missing semantic-correctness boundary was not rejected'
 
-          causal = clone_fixture()
-          contract_path = causal / 'CONTENT_NARRATIVE_CONTRACT.json'
-          contract = json.loads(contract_path.read_text(encoding='utf-8'))
-          contract['milestones']['monolith-baseline']['owner'] = 'm52'
-          contract_path.write_text(json.dumps(contract, indent=2) + '\n', encoding='utf-8')
-          result = run_check(causal)
-          assert result.returncode != 0, 'causal-order violation was not rejected'
-
-          speech = clone_fixture()
-          script = speech / 'speaker-script-canonical.js'
+          speech = fixture()
+          script = speech / 'rebuild-2026-09-17' / 'speaker-script-conference.md'
           text = script.read_text(encoding='utf-8')
-          marker = '  "m52": '
-          start = text.index(marker)
-          end = text.index('\n  "a1":', start)
-          script.write_text(text[:start] + text[end + 1:], encoding='utf-8')
-          result = run_check(speech)
-          assert result.returncode != 0, 'missing canonical speaker entry was not rejected'
+          start = text.index('## m21')
+          end = text.index('## a1', start)
+          script.write_text(text[:start] + text[end:], encoding='utf-8')
+          result = run(speech)
+          assert result.returncode != 0, 'missing speaker entry was not rejected'
 
-          print('Semantic contract probes PASS: wording independence, causal-order rejection, speaker-coverage rejection')
+          print('Rebuild contract probes PASS: baseline, narrative-boundary rejection, speaker-coverage rejection')
           PY
 
-      - name: Check JavaScript syntax and runtime QA contract
+      - name: Check retained JavaScript syntax
         run: |
           set -euo pipefail
           node --check deck.js
-          grep -Fq "const DECK_QA_CONTRACT = 'architecture-story-v3';" deck.js
           for file in deck-*.js speaker-script-*.js; do
             node --check "$file"
           done
@@ -145,7 +126,7 @@ jobs:
             --filter 'FullyQualifiedName~TypedIntrinsicEmitterOptimizerTests' \
             --verbosity minimal
 
-      - name: Verify route-order feasibility appendix witness on current master
+      - name: Verify route-order feasibility witness on current master
         working-directory: _deps/UniversalToolchain
         run: |
           dotnet test UniversalToolchain/UniversalToolchain.LanguageSdk.Tests/UniversalToolchain.LanguageSdk.Tests.csproj \
@@ -153,7 +134,7 @@ jobs:
             --filter 'FullyQualifiedName~PlannerPolicyControlTests.RouteSearch_ShouldChooseMoreExpensiveRoute_WhenCheaperRouteViolatesDescriptorOrder' \
             --verbosity minimal
 
-      - name: Render-check every audience and presenter slide
+      - name: Render-check every rebuilt slide
         run: python3 scripts/check_render.py
 
       - name: Re-open deployed GitHub Pages and compare exact production assets
