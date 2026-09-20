@@ -9,44 +9,30 @@ permissions:
   contents: read
 
 jobs:
-  static-site:
+  static-slide-deck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Check JavaScript syntax
-        run: node --check script.js
-
-      - name: Check canonical site contract
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate fixed slide deck contract
         run: |
           python3 - <<'PY'
           from pathlib import Path
-
-          root = Path(".")
-          index = (root / "index.html").read_text(encoding="utf-8")
-          css = (root / "styles.css").read_text(encoding="utf-8")
-          js = (root / "script.js").read_text(encoding="utf-8")
-          standalone = (root / "langdev-talk-standalone.html").read_text(encoding="utf-8")
-
-          assert '<link rel="stylesheet" href="styles.css" />' in index
-          assert '<script src="script.js"></script>' in index
-          assert css.strip() in standalone
-          assert js.strip() in standalone
-
-          required_ids = [
-              "opening", "problem", "semantics", "baselines", "capabilities",
-              "ownership", "times", "proof", "evidence", "lifecycle",
-              "erase", "model", "research", "final",
-          ]
-          for scene_id in required_ids:
-              assert f'id="{scene_id}"' in index, scene_id
-
-          assert "EXTEND" in index
-          assert "RESOLVE" in index
-          assert "PROVE" in index
-          assert "ERASE" in index
-          assert "InvokeDelegate" in index
-          assert "Foo(42)" in index
-
-          print("Presentation static contract PASS")
+          import re
+          html = Path('index.html').read_text(encoding='utf-8')
+          slides = re.findall(r'<section class="slide[^"]*" id="s(\d+)"', html)
+          assert len(slides) == 24, len(slides)
+          assert slides == [str(i) for i in range(1, 25)], slides
+          for required in [
+              'Compose the Language', 'Prove the Program', 'Erase the Abstraction',
+              'InvokeDelegate(f, 42)', 'Foo(42)', 'EXTEND', 'RESOLVE', 'PROVE', 'ERASE',
+              'UniversalToolchain is evidence, not the thesis',
+              'This is not a universal ontology', 'Unknown is not false'
+          ]:
+              assert required in html, required
+          script = re.search(r'<script>([\s\S]*)</script>', html).group(1)
+          Path('/tmp/deck-script.js').write_text(script, encoding='utf-8')
           PY
+          node --check /tmp/deck-script.js
