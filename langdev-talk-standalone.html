@@ -1,3 +1,11 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Build the Language, Then Make the Abstractions Disappear — a LangDev talk about composable language features, semantic evidence, and safe specialization." />
+  <title>Build the Language, Then Make the Abstractions Disappear</title>
+  <style>
 :root {
   --ink: #111214;
   --ink-2: #1b1d20;
@@ -702,3 +710,810 @@ html.js.slide-paging body { overscroll-behavior-y: none; }
   html.js.slide-paging { scroll-behavior: auto; }
 }
 
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><div class="progress__bar" id="progressBar"></div></div>
+
+  <header class="topbar" aria-label="Talk navigation">
+    <a class="brand" href="#opening" aria-label="Back to opening">
+      <span class="brand__mark" aria-hidden="true">λ</span>
+      <span>LangDev · Extensible Programming</span>
+    </a>
+    <button class="chapter-toggle" id="chapterToggle" type="button" aria-expanded="false" aria-controls="chapterNav">Chapters</button>
+    <nav class="chapter-nav" id="chapterNav" aria-label="Major chapters">
+      <a href="#problem">Problem</a>
+      <a href="#capabilities">Resolve</a>
+      <a href="#proof">Prove</a>
+      <a href="#erase">Erase</a>
+      <a href="#research">Research</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero scene scene--ink" id="opening" data-chapter="Opening">
+      <div class="hero__grid shell">
+        <div class="eyebrow reveal">Extensible Programming · LangDev</div>
+        <h1 class="hero__title reveal">Build the Language,<br><span>Then Make the Abstractions Disappear.</span></h1>
+        <p class="hero__lede reveal">What if <strong>Delegates</strong> were an independently authored language feature — not a built-in assumption of one compiler?</p>
+
+        <figure class="code-card code-card--hero reveal" aria-label="Running delegate example">
+          <figcaption>one feature, before we know the final language</figcaption>
+          <pre><code><span class="kw">delegate</span> <span class="type">Mapper</span>(<span class="type">Int</span>) -&gt; <span class="type">String</span>
+
+<span class="type">Mapper</span> f = x =&gt; <span class="fn">Foo</span>(x);
+f(<span class="num">42</span>);</code></pre>
+        </figure>
+
+        <div class="hero__question reveal">
+          <span class="hero__rule" aria-hidden="true"></span>
+          <p>The difficult part is not parsing <code>delegate</code>. The difficult part is making the same feature remain meaningful across semantic systems it did not know when it was authored.</p>
+        </div>
+        <a class="scroll-cue" href="#problem">scroll · swipe · ↓ <span aria-hidden="true">advance</span></a>
+      </div>
+    </section>
+
+    <section class="scene scene--paper" id="problem" data-chapter="The problem">
+      <div class="shell scene-grid">
+        <div class="scene-copy reveal">
+          <div class="kicker">01 · A language feature crosses boundaries</div>
+          <h2>A compiler plugin usually extends a compiler whose language is already known.</h2>
+          <p class="lead">A reusable language feature has a stronger contract: it must carry programmer-visible behavior through parsing, semantics, lowering, tooling, optimization, and backend behavior — while depending on as little concrete language policy as possible.</p>
+          <p class="thesis-line">A reusable language feature crosses semantic ownership boundaries.</p>
+        </div>
+
+        <div class="feature-orbit reveal" role="img" aria-label="Delegates affects multiple parts of the compiler pipeline">
+          <div class="orbit-core">Delegates</div>
+          <div class="orbit-node n1"><span>01</span> parser</div>
+          <div class="orbit-node n2"><span>02</span> typing</div>
+          <div class="orbit-node n3"><span>03</span> lowering</div>
+          <div class="orbit-node n4"><span>04</span> tooling</div>
+          <div class="orbit-node n5"><span>05</span> optimizer</div>
+          <div class="orbit-node n6"><span>06</span> backend</div>
+          <svg class="orbit-lines" viewBox="0 0 800 520" aria-hidden="true">
+            <path d="M400 260 L150 90 M400 260 L400 55 M400 260 L655 105 M400 260 L130 405 M400 260 L400 470 M400 260 L665 400" />
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene scene--mist" id="semantics" data-chapter="Semantic variation">
+      <div class="shell">
+        <div class="center-copy reveal">
+          <div class="kicker">02 · One construct, different semantics</div>
+          <h2><code>Mapper</code> is not one universal thing.</h2>
+          <p class="lead">The feature stays recognizable. The semantic interpretation changes.</p>
+        </div>
+
+        <div class="semantics-stage reveal">
+          <div class="semantic-source">
+            <div class="semantic-label">feature</div>
+            <strong>Mapper</strong>
+            <small>delegate construct</small>
+          </div>
+          <div class="semantic-branches" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="semantic-cases">
+            <article class="semantic-case">
+              <div class="semantic-label">nominal</div>
+              <strong>Mapper</strong>
+              <p>has its own nominal identity</p>
+            </article>
+            <article class="semantic-case">
+              <div class="semantic-label">structural</div>
+              <strong>(Int) → String</strong>
+              <p>is interpreted by callable shape</p>
+            </article>
+            <article class="semantic-case">
+              <div class="semantic-label">gradual</div>
+              <strong>callable shape + ?</strong>
+              <p>may require a runtime contract</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="constraint-strip reveal" aria-label="Additional semantic disciplines">
+          <span>Effects constrain calls</span>
+          <span>Ownership constrains captures</span>
+          <span>Lifetimes constrain escape</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene scene--warm" id="baselines" data-chapter="Strong baselines">
+      <div class="shell">
+        <div class="scene-copy reveal">
+          <div class="kicker">03 · Start with the obvious engineering answers</div>
+          <h2>Two simpler designs are genuinely reasonable.</h2>
+          <p class="lead">The proposal only matters if it solves a problem these baselines stop solving cleanly.</p>
+        </div>
+
+        <div class="baseline-pair">
+          <article class="baseline-panel reveal">
+            <div class="panel-index">A</div>
+            <h3>Pairwise adapters</h3>
+            <p>For a small system, explicit glue is often the right answer.</p>
+            <div class="adapter-matrix" aria-label="Growing integration matrix">
+              <div class="matrix-feature">Delegates</div>
+              <div class="matrix-link"></div><div class="matrix-target">Nominal</div>
+              <div class="matrix-link"></div><div class="matrix-target">Structural</div>
+              <div class="matrix-link"></div><div class="matrix-target">Gradual</div>
+              <div class="matrix-link dim"></div><div class="matrix-target dim">Effects</div>
+              <div class="matrix-link dim"></div><div class="matrix-target dim">Ownership</div>
+            </div>
+            <div class="panel-question">The real pressure is ownership: who maintains the full integration matrix as contracts evolve?</div>
+          </article>
+
+          <article class="baseline-panel reveal">
+            <div class="panel-index">B</div>
+            <h3>One giant <code>ITypeSystem</code></h3>
+            <p>Centralize every semantic question behind one interface.</p>
+            <div class="itype-box">
+              <div class="itype-head">ITypeSystem</div>
+              <div class="itype-list"><span>Assignable</span><span>Callable</span><span>Conversions</span><span>Captures</span><span>Effects</span><span>Lifetimes</span><span>RuntimeChecks</span></div>
+            </div>
+            <div class="dilemma"><span><b>too broad</b> → framework designs a universal type system</span><span><b>too narrow</b> → semantics leak through casts, tags, escape hatches</span></div>
+          </article>
+        </div>
+
+        <p class="bridge-statement reveal">So the dependency should become smaller than “a type system” — and more precise than “some plugin hook.”</p>
+      </div>
+    </section>
+
+    <section class="scene scene--ink" id="capabilities" data-chapter="Semantic capabilities">
+      <div class="shell split-sticky">
+        <div class="sticky-copy">
+          <div class="kicker kicker--light">04 · Demand-driven semantics</div>
+          <h2>Depend on the questions,<br>not the implementation.</h2>
+          <div class="dependency-flip" aria-label="Dependency changes from a concrete type system to semantic questions">
+            <div class="dependency-old"><span>Delegates</span><b>→</b><span>Concrete TypeSystem</span></div>
+            <div class="dependency-arrow" aria-hidden="true">↓</div>
+            <div class="dependency-new"><span>Delegates</span><b>→</b><span>semantic questions</span></div>
+          </div>
+          <p class="aside">This is <strong>not</strong> a universal ontology of type systems. It is a candidate contract for what this consumer actually needs.</p>
+        </div>
+
+        <div class="question-stack" aria-label="Semantic capability questions">
+          <div class="question-card reveal"><span>01</span><code>CanConstructCallable(signature)?</code></div>
+          <div class="question-card reveal"><span>02</span><code>IsAssignable(value, callableType, context)?</code></div>
+          <div class="question-card reveal"><span>03</span><code>IsApplicable(callable, arguments)?</code></div>
+          <div class="question-card reveal"><span>04</span><code>ResultType(invocation)?</code></div>
+          <div class="question-card reveal"><span>05</span><code>IsCaptureLegal(variable, closure)?</code></div>
+          <div class="question-card reveal"><span>06</span><code>RequiresRuntimeCheck(conversion)?</code></div>
+          <div class="question-card question-card--summary reveal"><strong>Demand-driven dependency.</strong><span>If nobody can resolve a required question safely, fail closed.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene scene--paper" id="ownership" data-chapter="Ownership rule">
+      <div class="shell">
+        <div class="center-copy reveal">
+          <div class="kicker">05 · Several disciplines can constrain one operation</div>
+          <h2>No single component owns “the whole semantic answer.”</h2>
+        </div>
+
+        <div class="constraint-convergence reveal" role="img" aria-label="Semantic disciplines contribute evidence to a consumer-owned proof obligation">
+          <div class="producer p-type"><span class="semantic-label">producer</span><strong>Nominal types</strong><small>representation · assignability</small></div>
+          <div class="producer p-effect"><span class="semantic-label">producer</span><strong>Effects</strong><small>call compatibility</small></div>
+          <div class="producer p-own"><span class="semantic-label">producer</span><strong>Ownership</strong><small>capture · lifetime legality</small></div>
+          <div class="producer p-gradual"><span class="semantic-label">producer</span><strong>Gradual checks</strong><small>runtime-check requirement</small></div>
+          <div class="obligation-core"><span class="semantic-label">consumer-owned</span><strong>Direct-call<br>proof obligation</strong></div>
+          <svg viewBox="0 0 1000 600" aria-hidden="true">
+            <path d="M220 120 C390 120 430 270 500 300" />
+            <path d="M780 120 C610 120 570 270 500 300" />
+            <path d="M220 485 C390 485 430 330 500 300" />
+            <path d="M780 485 C610 485 570 330 500 300" />
+          </svg>
+        </div>
+
+        <blockquote class="ownership-rule reveal">
+          <span>Consumer owns the obligation.</span>
+          <strong>Producers contribute evidence.</strong>
+        </blockquote>
+        <p class="center-note reveal">A producer may know a fact. It should not decide whether that fact is sufficient for somebody else’s transformation.</p>
+      </div>
+    </section>
+
+    <section class="scene scene--split" id="times" data-chapter="Two times">
+      <div class="two-times">
+        <article class="time-panel time-panel--global">
+          <div class="time-inner reveal">
+            <div class="kicker">06 · Language / profile time</div>
+            <h2>Resolve the open component world.</h2>
+            <div class="time-list"><span>Which components?</span><span>Which providers?</span><span>Which representation?</span><span>Which routes?</span><span>Which backend policy?</span><span>Are contracts compatible?</span></div>
+            <div class="time-result"><small>result</small><strong>Resolved Language</strong></div>
+          </div>
+        </article>
+        <article class="time-panel time-panel--local">
+          <div class="time-inner reveal">
+            <div class="kicker kicker--light">07 · Program / local time</div>
+            <h2>Learn facts about this program point.</h2>
+            <div class="fact-list"><code>target(f) = Foo</code><code>captures(f) = ∅</code><code>f does not escape</code><code>effects compatible</code><code>runtime check unnecessary</code></div>
+            <div class="time-result time-result--dark"><small>result</small><strong>Scoped evidence</strong></div>
+          </div>
+        </article>
+      </div>
+      <div class="split-bridge shell reveal">
+        <p>A valid language configuration does <em>not</em> prove a local optimization sound.</p>
+      </div>
+    </section>
+
+    <section class="scene scene--mist" id="proof" data-chapter="Proof obligations">
+      <div class="shell proof-layout">
+        <div class="proof-running reveal">
+          <div class="kicker">08 · The transformation owns its conditions</div>
+          <h2>“<code>f</code> is callable” is nowhere near enough.</h2>
+          <figure class="code-card">
+            <figcaption>running example</figcaption>
+            <pre><code><span class="type">Mapper</span> f = x =&gt; <span class="fn">Foo</span>(x);
+f(<span class="num">42</span>);</code></pre>
+          </figure>
+          <div class="rewrite-mini">
+            <code>InvokeDelegate(f, 42)</code><span>→?</span><code>Foo(42)</code>
+          </div>
+        </div>
+
+        <div class="proof-obligations" aria-label="Direct call proof obligations">
+          <div class="obligation reveal"><i>01</i><span>Exact target, or equivalent target proof</span><b>target(f) = Foo</b></div>
+          <div class="obligation reveal"><i>02</i><span>Signature and conversions remain compatible</span><b>signature ✓</b></div>
+          <div class="obligation reveal"><i>03</i><span>Capture semantics remain legal</span><b>captures ✓</b></div>
+          <div class="obligation reveal"><i>04</i><span>Effects are preserved</span><b>effects ✓</b></div>
+          <div class="obligation reveal"><i>05</i><span>Lifetime constraints still hold</span><b>lifetime ✓</b></div>
+          <div class="obligation reveal"><i>06</i><span>No required runtime contract disappears</span><b>runtime check ✓</b></div>
+          <div class="obligation reveal"><i>07</i><span>Non-escape, when this rewrite needs it</span><b>escape ✓</b></div>
+        </div>
+      </div>
+
+      <div class="trace-band reveal">
+        <div class="shell trace-flow" aria-label="Producer fact consumer use trace">
+          <span>Nominal typing</span><b>→</b><code>Assignable(λ, Mapper)</code><b>→</b><span>obligation</span><b>→</b><strong>use</strong>
+          <span>Effect system</span><b>→</b><code>CallAllowed(Foo, ctx)</code><b>→</b><span>obligation</span><b>→</b><strong>use</strong>
+          <span>Escape analysis</span><b>→</b><code>ExactTarget(f, Foo)</code><b>→</b><span>obligation</span><b>→</b><strong>Foo(42)</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene scene--paper" id="evidence" data-chapter="Evidence states">
+      <div class="shell evidence-layout">
+        <div class="scene-copy reveal">
+          <div class="kicker">09 · Evidence is not a boolean</div>
+          <h2>Unknown is not refuted.</h2>
+          <p class="lead">An open architecture needs to represent what is known, what is unsupported, and what actively contradicts another producer.</p>
+        </div>
+
+        <div class="state-ladder">
+          <article class="state-card state-established reveal"><span>Established(P)</span><p>Enough evidence exists.</p><strong>transformation may proceed</strong></article>
+          <article class="state-card state-unknown reveal"><span>Unknown(P)</span><p>Analysis does not know yet.</p><strong>keep the safe generic path</strong></article>
+          <article class="state-card state-unsupported reveal"><span>Unsupported(P)</span><p>The selected language cannot establish this proposition.</p><strong>required capability may be absent</strong></article>
+          <article class="state-card state-refuted reveal"><span>Refuted(P)</span><p>The proposition is known false.</p><strong>transformation is illegal</strong></article>
+          <article class="state-card state-contradictory reveal"><span>Contradictory(P)</span><p>Producers disagree under the current scope.</p><strong>fail closed unless reconciled</strong></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene scene--ink" id="lifecycle" data-chapter="Evidence lifecycle">
+      <div class="shell lifecycle-layout">
+        <div class="sticky-copy">
+          <div class="kicker kicker--light">10 · Facts have a lifecycle</div>
+          <h2><code>ExactTarget(f, Foo)</code><br>is not immortal.</h2>
+          <p class="lead lead--light">Lowering, cloning, CFG rewrites, and representation changes can invalidate what was once true.</p>
+          <div class="evidence-passport">            <span>scope</span><span>assumptions</span><span>representation / revision</span><span>validity</span>
+          </div>
+        </div>
+
+        <div class="lifecycle-track" aria-label="Evidence lifecycle across compiler representations">
+          <div class="rep-step reveal"><div class="rep-node">AST</div><div class="fact-token">ExactTarget(f, Foo)<small>derive</small></div></div>
+          <div class="rep-step reveal"><div class="rep-node">typed AST</div><div class="fact-token">ExactTarget(f, Foo)<small>preserve</small></div></div>
+          <div class="rep-step reveal"><div class="rep-node">AIR / IR</div><div class="fact-token fact-token--muted">ExactTarget(f, Foo)<small>transport?</small></div></div>
+          <div class="rep-step reveal"><div class="rep-node">lowered IR</div><div class="fact-token fact-token--warn">ExactTarget(f, Foo)<small>recompute</small></div></div>
+          <div class="rep-step reveal"><div class="rep-node">optimized IR</div><div class="fact-token fact-token--gone">invalidated<small>do not trust stale evidence</small></div></div>
+        </div>
+      </div>
+      <div class="shell existing-ideas reveal">
+        <p>This borrows familiar compiler discipline rather than claiming every brick is new: analysis preservation/invalidation, interfaces, effects, legality, and conversion machinery already exist. The research question is whether scoped evidence can become a reliable boundary <em>between independently authored language components</em>.</p>
+      </div>
+    </section>
+
+    <section class="scene scene--climax" id="erase" data-chapter="Deabstraction" data-climax>
+      <div class="shell climax-shell">
+        <div class="climax-copy">
+          <div class="kicker">11 · Specialize only after the proof exists</div>
+          <h2>Make the abstraction disappear.</h2>
+          <p class="lead">The generic representation exists because the language was open. It does not have to survive every concrete execution path.</p>
+        </div>
+
+        <div class="climax-stage" aria-label="Generic delegate machinery specializes into a direct call when obligations are established">
+          <div class="generic-machine">
+            <div class="machine-label">generic machinery</div>
+            <pre><code>Delegate {
+  signature
+  target
+  environment
+}
+
+InvokeDelegate(f, 42)</code></pre>
+          </div>
+
+          <div class="proof-ring" aria-hidden="true">
+            <span style="--i:0">exact target</span>
+            <span style="--i:1">captures safe</span>
+            <span style="--i:2">conversion exact</span>
+            <span style="--i:3">effects preserved</span>
+            <span style="--i:4">lifetime valid</span>
+            <span style="--i:5">no runtime check</span>
+          </div>
+
+          <div class="specialized-call"><span>specialized path</span><code>Foo(42)</code></div>
+        </div>
+
+        <div class="climax-rule">
+          <div><strong>proof succeeds</strong><span>erase locally</span></div>
+          <div><strong>proof unavailable</strong><span>keep generic path</span></div>
+        </div>
+        <p class="zero-cost-note">This is not a promise of universal zero-cost extensibility.</p>
+      </div>
+    </section>
+
+    <section class="scene scene--paper" id="model" data-chapter="Four verbs">
+      <div class="shell">
+        <div class="center-copy reveal">
+          <div class="kicker">12 · The whole architecture in four verbs</div>
+          <h2>EXTEND → RESOLVE → PROVE → ERASE</h2>
+        </div>
+        <div class="verb-sequence" aria-label="Extend resolve prove erase">
+          <article class="verb-card reveal"><span>01</span><h3>EXTEND</h3><p>Author a programmer-visible feature against explicit semantic requirements.</p></article>
+          <div class="verb-arrow" aria-hidden="true">→</div>
+          <article class="verb-card reveal"><span>02</span><h3>RESOLVE</h3><p>Close the open component world into one concrete coherent language.</p></article>
+          <div class="verb-arrow" aria-hidden="true">→</div>
+          <article class="verb-card reveal"><span>03</span><h3>PROVE</h3><p>Use program-specific evidence to discharge transformation obligations.</p></article>
+          <div class="verb-arrow" aria-hidden="true">→</div>
+          <article class="verb-card verb-card--accent reveal"><span>04</span><h3>ERASE</h3><p>Remove generic machinery only where legality is established.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene scene--research" id="research" data-chapter="Research boundary">
+      <div class="shell research-grid">
+        <div class="research-copy reveal">
+          <div class="kicker kicker--light">13 · A falsifiable architecture hypothesis</div>
+          <h2>The claim is in the connection, not in inventing every brick.</h2>
+          <p class="lead lead--light">Modular language composition exists. Capability-style interfaces exist. Proof obligations exist. Analysis invalidation exists. The potential contribution is a disciplined ownership boundary connecting independent feature authoring to later safe specialization.</p>
+        </div>
+
+        <div class="contribution-chain reveal" aria-label="Potential contribution chain">
+          <span>independent feature authoring</span><b>↓</b><span>semantic requirements</span><b>↓</b><span>language resolution</span><b>↓</b><span>scoped program evidence</span><b>↓</b><span>consumer-owned obligation</span><b>↓</b><strong>safe specialization</strong>
+        </div>
+
+        <div class="research-panels">
+          <article class="research-panel reveal">
+            <h3>Use the simpler alternative when it wins.</h3>
+            <p>If ordinary adapters remain simpler and preserve enough precision, use them. If this architecture introduces more ceremony and coupling than it removes, the experiment fails.</p>
+          </article>
+          <article class="research-panel reveal">
+            <h3>What would falsify it?</h3>
+            <ul><li>pairwise adapters stay consistently simpler;</li><li>capability contracts lose semantic precision;</li><li>evidence cannot remain trustworthy across representations;</li><li>coordination costs more than the coupling it removes.</li></ul>
+          </article>
+        </div>
+
+        <div class="alternative-landscape reveal" aria-label="Strong alternative landscape">
+          <div class="landscape-head">
+            <span>Strong alternatives already cover important parts of the problem.</span>
+            <strong>The open question is the cross-phase ownership boundary.</strong>
+          </div>
+          <div class="landscape-grid">
+            <article><small>PAIRWISE ADAPTERS</small><p>Explicit integration stays simple while the matrix stays small and stable.</p></article>
+            <article><small>LANGUAGE WORKBENCHES</small><p>Strong composition and tooling models; the question here is later evidence-owned specialization across independently authored semantics.</p></article>
+            <article><small>EXTENSIBLE TYPING</small><p>Strong mechanisms for open typing rules; this proposal avoids requiring one type framework to own every semantic discipline.</p></article>
+            <article><small>MLIR-STYLE INTERFACES</small><p>Strong operation interfaces, effects, legality, conversion, and analysis machinery; these are compatible building blocks, not strawmen.</p></article>
+            <article><small>EFFECTS / LEGALITY</small><p>Already express important constraints. The proposal asks how such facts participate in consumer-owned obligations across components.</p></article>
+            <article><small>ORDINARY COMPILER INTERFACES</small><p>Often sufficient. Prefer them whenever they keep ownership explicit without recreating a central semantic authority.</p></article>
+          </div>
+        </div>
+
+        <div class="ut-boundary reveal">
+          <div>
+            <div class="kicker kicker--light">UniversalToolchain</div>
+            <h3>Evidence, not the thesis.</h3>
+          </div>
+          <div class="ut-columns">
+            <div><small>IMPLEMENTED WITNESSES</small><span>declarative language profiles</span><span>staged planning</span><span>resolved plan</span><span>route feasibility</span><span>selected cross-backend behavior</span><span>bounded local deabstraction</span></div>
+            <div><small>RESEARCH TARGET</small><span>Delegates × independently authored type semantics × effects × ownership × evidence lifecycle</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene scene--final" id="final" data-chapter="Takeaway">
+      <div class="shell final-shell">
+        <div class="final-flow reveal" role="img" aria-label="Final architecture summary from language features to erase or keep">
+          <div class="flow-node flow-node--feature">Independent language features<small>semantic requirements</small></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node">RESOLVE LANGUAGE<small>concrete semantics</small></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node">PROGRAM ANALYSIS<small>scoped evidence</small></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-node flow-node--proof">PROOF OBLIGATION</div>
+          <div class="flow-split"><div><small>proven</small><strong>ERASE</strong><span>abstraction</span></div><div><small>unknown</small><strong>KEEP</strong><span>generic path</span></div></div>
+        </div>
+
+        <div class="final-copy reveal">
+          <p>Extensibility requires abstraction while the language is open.</p>
+          <p>Once the language is resolved and enough program-specific facts are known, some of that abstraction may no longer be necessary.</p>
+          <h2>Erase it only when its semantic obligations are proven.</h2>
+          <div class="final-mantra">EXTEND <span>→</span> RESOLVE <span>→</span> PROVE <span>→</span> ERASE</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="appendix" id="appendix" aria-labelledby="appendix-title">
+      <div class="shell">
+        <div class="appendix-head">
+          <div>
+            <div class="kicker">Research notes</div>
+            <h2 id="appendix-title">Appendix / FAQ</h2>
+          </div>
+          <p>Compact answers for discussion after the main narrative.</p>
+        </div>
+        <div class="faq-grid">
+          <details><summary>Why not ordinary adapters?</summary><p>For small or stable integration matrices, adapters may be the better design. The architecture is only useful if explicit semantic requirements and evidence ownership reduce net coupling without losing precision.</p></details>
+          <details><summary>Why not MLIR?</summary><p>MLIR already provides strong interfaces, effects, legality, conversion, and analysis infrastructure. The research question here is different: whether independently authored language features can exchange scoped semantic evidence through a disciplined ownership model from composition to specialization.</p></details>
+          <details><summary>Is this already implemented?</summary><p>No. UniversalToolchain provides bounded witnesses for pieces such as declarative profiles, staged planning, route feasibility, selected cross-backend behavior, and limited deabstraction. The full interaction among independently authored type semantics, effects, ownership, and evidence lifecycle remains a research target.</p></details>
+          <details><summary>What does “proof” mean here?</summary><p>A transformation-owned set of conditions whose truth is established from scoped semantic evidence. It need not mean an interactive theorem prover; it means the compiler can justify the legality conditions required for that transformation.</p></details>
+          <details><summary>What happens when evidence is unknown?</summary><p>The transformation does not fire. The compiler keeps the safe generic path.</p></details>
+          <details><summary>What happens when evidence is contradictory?</summary><p>Fail closed unless an explicit reconciliation rule can resolve the contradiction under the current scope and assumptions.</p></details>
+          <details><summary>Is this zero-cost?</summary><p>No universal zero-cost claim is made. Generic machinery may be erased only at program points where the required obligations are established.</p></details>
+          <details><summary>How does evidence survive lowering?</summary><p>Only through explicit preservation, transport, or recomputation rules. Otherwise it must be invalidated rather than silently trusted.</p></details>
+          <details><summary>What exactly is the potential contribution?</summary><p>The disciplined connection: independent feature authoring → semantic requirements → language resolution → scoped evidence → consumer-owned obligation → safe specialization.</p></details>
+          <details><summary>What would falsify the architecture?</summary><p>If adapters stay simpler, capability contracts lose precision, evidence cannot remain trustworthy across representations, or coordination overhead exceeds the coupling removed, the architecture should be rejected.</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell"><span>Build the Language, Then Make the Abstractions Disappear</span><a href="#opening">Back to top ↑</a></div>
+  </footer>
+
+  <script>
+document.documentElement.classList.add('js', 'slide-paging');
+
+const progressBar = document.getElementById('progressBar');
+const sections = [...document.querySelectorAll('main section[id]')];
+const narrativeSections = [...document.querySelectorAll('main > section.scene[id]')];
+const navLinks = [...document.querySelectorAll('.chapter-nav a')];
+const revealItems = [...document.querySelectorAll('.reveal')];
+const climax = document.querySelector('[data-climax]');
+const toggle = document.getElementById('chapterToggle');
+const nav = document.getElementById('chapterNav');
+const topbar = document.querySelector('.topbar');
+const appendix = document.getElementById('appendix');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const getHeaderOffset = () => Math.max(76, Math.ceil((topbar?.offsetHeight || 58) + 18));
+const targetY = (el) => Math.max(0, Math.round(window.scrollY + el.getBoundingClientRect().top - getHeaderOffset()));
+
+let sectionScrollFrame = 0;
+let animationEpoch = 0;
+let pagingInFlight = false;
+
+const cancelSectionScroll = () => {
+  animationEpoch += 1;
+  if (sectionScrollFrame) cancelAnimationFrame(sectionScrollFrame);
+  sectionScrollFrame = 0;
+  pagingInFlight = false;
+};
+
+const goToY = (rawTarget) => {
+  const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  const target = Math.max(0, Math.min(maxScroll, Math.round(rawTarget)));
+  const start = window.scrollY;
+  const distance = target - start;
+
+  cancelSectionScroll();
+  const epoch = animationEpoch;
+
+  if (reduceMotion || Math.abs(distance) < 2) {
+    window.scrollTo(0, target);
+    updateProgress();
+    return;
+  }
+
+  pagingInFlight = true;
+  const duration = Math.min(500, Math.max(320, 300 + (Math.abs(distance) / Math.max(1, window.innerHeight)) * 95));
+  const startedAt = performance.now();
+  const ease = (t) => 1 - Math.pow(1 - t, 4);
+
+  const step = (now) => {
+    if (epoch !== animationEpoch) return;
+    const t = Math.min(1, (now - startedAt) / duration);
+    window.scrollTo(0, start + distance * ease(t));
+    if (t < 1) {
+      sectionScrollFrame = requestAnimationFrame(step);
+      return;
+    }
+
+    sectionScrollFrame = 0;
+    pagingInFlight = false;
+    window.scrollTo(0, target);
+    updateProgress();
+  };
+
+  sectionScrollFrame = requestAnimationFrame(step);
+};
+
+const goToSection = (el) => {
+  if (el) goToY(targetY(el));
+};
+
+/*
+  The talk is longer than one viewport in several places. Treating every section
+  as a single slide would make lower content unreachable. Instead, each semantic
+  scene gets one or more viewport-sized paging stops, while section boundaries
+  remain exact anchor points. The appendix deliberately returns to ordinary
+  continuous scrolling.
+*/
+let slideStops = [];
+let appendixEntryY = Infinity;
+
+const buildSlideStops = () => {
+  const viewport = Math.max(1, window.innerHeight);
+  const header = getHeaderOffset();
+  const usable = Math.max(360, viewport - header - 20);
+  const stride = Math.max(340, Math.round(usable * 0.92));
+  const nextStops = [];
+
+  const addStop = (y, sectionId, kind) => {
+    const maxScroll = Math.max(0, document.documentElement.scrollHeight - viewport);
+    const clamped = Math.max(0, Math.min(maxScroll, Math.round(y)));
+    const previous = nextStops[nextStops.length - 1];
+    if (previous && Math.abs(previous.y - clamped) < 44) return;
+    nextStops.push({ y: clamped, sectionId, kind });
+  };
+
+  narrativeSections.forEach((section) => {
+    const start = Math.max(0, section.offsetTop - header);
+    const lastUseful = Math.max(start, section.offsetTop + section.offsetHeight - viewport);
+
+    addStop(start, section.id, 'scene-start');
+
+    let cursor = start + stride;
+    while (cursor < lastUseful - 100) {
+      addStop(cursor, section.id, 'scene-page');
+      cursor += stride;
+    }
+
+    if (lastUseful > start + 120) addStop(lastUseful, section.id, 'scene-end');
+  });
+
+  if (appendix) {
+    appendixEntryY = Math.max(0, appendix.offsetTop - header);
+    addStop(appendixEntryY, 'appendix', 'appendix-entry');
+  } else {
+    appendixEntryY = Infinity;
+  }
+
+  slideStops = nextStops.sort((a, b) => a.y - b.y);
+};
+
+const pagingTarget = (direction) => {
+  const y = window.scrollY;
+  const tolerance = 28;
+
+  if (direction > 0) {
+    if (y >= appendixEntryY - tolerance) return null;
+    return slideStops.find((stop) => stop.y > y + tolerance) || null;
+  }
+
+  /* Deep inside the appendix, keep native scrolling until its top is reached. */
+  if (y > appendixEntryY + 96) return null;
+
+  for (let i = slideStops.length - 1; i >= 0; i -= 1) {
+    if (slideStops[i].y < y - tolerance) return slideStops[i];
+  }
+  return null;
+};
+
+const pageByDirection = (direction) => {
+  const target = pagingTarget(direction);
+  if (!target) return false;
+  goToY(target.y);
+  return true;
+};
+
+const navGroupForSection = (id) => {
+  if (['opening','problem','semantics','baselines'].includes(id)) return 'problem';
+  if (['capabilities','ownership','times'].includes(id)) return 'capabilities';
+  if (['proof','evidence','lifecycle'].includes(id)) return 'proof';
+  if (['erase','model'].includes(id)) return 'erase';
+  return 'research';
+};
+
+const updateActiveChapter = () => {
+  const cursor = window.scrollY + getHeaderOffset() + Math.min(220, window.innerHeight * 0.28);
+  let current = sections[0]?.id;
+  for (const section of sections) {
+    if (section.offsetTop <= cursor) current = section.id;
+    else break;
+  }
+  const activeGroup = navGroupForSection(current);
+  navLinks.forEach((link) => link.classList.toggle('is-active', link.getAttribute('href') === `#${activeGroup}`));
+};
+
+const updateProgress = () => {
+  const doc = document.documentElement;
+  const max = Math.max(1, doc.scrollHeight - doc.clientHeight);
+  const p = Math.min(1, Math.max(0, window.scrollY / max));
+  progressBar.style.width = `${p * 100}%`;
+
+  if (climax && !reduceMotion) {
+    const stage = climax.querySelector('.climax-stage');
+    const r = stage.getBoundingClientRect();
+    const header = getHeaderOffset();
+    const onScreen = r.bottom > header && r.top < window.innerHeight;
+    climax.classList.toggle('is-mid', onScreen && r.top < window.innerHeight * 0.66);
+    climax.classList.toggle('is-done', onScreen && r.top < window.innerHeight * 0.36);
+  }
+
+  updateActiveChapter();
+};
+
+if ('IntersectionObserver' in window) {
+  const revealObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) entry.target.classList.add('is-visible');
+    }
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+  revealItems.forEach((el) => revealObserver.observe(el));
+} else {
+  revealItems.forEach((el) => el.classList.add('is-visible'));
+}
+
+let scrollRaf = false;
+window.addEventListener('scroll', () => {
+  if (scrollRaf) return;
+  scrollRaf = true;
+  requestAnimationFrame(() => {
+    updateProgress();
+    scrollRaf = false;
+  });
+}, { passive: true });
+
+let resizeTimer = 0;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => {
+    cancelSectionScroll();
+    buildSlideStops();
+    updateProgress();
+  }, 100);
+}, { passive: true });
+
+if (toggle && nav) {
+  toggle.addEventListener('click', () => {
+    const open = nav.classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+}
+
+document.querySelectorAll('a[href^="#"]').forEach((link) => {
+  link.addEventListener('click', (event) => {
+    const id = link.getAttribute('href')?.slice(1);
+    const target = id ? document.getElementById(id) : null;
+    if (!target) return;
+    event.preventDefault();
+    goToSection(target);
+    if (nav) nav.classList.remove('is-open');
+    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    history.replaceState(null, '', `#${id}`);
+  });
+});
+
+/* One physical wheel / trackpad gesture advances one paging stop. Momentum from
+   the same gesture is suppressed until the gesture has gone quiet. */
+let wheelAccumulator = 0;
+let wheelGestureLocked = false;
+let lastWheelAt = 0;
+let wheelUnlockTimer = 0;
+
+const scheduleWheelUnlock = () => {
+  clearTimeout(wheelUnlockTimer);
+  wheelUnlockTimer = window.setTimeout(() => {
+    const quietFor = performance.now() - lastWheelAt;
+    if (quietFor >= 170 && !pagingInFlight) {
+      wheelGestureLocked = false;
+      wheelAccumulator = 0;
+      return;
+    }
+    scheduleWheelUnlock();
+  }, 90);
+};
+
+window.addEventListener('wheel', (event) => {
+  if (event.ctrlKey || event.metaKey) return;
+  if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+  if (!event.deltaY) return;
+
+  const direction = Math.sign(event.deltaY);
+  const target = pagingTarget(direction);
+  if (!target) return;
+
+  event.preventDefault();
+  lastWheelAt = performance.now();
+  scheduleWheelUnlock();
+
+  if (wheelGestureLocked || pagingInFlight) return;
+
+  wheelAccumulator += event.deltaY;
+  const threshold = event.deltaMode === 1 ? 3 : event.deltaMode === 2 ? 1 : 46;
+  if (Math.abs(wheelAccumulator) < threshold) return;
+
+  wheelGestureLocked = true;
+  wheelAccumulator = 0;
+  goToY(target.y);
+}, { passive: false });
+
+/* Slide-style keyboard controls. Repeated keydown is intentionally ignored so
+   holding a key cannot overshoot multiple pages. */
+window.addEventListener('keydown', (event) => {
+  if (event.altKey || event.ctrlKey || event.metaKey) return;
+
+  const activeTag = document.activeElement?.tagName;
+  if (['INPUT','TEXTAREA','SELECT','SUMMARY','BUTTON','A'].includes(activeTag)) return;
+
+  let direction = 0;
+  if (event.key === ' ' && event.shiftKey) direction = -1;
+  else if (['ArrowDown','PageDown',' ','j','J'].includes(event.key) && !event.shiftKey) direction = 1;
+  else if (['ArrowUp','PageUp','k','K'].includes(event.key) && !event.shiftKey) direction = -1;
+  else return;
+
+  const target = pagingTarget(direction);
+  if (!target) return;
+
+  event.preventDefault();
+  if (event.repeat || pagingInFlight) return;
+  goToY(target.y);
+});
+
+/* On touch screens the narrative behaves like a vertical presentation: one
+   deliberate swipe = one paging stop. The appendix keeps native touch scroll. */
+let touchStartX = 0;
+let touchStartY = 0;
+let touchControlsNarrative = false;
+
+window.addEventListener('touchstart', (event) => {
+  if (event.touches.length !== 1) return;
+  const touch = event.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+  touchControlsNarrative = window.scrollY < appendixEntryY - 28;
+}, { passive: true });
+
+window.addEventListener('touchmove', (event) => {
+  if (!touchControlsNarrative || event.touches.length !== 1) return;
+  const touch = event.touches[0];
+  const dx = touch.clientX - touchStartX;
+  const dy = touch.clientY - touchStartY;
+  if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) event.preventDefault();
+}, { passive: false });
+
+window.addEventListener('touchend', (event) => {
+  if (!touchControlsNarrative || event.changedTouches.length !== 1 || pagingInFlight) {
+    touchControlsNarrative = false;
+    return;
+  }
+
+  const touch = event.changedTouches[0];
+  const dx = touch.clientX - touchStartX;
+  const dy = touch.clientY - touchStartY;
+  touchControlsNarrative = false;
+
+  if (Math.abs(dy) < 54 || Math.abs(dy) <= Math.abs(dx) * 1.15) return;
+  pageByDirection(dy < 0 ? 1 : -1);
+}, { passive: true });
+
+buildSlideStops();
+updateProgress();
+
+</script>
+</body>
+</html>
