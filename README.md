@@ -1,31 +1,16 @@
-# LangDev 2026 presentation
+# LangDev 2026 slide deck
 
-Current conference presentation website for **Build the Language, Then Make the Abstractions Disappear**.
+Real browser slide deck for **Compose the Language. Prove the Program. Erase the Abstraction.**
 
-The repository was intentionally flattened on 2026-09-20: the previous slide-deck implementation, legacy deck scripts/styles, old speaker-script overlays, demo subtree, and superseded rebuild files were removed and replaced by the current vertical narrative site.
-
-## Run
-
-Serve the repository root with any static HTTP server and open `index.html`.
-
-For a portable single-file copy, open `langdev-talk-standalone.html`.
+This revision replaces the previous paged long-form presentation with fixed browser slides: one viewport is one slide, with no long-scroll sections and no sticky scrollytelling.
 
 ## Navigation
 
-The main narrative uses slide-by-slide vertical paging:
+- `ArrowRight`, `ArrowDown`, `PageDown`, `Space`, `J`: next slide.
+- `ArrowLeft`, `ArrowUp`, `PageUp`, `Shift+Space`, `K`: previous slide.
+- Wheel/trackpad and touch swipe advance by at most one slide.
+- Hash navigation uses `#1`, `#2`, ... `#24`.
 
-- wheel / trackpad: one page per gesture;
-- `ArrowDown`, `PageDown`, `Space`, `J`: next page;
-- `ArrowUp`, `PageUp`, `Shift+Space`, `K`: previous page;
-- touch swipe: one page;
-- chapter links: exact scene starts.
+## Production file
 
-Long semantic scenes get additional viewport-sized page stops so content is not skipped. The appendix returns to ordinary continuous scrolling. `prefers-reduced-motion` disables animated transitions while preserving paging.
-
-## Files
-
-- `index.html` — canonical GitHub Pages entry point.
-- `styles.css` — visual system.
-- `script.js` — interactions, paging, progressive states.
-- `langdev-talk-standalone.html` — exact single-file build.
-- `QA_REPORT.md` — browser verification for the current paging revision.
+The production deck is self-contained in `index.html` for GitHub Pages.
