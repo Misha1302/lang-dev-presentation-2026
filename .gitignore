@@ -1,2 +1,4 @@
 render-artifacts/
 artifacts/
+qa/
+__pycache__/

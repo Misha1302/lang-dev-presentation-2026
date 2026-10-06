@@ -1,16 +1,29 @@
-# LangDev 2026 slide deck
+# LangDev 2026 — Open to extension. Concrete at execution.
 
-Real browser slide deck for **Compose the Language. Prove the Program. Erase the Abstraction.**
+The production presentation is **index.html**: a self-contained, offline-capable 16:9 HTML deck with 17 slides and a **21:25 rehearsal allocation**, excluding audience Q&A. Open it directly in a browser; no installation, fonts, CDN or server is required. The live production entrypoint remains https://misha1302.github.io/lang-dev-presentation-2026/ after publication.
 
-This revision replaces the previous paged long-form presentation with fixed browser slides: one viewport is one slide, with no long-scroll sections and no sticky scrollytelling.
+The narrative follows real Wist source through modular composition, one immutable LanguagePlan, Bytecode/AIR and interpreter/CIL execution. A tested external-binding regression motivates a clearly separated proposal for typed semantic evidence, illustrated with one conceptual SIMD scenario. No production SIMD, formal completeness, measured speedup or novelty claim is made.
 
 ## Navigation
 
-- `ArrowRight`, `ArrowDown`, `PageDown`, `Space`, `J`: next slide.
-- `ArrowLeft`, `ArrowUp`, `PageUp`, `Shift+Space`, `K`: previous slide.
-- Wheel/trackpad and touch swipe advance by at most one slide.
-- Hash navigation uses `#1`, `#2`, ... `#24`.
+- `→`, `↓`, `PageDown`, `Space`, `J`: next slide, or next reasoning step in reveal mode.
+- `←`, `↑`, `PageUp`, `Shift+Space`, `K`: previous slide.
+- `R`: toggle staged reveals; `A`: reveal the complete current slide.
+- `P`: presenter notes in ANCHOR / FLOW / TRANSITION form; `H`: help; `F`: fullscreen.
+- `Home` / `End`: first / last slide. Buttons and left-side dots also navigate.
+- Wheel/trackpad and touch swipe advance one step per gesture.
+- Canonical hashes: `#slide-1` … `#slide-17`; numeric `#1` … `#17` links also work.
 
-## Production file
+The deck scales uniformly and letterboxes non-16:9 viewports. Browser printing produces one slide per page. All meaningful type is at least 16px in the 1600×900 design coordinates; code is 23–40px.
 
-The production deck is self-contained in `index.html` for GitHub Pages.
+## Reproducible QA
+
+```bash
+python -m pip install -r scripts/requirements.txt
+python -m playwright install chromium
+python scripts/validate_deck.py --output qa/final
+```
+
+The validator exercises the actual production DOM, captures every slide at 1600×900 and 1920×1080, captures every reveal state, checks typography/geometry and navigation, tests direct local-file loading, and creates a PDF and contact sheets. Human screenshot inspection is still required; see QA_REPORT.md for the completed review.
+
+REBUILD_EVIDENCE.md records pinned compiler sources, implementation/proposal boundaries, the git-history investigation and each slide's causal narrative. Generated QA artifacts live in `qa/` and are ignored by Git. Compiler sources are unchanged.
