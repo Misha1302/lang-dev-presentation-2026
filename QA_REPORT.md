@@ -4,9 +4,15 @@ Reviewed 2026-10-06. Artifact: the actual production `index.html`, not a mockup.
 
 ## Result
 
-PASS for the reviewed Chromium/local-file presentation. **17 slides, 16:9, 21:25 rehearsal allocation**, excluding audience Q&A. Duration is an editorial allocation, not a measured speaker rehearsal.
+PASS for the reviewed Chromium/local-file presentation. **17 slides, 16:9, 21:00 rehearsal allocation**, excluding audience Q&A. Duration is an editorial allocation, not a measured speaker rehearsal.
 
 The deck is self-contained: no font, CDN, network or server dependency is needed to present it. External evidence links are optional. The exported PDF has 17 pages.
+
+## Last-mile speaker patch — 2026-10-06
+
+PR #22 added the accepted conference title to slide 1, marked slide 9 as the explicit `research outlook · proposed` boundary, shortened slides 9–15 to a **6:00** outlook, and redistributed the saved time to the implemented compiler story for a **15:00 + 6:00 = 21:00** editorial allocation. Visible content on slides 2–8 and 16–17 was unchanged; only their timing metadata / note clocks changed.
+
+The PR render run and the post-merge `main` run both passed the production validator. The PR artifact reported **17 slides, 1260 seconds, 34 full-slide screenshots, 53 reveal states, 7 embedded font faces, 0 JavaScript errors and 0 geometry issues**; navigation, touch handling, local-file loading and responsive fitting passed. The full montage was reviewed after the patch, with slides 1 and 9 also inspected at full 1600×900 resolution because they are the only slides with visual-content changes.
 
 ## Completed passes
 
