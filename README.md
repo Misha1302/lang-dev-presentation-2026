@@ -1,6 +1,6 @@
 # LangDev 2026 — Open to extension. Concrete at execution.
 
-The production presentation is **index.html**: a self-contained, offline-capable 16:9 HTML deck with 17 slides and a **17:45 rehearsal allocation**, excluding audience Q&A. Open it directly in a browser; no installation, installed fonts, CDN or server is required. Inter and renamed Liberation Mono subsets are embedded as WOFF2 data URLs, with SIL OFL licenses included in the HTML. The live production entrypoint is https://misha1302.github.io/lang-dev-presentation-2026/.
+The production presentation is **index.html**: a self-contained, offline-capable 16:9 HTML deck with 17 slides and a **21:00 rehearsal allocation**, excluding audience Q&A. Open it directly in a browser; no installation, installed fonts, CDN or server is required. Inter and renamed Liberation Mono subsets are embedded as WOFF2 data URLs, with SIL OFL licenses included in the HTML. The live production entrypoint is https://misha1302.github.io/lang-dev-presentation-2026/.
 
 The accepted talk title is **“Build the Language, Then Make the Abstractions Disappear: Extensible Programming on .NET.”** The shorter on-slide thesis is **“Open to extension. Concrete at execution.”**
 
