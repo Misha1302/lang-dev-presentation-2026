@@ -1,10 +1,10 @@
 # LangDev 2026 — Open to extension. Concrete at execution.
 
-The production presentation is **index.html**: a self-contained, offline-capable 16:9 HTML deck with 17 slides and a **21:25 rehearsal allocation**, excluding audience Q&A. Open it directly in a browser; no installation, installed fonts, CDN or server is required. Inter and renamed Liberation Mono subsets are embedded as WOFF2 data URLs, with SIL OFL licenses included in the HTML. The live production entrypoint is https://misha1302.github.io/lang-dev-presentation-2026/.
+The production presentation is **index.html**: a self-contained, offline-capable 16:9 HTML deck with 17 slides and a **17:45 rehearsal allocation**, excluding audience Q&A. Open it directly in a browser; no installation, installed fonts, CDN or server is required. Inter and renamed Liberation Mono subsets are embedded as WOFF2 data URLs, with SIL OFL licenses included in the HTML. The live production entrypoint is https://misha1302.github.io/lang-dev-presentation-2026/.
 
 The accepted talk title is **“Build the Language, Then Make the Abstractions Disappear: Extensible Programming on .NET.”** The shorter on-slide thesis is **“Open to extension. Concrete at execution.”**
 
-The narrative follows real Wist source through modular composition, one immutable LanguagePlan, Bytecode/AIR and interpreter/CIL execution. A tested external-binding regression motivates a clearly separated proposal for typed semantic evidence, illustrated with one conceptual SIMD scenario. No production SIMD, formal completeness, measured speedup or novelty claim is made.
+The narrative follows real Wist source through modular composition, one immutable LanguagePlan, Bytecode/AIR and interpreter/CIL execution. A tested external-binding regression motivates a clearly separated **6:00 research outlook** on typed semantic evidence, illustrated with one conceptual SIMD scenario. No production SIMD, formal completeness, measured speedup or novelty claim is made.
 
 For last-mile rehearsal, use the deployed companion runbook: https://misha1302.github.io/lang-dev-presentation-2026/speaker-runbook.html. It keeps slides 9–15 framed as a short research outlook rather than a second full talk.
 
