@@ -58,25 +58,25 @@ Each row supplies an anchor, 3–5 visible reasoning steps, and a causal transit
 
 | Slide | Seconds | Visible reasoning / transition |
 |---|---:|---|
-| 1 | 45 | Real Wist expression → reusable framework → open composition → concrete .NET execution. Why can one feature be reused? |
-| 2 | 65 | NativeTypes contributes tokens → AST → lowering → numeric operations. A feature crosses stages, so one plugin hook is insufficient. |
-| 3 | 65 | Monolithic edits → module-owned contributions → dialect selection. Published extension contracts move ownership out of the core. What language does this build? |
-| 4 | 75 | Exact PricingRestricted selection → native arithmetic works → loops/conditions/interop excluded. Selection defines the language; global compatibility still needs resolution. |
-| 5 | 90 | Definition + registered packages → unresolved choices → Compile → immutable plan fields. Runtime materializes that answer. Now compile a program. |
-| 6 | 95 | Same Wist expression → syntax tree → semantic binding → module Bytecode → AIR → interpreter/CIL → 95.0. Representation becomes executable. |
-| 7 | 75 | Generic environment load → exact local match + capability → typed intrinsic → CIL argument load. Removal is a concrete conditional rewrite. What must remain invariant? |
-| 8 | 90 | Host price/fee → local price declaration → binding/storage identities → deterministic interpreter/CIL parity. Test-backed regression guard, no invented wrong output. Structure alone does not settle all future semantic questions. |
-| 9 | 65 | Current plan/representations/parity → multiple components need meaning → proposed evidence/rule boundary. Binding stays binder-owned. Ask about a future optimizer. |
-| 10 | 85 | One conceptual SIMD loop → direct dependencies and combination logic → one obligation query → unchanged scalar fallback unless proven. How is an answer derived? |
-| 11 | 100 | Two dependency facts → IndependentIterations; purity + target support → legality under fixed type/bounds/lane assumptions. Cost is separate. What if a premise is missing? |
-| 12 | 95 | Same consumer UNKNOWN → new DependencyAnalysis evidence/rule → same query PROVED. Consumer unchanged, knowledge changes; monotonicity only for current valid evidence. |
-| 13 | 75 | Providers publish typed scoped evidence → rules derive → consumer queries. Subject, scope, revision remain aligned; no runtime activation by projection. How do we explain and invalidate the answer? |
-| 14 | 85 | Derivation names producer/rule → changed loop invalidates premise → obligation returns UNKNOWN → scalar fallback/recompute. Unknown differs from disproven; conflicts fail closed. |
-| 15 | 75 | Serious precedents already exist → distinguish their integration boundaries → evaluate shared boundary against strongest local baseline. Contribution remains a question, not a novelty claim. |
-| 16 | 75 | Revisit module choices → plan → program representations → specialized CIL → DynamicMethod → .NET JIT. Decisions and local machinery disappear at different gates; no universal cost claim. |
-| 17 | 30 | Compose structure → agree on meaning → specialize representation. Show code/research links; invite questions. |
+| 1 | 60 | Real Wist expression → reusable framework → open composition → concrete .NET execution. Why can one feature be reused? |
+| 2 | 80 | NativeTypes contributes tokens → AST → lowering → numeric operations. A feature crosses stages, so one plugin hook is insufficient. |
+| 3 | 80 | Monolithic edits → module-owned contributions → dialect selection. Published extension contracts move ownership out of the core. What language does this build? |
+| 4 | 90 | Exact PricingRestricted selection → native arithmetic works → loops/conditions/interop excluded. Selection defines the language; global compatibility still needs resolution. |
+| 5 | 110 | Definition + registered packages → unresolved choices → Compile → immutable plan fields. Runtime materializes that answer. Now compile a program. |
+| 6 | 120 | Same Wist expression → syntax tree → semantic binding → module Bytecode → AIR → interpreter/CIL → 95.0. Representation becomes executable. |
+| 7 | 90 | Generic environment load → exact local match + capability → typed intrinsic → CIL argument load. Removal is a concrete conditional rewrite. What must remain invariant? |
+| 8 | 115 | Host price/fee → local price declaration → binding/storage identities → deterministic interpreter/CIL parity. Test-backed regression guard, no invented wrong output. Structure alone does not settle all future semantic questions. |
+| 9 | 45 | Current plan/representations/parity → multiple components need meaning → proposed evidence/rule boundary. Binding stays binder-owned. Ask about a future optimizer. |
+| 10 | 55 | One conceptual SIMD loop → direct dependencies and combination logic → one obligation query → unchanged scalar fallback unless proven. How is an answer derived? |
+| 11 | 65 | Two dependency facts → IndependentIterations; purity + target support → legality under fixed type/bounds/lane assumptions. Cost is separate. What if a premise is missing? |
+| 12 | 50 | Same consumer UNKNOWN → new DependencyAnalysis evidence/rule → same query PROVED. Consumer unchanged, knowledge changes; monotonicity only for current valid evidence. |
+| 13 | 45 | Providers publish typed scoped evidence → rules derive → consumer queries. Subject, scope, revision remain aligned; no runtime activation by projection. How do we explain and invalidate the answer? |
+| 14 | 50 | Derivation names producer/rule → changed loop invalidates premise → obligation returns UNKNOWN → scalar fallback/recompute. Unknown differs from disproven; conflicts fail closed. |
+| 15 | 50 | Serious precedents already exist → distinguish their integration boundaries → evaluate shared boundary against strongest local baseline. Contribution remains a question, not a novelty claim. |
+| 16 | 100 | Revisit module choices → plan → program representations → specialized CIL → DynamicMethod → .NET JIT. Decisions and local machinery disappear at different gates; no universal cost claim. |
+| 17 | 55 | Compose structure → agree on meaning → specialize representation. Show code/research links; invite questions. |
 
-Total: **1285 seconds = 21:25**, excluding audience Q&A. This is a rehearsal allocation, not a measured delivery duration.
+Total: **1260 seconds = 21:00**, excluding audience Q&A. Slides 1–8 and 16–17 receive **900 seconds = 15:00**; slides 9–15 are a bounded **360 seconds = 6:00 research outlook**. This is a rehearsal allocation, not a measured delivery duration.
 
 ## Evidence gaps deliberately left out
 
