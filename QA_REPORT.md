@@ -30,6 +30,7 @@ python scripts/validate_deck.py --output qa/final
 | Reveal captures | 53 states, including initial and completed states |
 | Geometry issue groups | 0 |
 | JavaScript errors | 0 |
+| Embedded fonts | Seven bundled WOFF2 faces; loading checked explicitly |
 | Meaningful text / panel bounds | Passed at both desktop sizes and every reveal state |
 | Slide IDs, counters, notes, step continuity | Passed |
 | Keyboard, arrows, dots, hashes, wheel debounce | Passed |
@@ -73,3 +74,5 @@ The semantic proof layer and SIMD example remain proposals, not implemented func
 ## Cleanup
 
 Removed obsolete duplicate `langdev_presentation_dag_pseudocode.html`; Git history retains it. Replaced stale 24-slide/delegate documentation and CI contracts with checks for the actual production deck. Removed obsolete slide CSS/IDs/navigation references during the rebuild. Compiler source and architecture are unchanged. The rebuild was verified locally before the owner's follow-up publication request; publishing uses the existing GitHub Pages deployment from `main` at the repository root.
+
+The first publication's GitHub-hosted browser exposed a portability defect: local Inter was not installed on the runner, so fallback-font metrics wrapped titles and crowded slides 6, 13 and 15. The deployed source and controls were correct, but the independent geometry check appropriately failed. The repair embeds Inter and renamed Liberation Mono subsets directly in the HTML, including their original OFL licenses. Every CSS text stack now prefers these bundled families. No geometry assertion was removed or relaxed; font loading is now an additional assertion. This also removes dependence on the speaker's installed fonts.

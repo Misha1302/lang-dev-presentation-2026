@@ -111,6 +111,15 @@ def validate(output: Path, browser_name: str = 'chromium'):
             page = browser.new_page(viewport={'width':1600, 'height':900}, reduced_motion='reduce')
             page.on('pageerror', lambda error: errors.append(str(error)))
             page.goto(f'http://127.0.0.1:{server.server_port}/index.html')
+            embedded_fonts = page.evaluate("""async () => {
+              const specs = [400,500,600,700,800].map(w => `${w} 26px DeckSans`)
+                .concat([400,700].map(w => `${w} 26px DeckMono`));
+              const loaded = await Promise.all(specs.map(s => document.fonts.load(s)));
+              await document.fonts.ready;
+              return loaded.map((faces,i) => ({spec:specs[i],count:faces.length,
+                ready:faces.every(f => f.status === 'loaded')}));
+            }""")
+            assert all(f['count'] == 1 and f['ready'] for f in embedded_fonts), embedded_fonts
             assert page.locator('.slide').count() == 17
             metadata = page.locator('.slide').evaluate_all("ss => ss.map(s => ({id:s.id,seconds:+s.dataset.seconds,status:s.dataset.status,steps:[...s.querySelectorAll('[data-step]')].map(n=>+n.dataset.step)}))")
             assert [s['id'] for s in metadata] == [f'slide-{i}' for i in range(1, 18)]
@@ -200,7 +209,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
     montage([path for path in states if path.name.startswith(('reveal-11-', 'reveal-12-'))], output / 'proof-reveals.png', columns=3, width=640)
     for first in range(0,len(states),12):
         montage(states[first:first+12], output / f'reveal-contact-{first//12+1}.png', columns=3, width=600)
-    report = {'browser':browser_name,'slides':17,'timing_seconds':seconds,'full_slide_screenshots':len(snapshots)*2,'reveal_states':len(states),'javascript_errors':errors,'geometry_issues':geometry,'navigation':'passed','touch_handler':'passed','local_file':'passed','responsive_fit':'passed'}
+    report = {'browser':browser_name,'slides':17,'timing_seconds':seconds,'full_slide_screenshots':len(snapshots)*2,'reveal_states':len(states),'embedded_font_faces':len(embedded_fonts),'javascript_errors':errors,'geometry_issues':geometry,'navigation':'passed','touch_handler':'passed','local_file':'passed','responsive_fit':'passed'}
     (output / 'validation.json').write_text(json.dumps(report,indent=2))
     print(json.dumps({key:value for key,value in report.items() if key != 'geometry_issues'},indent=2))
     print(f'Geometry issue groups: {len(geometry)}')

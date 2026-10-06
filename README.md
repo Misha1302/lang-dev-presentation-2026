@@ -1,6 +1,6 @@
 # LangDev 2026 — Open to extension. Concrete at execution.
 
-The production presentation is **index.html**: a self-contained, offline-capable 16:9 HTML deck with 17 slides and a **21:25 rehearsal allocation**, excluding audience Q&A. Open it directly in a browser; no installation, fonts, CDN or server is required. The live production entrypoint remains https://misha1302.github.io/lang-dev-presentation-2026/ after publication.
+The production presentation is **index.html**: a self-contained, offline-capable 16:9 HTML deck with 17 slides and a **21:25 rehearsal allocation**, excluding audience Q&A. Open it directly in a browser; no installation, installed fonts, CDN or server is required. Inter and renamed Liberation Mono subsets are embedded as WOFF2 data URLs, with SIL OFL licenses included in the HTML. The live production entrypoint is https://misha1302.github.io/lang-dev-presentation-2026/.
 
 The narrative follows real Wist source through modular composition, one immutable LanguagePlan, Bytecode/AIR and interpreter/CIL execution. A tested external-binding regression motivates a clearly separated proposal for typed semantic evidence, illustrated with one conceptual SIMD scenario. No production SIMD, formal completeness, measured speedup or novelty claim is made.
 
