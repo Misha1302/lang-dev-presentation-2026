@@ -217,7 +217,7 @@ DEALINGS IN THE FONT SOFTWARE.
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink)}body{font:26px/1.4 "DeckSans",sans-serif}code,pre,.mono{font-family:"DeckMono","DeckSans",monospace}a{color:inherit;text-decoration:none}a:hover{text-decoration:underline}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid var(--cyan);outline-offset:5px}
 #stage{position:absolute;width:1600px;height:900px;left:50%;top:50%;transform-origin:center;overflow:hidden;background:var(--bg)}#deck{position:absolute;inset:0}.slide{position:absolute;inset:0;display:none;padding:84px 90px 78px;background:radial-gradient(ellipse at 85% 15%,#101e2a 0,transparent 52%),radial-gradient(ellipse at 10% 95%,#171329 0,transparent 50%),var(--bg);overflow:hidden}.slide.active{display:block}.wrap{height:100%;display:flex;flex-direction:column;position:relative}.head{margin-bottom:32px;flex-shrink:0}h1,h2,h3,p,pre{margin:0}h1,h2{font-weight:750;letter-spacing:-.045em;line-height:1.08}h1{font-size:80px}h2{font-size:56px;max-width:1390px}h3{font-size:30px;line-height:1.25;letter-spacing:-.025em}.kicker{font:600 18px/1.2 "DeckMono","DeckSans",monospace;letter-spacing:.13em;color:var(--cyan);margin-bottom:16px}.proposed{color:var(--amber)}.body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:24px}.claim{flex-shrink:0;font-size:30px;line-height:1.3;margin-top:28px;padding-left:20px;border-left:3px solid var(--cyan);max-width:1390px}.sub{font-size:28px;line-height:1.45;color:var(--muted)}.small{font-size:21px;line-height:1.45;color:var(--muted)}.label{font:600 18px/1.3 "DeckMono","DeckSans",monospace;color:var(--muted);margin-bottom:16px}.caption{font-size:20px;line-height:1.4;color:var(--muted)}.cyan-t{color:var(--cyan)}.violet-t{color:var(--violet)}.green-t{color:var(--green)}.amber-t{color:var(--amber)}.rose-t{color:var(--rose)}.muted{color:var(--muted)}
 .panel{padding:28px 32px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(140deg,rgba(255,255,255,.045),rgba(255,255,255,.015))}.panel.cyan{border-color:#34535f;background:linear-gradient(140deg,#10232e,#101722)}.panel.violet{border-color:#4a405e;background:linear-gradient(140deg,#221d35,#101722)}.panel.green{border-color:#365849;background:linear-gradient(140deg,#132b26,#101722)}.panel.amber{border-color:#61563b;background:linear-gradient(140deg,#2b2619,#101722)}.two{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}.compare{display:grid;grid-template-columns:1fr 64px 1fr;gap:20px;align-items:center}.arrow{font-size:42px;color:var(--cyan);text-align:center}.down{font-size:34px;color:var(--cyan);text-align:center;line-height:1}.code{font:26px/1.65 "DeckMono","DeckSans",monospace;white-space:pre-wrap;color:#e2eaf4}.code.large{font-size:34px}.code .kw{color:var(--violet)}.code .fn{color:var(--cyan)}.code .value{color:var(--green)}.code .cm{color:var(--muted)}.strip{display:flex;align-items:center;gap:18px;flex-wrap:wrap}.chip{padding:8px 15px;border:1px solid var(--line);border-radius:9px;font:21px/1.35 "DeckMono","DeckSans",monospace;background:#111926}.chip.violet{color:var(--violet);border-color:#4a405e}.chip.cyan{color:var(--cyan);border-color:#34535f}.chip.green{color:var(--green);border-color:#365849}.chip.amber{color:var(--amber);border-color:#61563b}.node{padding:18px 22px;border:1px solid var(--line);border-radius:14px;background:#111a25;font:24px/1.35 "DeckMono","DeckSans",monospace;text-align:center}.node.violet{border-color:#645178;color:var(--violet)}.node.cyan{border-color:#41727e;color:var(--cyan)}.node.green{border-color:#477158;color:var(--green)}.node.amber{border-color:#756341;color:var(--amber)}
-.sources{position:absolute;left:90px;bottom:28px;right:400px;font:16px/1.4 "DeckMono","DeckSans",monospace;color:#a2b0c3;display:flex;gap:22px;align-items:center}.sources a{border-bottom:1px solid #46566a}.notes{display:none}#progress{position:absolute;bottom:0;left:0;height:3px;background:var(--cyan);transition:width .2s;z-index:20}#counter{position:absolute;bottom:22px;right:90px;display:flex;align-items:center;gap:14px;z-index:20}#counter button{border:1px solid var(--line);background:#111925;color:var(--ink);width:44px;height:38px;border-radius:9px;font-size:24px}#count{min-width:86px;text-align:center;font:18px "DeckMono","DeckSans",monospace;color:var(--muted)}#dots{position:absolute;left:24px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:9px;z-index:20}.dot{width:8px;height:8px;border:0;border-radius:8px;background:#49576a;padding:0}.dot.active{height:22px;background:var(--cyan)}#modeBadge{position:absolute;left:90px;top:24px;font:16px "DeckMono","DeckSans",monospace;color:var(--muted);z-index:20}#notesPanel,#helpOverlay{position:absolute;z-index:40;display:none;border:1px solid #487581;border-radius:18px;background:#0c131ff5;padding:24px 30px;box-shadow:0 20px 80px #0008}#notesPanel{bottom:80px;left:210px;right:210px;max-height:440px;overflow:auto;font-size:22px}#notesPanel.visible,#helpOverlay.visible{display:block}#notesPanel p{margin-bottom:14px}#notesPanel b{color:var(--cyan)}#helpOverlay{right:90px;bottom:80px;font:22px/1.8 "DeckMono","DeckSans",monospace}.notes-title{font:18px "DeckMono","DeckSans",monospace;color:var(--cyan);margin-bottom:16px}
+.sources{position:absolute;left:90px;bottom:28px;right:400px;font:16px/1.4 "DeckMono","DeckSans",monospace;color:#a2b0c3;display:flex;gap:22px;align-items:center}.sources a{border-bottom:1px solid #46566a}.notes{display:none}#progress{position:absolute;bottom:0;left:0;height:3px;background:var(--cyan);transition:width .2s;z-index:20}#counter{position:absolute;bottom:22px;right:90px;display:flex;align-items:center;gap:14px;z-index:20}#counter button{border:1px solid var(--line);background:#111925;color:var(--ink);width:44px;height:38px;border-radius:9px;font-size:24px}#count{min-width:86px;text-align:center;font:18px "DeckMono","DeckSans",monospace;color:var(--muted)}#dots{position:absolute;left:24px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:9px;z-index:20}.dot{width:8px;height:8px;border:0;border-radius:8px;background:#49576a;padding:0}.dot.active{height:22px;background:var(--cyan)}#notesPanel,#helpOverlay{position:absolute;z-index:40;display:none;border:1px solid #487581;border-radius:18px;background:#0c131ff5;padding:24px 30px;box-shadow:0 20px 80px #0008}#notesPanel{bottom:74px;left:180px;right:180px;max-height:520px;overflow:auto;padding:30px 36px;font-size:30px;line-height:1.38}#notesPanel.visible,#helpOverlay.visible{display:block}#notesPanel .speaker-slide{font:700 20px/1 "DeckMono","DeckSans",monospace;color:var(--muted);letter-spacing:.1em;margin-bottom:20px}#notesPanel .speaker-section{font:700 18px/1.1 "DeckMono","DeckSans",monospace;letter-spacing:.12em;color:var(--cyan);margin:0 0 10px}#notesPanel .speaker-section.next{color:var(--green);margin-top:24px}#notesPanel .speaker-line{font-size:30px;line-height:1.38;margin:0 0 14px;max-width:1120px}#notesPanel .speaker-line.next{font-size:27px;color:#dce9f7;margin-bottom:0}#helpOverlay{right:90px;bottom:80px;font:22px/1.8 "DeckMono","DeckSans",monospace}.notes-title{font:18px "DeckMono","DeckSans",monospace;color:var(--cyan);margin-bottom:16px}
 body.reveal .slide.active [data-step]{opacity:0;transition:opacity .25s ease}body.reveal .slide.active [data-step].shown{opacity:1}body.reveal .slide.active [data-step]:not(.shown){pointer-events:none}body.reveal .slide.active [data-step]:not(.shown) a{visibility:hidden}
 /* Compositions follow their arguments rather than a repeated card template. */
 .hero{justify-content:center;gap:36px}.hero h1{max-width:1200px}.hero-example{display:flex;align-items:center;gap:34px;padding:27px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.hero-example code{font-size:40px}.hero-example .answer{font:48px "DeckMono","DeckSans",monospace;color:var(--green)}.hero-path{display:flex;align-items:center;gap:22px;font-size:25px}.hero-path .arrow{font-size:28px}.identity{font-size:25px;color:var(--muted)}
@@ -231,12 +231,11 @@ body.reveal .slide.active [data-step]{opacity:0;transition:opacity .25s ease}bod
 .provenance{display:grid;grid-template-columns:1fr .95fr;gap:50px;align-items:center}.trace{display:grid;gap:15px}.trace .node{text-align:left;font-size:23px}.trace .node small{display:block;font:21px "DeckSans",sans-serif;color:var(--muted);margin-top:7px}.trace .indent{margin-left:40px;border-left:2px solid var(--violet);padding-left:26px}.revision{display:grid;gap:16px}.revision .event{font-size:27px;border-left:3px solid var(--amber);padding:15px 23px;background:#252217}.outcomes{display:flex;gap:22px;justify-content:space-between;padding-top:23px;border-top:1px solid var(--line);font-size:22px}.prior-table{width:100%;border-collapse:collapse;font-size:23px}.prior-table th{text-align:left;font-size:19px;font-weight:500;color:var(--muted);padding:15px 20px;border-bottom:1px solid #64738a}.prior-table td{padding:20px;border-bottom:1px solid var(--line);vertical-align:top}.prior-table td:first-child{width:270px;color:var(--violet);font-weight:600}.prior-table td:nth-child(2){width:510px}.prior-table tr:last-child td{color:var(--cyan);background:#10232b}.experiment{font-size:26px;line-height:1.4;padding-left:22px;border-left:3px solid var(--amber)}
 .narrowing{display:grid;grid-template-columns:.85fr 1.3fr .85fr;gap:45px;align-items:center}.narrow-path{display:grid;gap:6px;justify-items:center}.narrow-layer{width:100%;padding:8px 16px;background:#241e36;border:1px solid #625174;border-radius:10px;font:25px/1.25 "DeckMono","DeckSans",monospace;text-align:center}.narrow-path .down{font-size:22px}.narrow-layer:nth-of-type(2){width:88%;background:#142832;border-color:#41727e;color:var(--cyan)}.narrow-layer:nth-of-type(3){width:77%;background:#14242e;border-color:#41727e}.narrow-layer:nth-of-type(4){width:67%;background:#14242e;border-color:#41727e}.narrow-layer:nth-of-type(5){width:56%;background:#152d25;border-color:#548369;color:var(--green)}.narrow-layer:nth-of-type(6){width:48%;background:#152d25;border-color:#548369;color:var(--green)}.disappearance{font-size:27px;line-height:1.4}.disappearance p{margin-bottom:28px}.disappearance .number{display:block;font:50px "DeckMono","DeckSans",monospace;color:var(--cyan);margin-bottom:13px}.artifact{padding:26px 28px;border-left:3px solid var(--green);background:#14251f}.artifact code{font-size:25px}.artifact .result{font-size:52px;margin-top:24px}.qa-title{font-size:75px;line-height:1.14;letter-spacing:-.04em}.qa-path{display:flex;gap:24px;align-items:center;font-size:30px;margin-top:30px}.qa-links{display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:45px}.qa-links a{font-size:27px;color:var(--cyan)}.qa-links p{font-size:22px;color:var(--muted);margin-top:10px}.qa{justify-content:center}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
-@media print{@page{size:1600px 900px;margin:0}html,body{overflow:visible;height:auto}#stage{position:static;transform:none!important;height:auto;width:1600px}#deck{position:static}.slide,.slide.active{position:relative;display:block;width:1600px;height:900px;break-after:page;print-color-adjust:exact}.slide [data-step]{opacity:1!important}#dots,#counter,#progress,#modeBadge,#helpOverlay,#notesPanel{display:none}}
+@media print{@page{size:1600px 900px;margin:0}html,body{overflow:visible;height:auto}#stage{position:static;transform:none!important;height:auto;width:1600px}#deck{position:static}.slide,.slide.active{position:relative;display:block;width:1600px;height:900px;break-after:page;print-color-adjust:exact}.slide [data-step]{opacity:1!important}#dots,#counter,#progress,#helpOverlay,#notesPanel{display:none}}
 </style>
 </head>
 <body>
 <div id="stage">
-<div id="modeBadge">LangDev 2026 · R reveal · P notes · H help</div>
 <main id="deck" aria-label="LangDev 2026 presentation">
 
 <section class="slide" id="slide-1" data-slide="1" data-seconds="60" data-status="implemented">
@@ -422,7 +421,7 @@ publish SupportsSIMD(T)</pre></div></div><div class="arrow" data-step="1">→</d
 <aside class="notes"><div class="notes-title">17 · 0:55 · Q&A follows</div><p><b>ANCHOR:</b> Extensibility needs explicit decisions that execution can consume.</p><p><b>FLOW:</b><br>1. Modules compose structure; one plan makes it concrete.<br>2. Backends must agree on meaning; shared evidence is a proposed way to extend cooperation.<br>3. Lowering and specialization produce executable operations. Thank the audience and invite questions.</p><p><b>TRANSITION:</b> Q&A. Code is implemented; semantic proof composition remains proposed.</p></aside>
 </div><div class="sources"><span>Source-backed implementation · explicitly bounded research proposal</span></div></section>
 </main>
-<div id="dots" aria-label="Choose a slide"></div><div id="counter"><button id="prev" aria-label="Previous slide">←</button><span id="count" aria-live="polite"></span><button id="next" aria-label="Next slide or reveal">→</button></div><div id="progress"></div><aside id="notesPanel" aria-label="Presenter notes"></aside><aside id="helpOverlay">← / → · ↑ / ↓ · Space — navigate / reveal<br>Shift+Space — previous slide<br>R — staged reveals &nbsp; A — reveal all<br>P — notes &nbsp; H — help &nbsp; F — fullscreen<br>Home / End — first / last slide<br>Wheel / swipe — one step at a time</aside>
+<div id="dots" aria-label="Choose a slide"></div><div id="counter"><button id="prev" aria-label="Previous slide">←</button><span id="count" aria-live="polite"></span><button id="next" aria-label="Next slide or reveal">→</button></div><div id="progress"></div><aside id="notesPanel" aria-label="Presenter notes" aria-live="polite"></aside><aside id="helpOverlay">← / → · ↑ / ↓ · Space — navigate / reveal<br>Shift+Space — previous slide<br>R — staged reveals &nbsp; A — reveal all<br>P — notes &nbsp; H — help &nbsp; F — fullscreen<br>Home / End — first / last slide<br>Wheel / swipe — one step at a time</aside>
 </div>
 <script>
 (() => {
@@ -434,11 +433,127 @@ publish SupportsSIMD(T)</pre></div></div><div class="arrow" data-step="1">→</d
   const progress = document.getElementById('progress');
   const notesPanel = document.getElementById('notesPanel');
   const helpOverlay = document.getElementById('helpOverlay');
-  const modeBadge = document.getElementById('modeBadge');
   const revealIndex = new Map();
   let active = 1, revealMode = false, notesVisible = false;
   let wheelTotal = 0, wheelTimer, wheelLockedUntil = 0, touchX = 0, touchY = 0;
   const sourceRoot = 'https://github.com/Misha1302/UniversalToolchain/blob/1d46f17c8dc28f434fa58bdf92f9f8278fa5aaee/';
+  const shortNotes = Object.freeze({
+    "1": {
+      "say": [
+        "This talk is about two moments: open language composition and concrete execution."
+      ],
+      "next": "Why can’t a language feature live behind just one plugin hook?"
+    },
+    "2": {
+      "say": [
+        "A language feature is a vertical slice: syntax, AST, lowering and execution all participate."
+      ],
+      "next": "So ownership should move from the central compiler into feature modules."
+    },
+    "3": {
+      "say": [
+        "Each module owns its contributions. A dialect only selects which modules form the language."
+      ],
+      "next": "Now we can build a genuinely restricted language from the same compiler."
+    },
+    "4": {
+      "say": [
+        "These selected modules literally define the language surface: arithmetic is present; loops and interop are not."
+      ],
+      "next": "But selecting modules is not enough — global choices still have to be resolved."
+    },
+    "5": {
+      "say": [
+        "LanguagePlan turns many open composition choices into one immutable compiler plan.",
+        "Resolve the language once; compile programs through that resolved plan."
+      ],
+      "next": "Now let’s follow one real Wist program through it."
+    },
+    "6": {
+      "say": [
+        "The same expression becomes progressively more concrete: AST → Bytecode → AIR → interpreter or CIL.",
+        "The framework stays extensible, but execution receives exact operations."
+      ],
+      "next": "Once enough is known, some representation machinery can disappear."
+    },
+    "7": {
+      "say": [
+        "With an exact pattern, known slot and supported type, three generic AIR operations become one typed intrinsic.",
+        "This is a tested rewrite, not a universal speedup claim."
+      ],
+      "next": "Representation may change, but meaning must not."
+    },
+    "8": {
+      "say": [
+        "The binder resolves what every name means before execution.",
+        "Interpreter and CIL must execute that same resolved meaning — here both return 2."
+      ],
+      "next": "Today the binder owns this answer. What if several modules own the premises?"
+    },
+    "9": {
+      "say": [
+        "LanguagePlan composes structure, but it does not automatically compose every semantic argument."
+      ],
+      "next": "Let’s make that problem concrete with one optimizer question."
+    },
+    "10": {
+      "say": [
+        "The optimizer should ask: ‘Is this transformation legal?’ — not know every analysis provider.",
+        "If the answer is unknown, keep the safe scalar version."
+      ],
+      "next": "So how can the compiler prove that answer?"
+    },
+    "11": {
+      "say": [
+        "Different modules publish evidence; rules combine it into the property the optimizer needs.",
+        "Legality and profitability are separate decisions."
+      ],
+      "next": "The interesting part is what happens when one premise is missing."
+    },
+    "12": {
+      "say": [
+        "A new analysis module can add the missing evidence and make the same old query provable.",
+        "The consumer does not change; the knowledge graph changes."
+      ],
+      "next": "That suggests a very small shared contract."
+    },
+    "13": {
+      "say": [
+        "Providers publish evidence. Rules derive facts. Consumers query obligations.",
+        "Evidence must belong to the right subject, scope and revision."
+      ],
+      "next": "And that identity also tells us when a result becomes stale."
+    },
+    "14": {
+      "say": [
+        "Provenance tells us why an answer is true and when it stops being valid.",
+        "After invalidation, the answer becomes Unknown again, so we safely fall back."
+      ],
+      "next": "These ideas already have strong precedents."
+    },
+    "15": {
+      "say": [
+        "MLIR, LLVM, extensible grammars and Datalog already provide important pieces.",
+        "My question is the integration boundary — not a claim that these ideas are new."
+      ],
+      "next": "Whatever mechanism wins, execution should consume resolved decisions."
+    },
+    "16": {
+      "say": [
+        "There are two disappearance gates.",
+        "Composition choices collapse into LanguagePlan; representation choices specialize into concrete execution.",
+        "Eventually CIL becomes a DynamicMethod and .NET JIT executes it."
+      ],
+      "next": "That leaves three responsibilities."
+    },
+    "17": {
+      "say": [
+        "Compose the language. Agree on meaning. Execute concrete operations.",
+        "The compiler part is implemented; shared semantic proof composition is the research proposal."
+      ],
+      "end": "Thank you. Questions?"
+    }
+  });
   document.querySelectorAll('[data-source]').forEach(link => {
     link.href = sourceRoot + link.dataset.source;
     link.target = '_blank'; link.rel = 'noopener noreferrer';
@@ -459,10 +574,30 @@ publish SupportsSIMD(T)</pre></div></div><div class="arrow" data-step="1">→</d
         el.setAttribute('aria-hidden', String(!visible));
       });
     });
-    modeBadge.textContent = `LangDev 2026 · Reveal ${revealMode ? 'on' : 'off'} · P notes · H help`;
+  }
+  function noteElement(className, text) {
+    const element = document.createElement('div');
+    element.className = className;
+    element.textContent = text;
+    return element;
   }
   function updateNotes() {
-    notesPanel.innerHTML = slides[active - 1].querySelector('.notes')?.innerHTML || '';
+    const note = shortNotes[active];
+    const tailLabel = note.end ? 'END' : 'NEXT';
+    const tailText = note.end || note.next;
+    notesPanel.replaceChildren(
+      noteElement('speaker-slide', String(active).padStart(2, '0')),
+      noteElement('speaker-section', 'SAY'),
+      ...note.say.map(text => noteElement('speaker-line', text)),
+      noteElement('speaker-section next', tailLabel),
+      noteElement('speaker-line next', tailText)
+    );
+    const legacyNotes = slides[active - 1].querySelector('.notes')?.cloneNode(true);
+    if (legacyNotes) {
+      legacyNotes.hidden = true;
+      legacyNotes.setAttribute('aria-hidden', 'true');
+      notesPanel.appendChild(legacyNotes);
+    }
     notesPanel.classList.toggle('visible', notesVisible);
   }
   function go(n, updateHash = true) {
