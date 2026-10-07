@@ -1,0 +1,94 @@
+name: Inject contact slide
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inject-contact-slide:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add contact slide to production deck
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+
+          if 'id="slide-18"' in html and '@Micodiy' in html:
+              print('Contact slide already present; nothing to change.')
+              raise SystemExit(0)
+
+          css = r'''
+          /* Slide 18 · contacts */
+          .contact-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;margin-top:18px}
+          .contact-card{display:flex;flex-direction:column;justify-content:space-between;min-height:315px;border:1px solid rgba(255,255,255,.13);background:linear-gradient(145deg,rgba(255,255,255,.060),rgba(255,255,255,.020));border-radius:22px;box-shadow:0 24px 90px rgba(0,0,0,.38);padding:17px;text-decoration:none;color:var(--ink)}
+          .contact-card:hover{border-color:rgba(103,232,249,.38);transform:translateY(-2px)}
+          .contact-card .contact-tag{font:900 11px/1 monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px}
+          .contact-card .contact-title{font:850 20px/1.15 monospace;color:#fff}
+          .contact-card .contact-url{font:12px/1.35 monospace;color:#93a4ba;word-break:break-all;margin-top:10px}
+          .contact-card .qr{width:100%;aspect-ratio:1/1;border-radius:16px;background:#fff;padding:10px;margin-top:16px;object-fit:contain}
+          .contact-footer{margin-top:22px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+          .contact-pill{border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:10px 14px;font:800 13px/1 monospace;color:#d8e5f2;background:rgba(255,255,255,.04)}
+          .contact-pill.green{color:#dcfce7;border-color:rgba(134,239,172,.32);background:rgba(134,239,172,.07)}
+          @media(max-width:1100px){.contact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.contact-card{min-height:auto}}
+          @media(max-width:760px){.contact-grid{grid-template-columns:1fr}.contact-card .contact-title{font-size:17px}}
+          '''
+          if '/* Slide 18 · contacts */' not in html:
+              html = html.replace('</style>', css + '\n</style>')
+
+          def qr(url: str) -> str:
+              from urllib.parse import quote
+              return 'https://api.qrserver.com/v1/create-qr-code/?size=320x320&amp;margin=8&amp;data=' + quote(url, safe='')
+
+          cards = [
+              ('live deck', 'Presentation', 'misha1302.github.io/lang-dev-presentation-2026/', 'https://misha1302.github.io/lang-dev-presentation-2026/'),
+              ('project', 'Wist2 / UniversalToolchain', 'github.com/Misha1302/Wist2', 'https://github.com/Misha1302/Wist2'),
+              ('github', 'Mikhail Razakov', 'github.com/Misha1302', 'https://github.com/Misha1302'),
+              ('telegram', '@Micodiy', 't.me/Micodiy', 'https://t.me/Micodiy'),
+              ('email', 'razakov.mikhail@outlook.com', 'mailto:razakov.mikhail@outlook.com', 'mailto:razakov.mikhail@outlook.com'),
+          ]
+          cards_html = '\n'.join(
+              f'<a class="contact-card" href="{href}" target="_blank" rel="noopener"><div><div class="contact-tag">{tag}</div><div class="contact-title">{title}</div><div class="contact-url">{shown}</div></div><img class="qr" alt="QR: {title}" src="{qr(href)}"></a>'
+              for tag, title, shown, href in cards
+          )
+          slide = f'''
+          <section class="slide" id="slide-18" data-slide="18" data-seconds="30" data-status="contacts">
+          <div class="wrap"><div class="head"><div><div class="kicker">links · contacts · Q&amp;A</div><h2>Continue the discussion</h2><p class="sub">UniversalToolchain / Wist · extensible compiler architecture · semantic facts and concrete .NET execution.</p></div><div class="num">18 / 18</div></div>
+          <div class="contact-grid" data-step="1">
+          {cards_html}
+          </div>
+          <div class="contact-footer" data-step="2"><span class="contact-pill green">scan · open · discuss</span><span class="contact-pill">Apache-2.0 project</span><span class="contact-pill">Telegram: @Micodiy</span></div>
+          <aside class="notes"><div class="notes-title">18 · contacts</div><p>Leave this slide open during Q&amp;A or after the talk so people can scan the project, presentation and contact links.</p></aside>
+          </div></section>
+          '''
+
+          if '</main>' not in html:
+              raise SystemExit('Cannot find </main> in index.html')
+          html = html.replace('</main>', slide + '\n</main>', 1)
+          html = re.sub(r'(\b\d{2}) / 17\b', r'\1 / 18', html)
+          html = html.replace('17 / 17', '17 / 18')
+
+          path.write_text(html, encoding='utf-8')
+          print('Injected contact slide as slide 18.')
+          PY
+      - name: Commit contact slide
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No deck changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add contact QR slide to deck"
+          git push
