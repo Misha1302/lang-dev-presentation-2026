@@ -247,6 +247,13 @@ body.reveal .slide.active [data-step]{opacity:0;transition:opacity .25s ease}bod
 @media(max-width:1100px){.contact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.contact-card{min-height:auto}}
 @media(max-width:760px){.contact-grid{grid-template-columns:1fr}.contact-card .contact-title{font-size:17px}}
 
+
+/* contact slide overflow fix */
+.contact-card{min-width:0;overflow:hidden}
+.contact-title,.contact-url{min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+.contact-card[href^="mailto:"] .contact-title{font-size:clamp(14px,1.08vw,19px);line-height:1.18;letter-spacing:-.02em}
+.contact-card[href^="mailto:"] .contact-url{font-size:clamp(8px,.70vw,10px);line-height:1.35}
+
 </style>
 </head>
 <body>
