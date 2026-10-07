@@ -171,6 +171,8 @@ def validate(output: Path, browser_name: str = 'chromium'):
             page.keyboard.press('a'); assert page.locator('.slide.active [data-step]:not(.shown)').count() == 0
             page.keyboard.press('p'); assert page.locator('#notesPanel').is_visible()
             assert 'ANCHOR:' in page.locator('#notesPanel').text_content()
+            assert page.locator('#notesPanel').bounding_box()['y'] < 120
+            page.screenshot(path=str(output / 'presenter-notes-top.png'))
             page.keyboard.press('p'); page.keyboard.press('h'); assert page.locator('#helpOverlay').is_visible()
             page.keyboard.press('h'); page.keyboard.press('r')
             page.evaluate("location.hash = '#slide-12'"); page.wait_for_function('LANGDEV_DECK.active === 12')
