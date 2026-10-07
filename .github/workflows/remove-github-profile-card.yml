@@ -1,0 +1,56 @@
+name: Remove GitHub profile card
+on:
+  push:
+    paths:
+      - '.github/contact-card-remove-trigger.txt'
+      - '.github/workflows/remove-github-profile-card.yml'
+permissions:
+  contents: write
+jobs:
+  remove-github-profile-card:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove profile-only GitHub card
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          targets = [Path('index.html'), Path('contact-slide.html')]
+          changed = False
+          patterns = [
+              re.compile(r'\n<a class="contact-card" href="https://github\.com/Misha1302" target="_blank" rel="noopener"><div><div class="contact-tag">github</div><div class="contact-title">Mikhail Razakov</div><div class="contact-url">github\.com/Misha1302</div></div><img class="qr" alt="QR: Mikhail Razakov" src="https://api\.qrserver\.com/v1/create-qr-code/\?size=320x320&amp;margin=8&amp;data=https%3A%2F%2Fgithub\.com%2FMisha1302"></a>'),
+              re.compile(r'\n\s*<a class="card" href="https://github\.com/Misha1302" target="_blank" rel="noopener"><div><div class="tag green">github</div><div class="title">Mikhail Razakov</div><div class="url">github\.com/Misha1302</div></div><img class="qr" alt="QR: GitHub profile" src="https://api\.qrserver\.com/v1/create-qr-code/\?size=320x320&amp;margin=8&amp;data=https%3A%2F%2Fgithub\.com%2FMisha1302"></a>'),
+          ]
+          replacements = [
+              ('.contact-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}', '.contact-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}'),
+              ('.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}', '.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}'),
+              ('@media(max-width:1200px){.grid{grid-template-columns:repeat(3,1fr)}', '@media(max-width:1200px){.grid{grid-template-columns:repeat(2,1fr)}'),
+          ]
+          for path in targets:
+              if not path.exists():
+                  continue
+              text = path.read_text(encoding='utf-8')
+              new = text
+              for pattern in patterns:
+                  new = pattern.sub('', new)
+              for old, repl in replacements:
+                  new = new.replace(old, repl)
+              if new != text:
+                  path.write_text(new, encoding='utf-8')
+                  changed = True
+          if not changed:
+              print('No changes needed')
+          PY
+      - name: Commit removal
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html contact-slide.html
+          git commit -m "Remove GitHub profile card from contacts slide"
+          git push
