@@ -1,0 +1,46 @@
+name: Fix contact card overflow
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/contact-overflow-trigger.txt
+
+permissions:
+  contents: write
+
+jobs:
+  fix-contact-overflow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch contact slide CSS
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+          marker = '/* contact slide overflow fix */'
+          css = '''
+          /* contact slide overflow fix */
+          .contact-card{min-width:0;overflow:hidden}
+          .contact-title,.contact-url{min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+          .contact-card[href^="mailto:"] .contact-title{font-size:clamp(14px,1.08vw,19px);line-height:1.18;letter-spacing:-.02em}
+          .contact-card[href^="mailto:"] .contact-url{font-size:clamp(8px,.70vw,10px);line-height:1.35}
+          '''
+          if marker not in html:
+              html = html.replace('</style>', css + '\n</style>', 1)
+          path.write_text(html, encoding='utf-8')
+          PY
+      - name: Commit overflow fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet index.html; then
+            echo "No changes"
+          else
+            git add index.html
+            git commit -m "Fix contact card overflow"
+            git push
+          fi
