@@ -120,9 +120,9 @@ def validate(output: Path, browser_name: str = 'chromium'):
                 ready:faces.every(f => f.status === 'loaded')}));
             }""")
             assert all(f['count'] == 1 and f['ready'] for f in embedded_fonts), embedded_fonts
-            assert page.locator('.slide').count() == 17
+            assert page.locator('.slide').count() == 18
             metadata = page.locator('.slide').evaluate_all("ss => ss.map(s => ({id:s.id,seconds:+s.dataset.seconds,status:s.dataset.status,steps:[...s.querySelectorAll('[data-step]')].map(n=>+n.dataset.step)}))")
-            assert [s['id'] for s in metadata] == [f'slide-{i}' for i in range(1, 18)]
+            assert [s['id'] for s in metadata] == [f'slide-{i}' for i in range(1, 19)]
             seconds = sum(s['seconds'] for s in metadata)
             assert 1260 <= seconds <= 1320, seconds
             assert all(s['status'] == 'proposed' for s in metadata[9:14])
@@ -133,7 +133,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
             assert page.locator('[data-source]:not([href])').count() == 0
             for width, height in [(1600,900), (1920,1080)]:
                 page.set_viewport_size({'width':width, 'height':height})
-                for i in range(1,18):
+                for i in range(1,19):
                     page.evaluate('(n) => { LANGDEV_DECK.setReveal(false); LANGDEV_DECK.go(n); }', i)
                     path = output / f'{width}-slide-{i:02}.png'
                     page.screenshot(path=str(path))
@@ -159,7 +159,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
                 before = page.evaluate('LANGDEV_DECK.active')
                 page.keyboard.press(key)
                 assert page.evaluate('LANGDEV_DECK.active') == before - 1, key
-            page.keyboard.press('End'); assert page.evaluate('LANGDEV_DECK.active') == 17
+            page.keyboard.press('End'); assert page.evaluate('LANGDEV_DECK.active') == 18
             page.keyboard.press('Home'); assert page.evaluate('LANGDEV_DECK.active') == 1
             page.locator('#next').click(); assert page.evaluate('LANGDEV_DECK.active') == 2
             page.locator('#prev').click(); assert page.evaluate('LANGDEV_DECK.active') == 1
@@ -209,7 +209,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
     montage([path for path in states if path.name.startswith(('reveal-11-', 'reveal-12-'))], output / 'proof-reveals.png', columns=3, width=640)
     for first in range(0,len(states),12):
         montage(states[first:first+12], output / f'reveal-contact-{first//12+1}.png', columns=3, width=600)
-    report = {'browser':browser_name,'slides':17,'timing_seconds':seconds,'full_slide_screenshots':len(snapshots)*2,'reveal_states':len(states),'embedded_font_faces':len(embedded_fonts),'javascript_errors':errors,'geometry_issues':geometry,'navigation':'passed','touch_handler':'passed','local_file':'passed','responsive_fit':'passed'}
+    report = {'browser':browser_name,'slides':len(metadata),'timing_seconds':seconds,'full_slide_screenshots':len(snapshots)*2,'reveal_states':len(states),'embedded_font_faces':len(embedded_fonts),'javascript_errors':errors,'geometry_issues':geometry,'navigation':'passed','touch_handler':'passed','local_file':'passed','responsive_fit':'passed'}
     (output / 'validation.json').write_text(json.dumps(report,indent=2))
     print(json.dumps({key:value for key,value in report.items() if key != 'geometry_issues'},indent=2))
     print(f'Geometry issue groups: {len(geometry)}')
