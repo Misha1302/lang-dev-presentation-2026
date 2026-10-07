@@ -1,84 +1,116 @@
-# LangDev 2026 — final production review
+# LangDev 2026 — final production visual QA
 
-Reviewed 2026-10-06. Artifact: the actual production `index.html`, not a mockup.
+Reviewed 2026-10-07. Production artifact: `index.html`. Final deck revision under visual QA: `ad114ab509e23386728d3e484401d9ae64cd4ee5`.
 
-## Result
+## Verdict
 
-PASS for the reviewed Chromium/local-file presentation. **17 slides, 16:9, 21:00 rehearsal allocation**, excluding audience Q&A. Duration is an editorial allocation, not a measured speaker rehearsal.
+**PRESENTATION READY**
 
-The deck is self-contained: no font, CDN, network or server dependency is needed to present it. External evidence links are optional. The exported PDF has 17 pages.
+The production deck has **18 slides**, a **21:30 editorial rehearsal allocation** excluding audience Q&A, and a fixed 16:9 design surface. The visual language remains unchanged: dark technical background, cyan/violet/green semantic accents, code-first engineering diagrams and restrained card use.
 
-## Last-mile speaker patch — 2026-10-06
+This report is based on rendered browser output, not source inspection alone.
 
-PR #22 added the accepted conference title to slide 1, marked slide 9 as the explicit `research outlook · proposed` boundary, shortened slides 9–15 to a **6:00** outlook, and redistributed the saved time to the implemented compiler story for a **15:00 + 6:00 = 21:00** editorial allocation. Visible content on slides 2–8 and 16–17 was unchanged; only their timing metadata / note clocks changed.
+## Required rendered QA completed
 
-The PR render run and the post-merge `main` run both passed the production validator. The PR artifact reported **17 slides, 1260 seconds, 34 full-slide screenshots, 53 reveal states, 7 embedded font faces, 0 JavaScript errors and 0 geometry issues**; navigation, touch handling, local-file loading and responsive fitting passed. The full montage was reviewed after the patch, with slides 1 and 9 also inspected at full 1600×900 resolution because they are the only slides with visual-content changes.
+After the final repairs, every slide was rendered again at all required viewports:
 
-## Completed passes
+| Viewport | Slides rendered and visually inspected |
+|---|---:|
+| 1920×1080 | 18 / 18 |
+| 1536×864 | 18 / 18 |
+| 1366×768 | 18 / 18 |
+| **Required viewport × slide combinations** | **54** |
 
-1. **Narrative / technical content:** inspected production source and full git history, pinned current compiler source, read architecture contracts, inspected implementations and tests, executed compiler evidence checks, then wrote the claim map and each slide's visible reasoning. Rebuilt the story around one real Wist program and one bounded proposed SIMD scenario.
-2. **Visual composition:** restored connected module lanes, unresolved-to-resolved planning, an exact capability-gated AIR rewrite and narrowing abstraction layers. Different layouts show syntax, configuration, representations, binding identity, evidence derivation and provenance. Notes contain ANCHOR / FLOW / TRANSITION rather than a memorized script.
-3. **Rendered QA / repairs:** opened the production file in Chromium; rendered and visually inspected all 17 slides at 1600×900, all staged-reveal contact sheets and the full-deck montage. Rendered all 17 slides again at 1920×1080. Automated geometry checks complement, rather than replace, screenshot inspection.
+Staged reveals were captured again at 1920×1080. There are **56 rendered reveal states** including initial states, every intermediate reveal and final states. Slide 17 has no staged reveal.
 
-Screenshot-driven repairs included a long module label touching a connector, a compressed evidence-identity strip, a query node extending past the safe margin, a prior-art title pushing content downward, an unnecessary DAG label touching a node, and a crowded final narrowing diagram. The interpreter/CIL route changed from an ambiguous sequence into a genuine fork/join. Content and spacing were reduced without shrinking meaningful text below 16px.
+The checked contact sheets are in the ignored local QA workspace under `qa-final-visual/`:
+- `before-contact-sheet.png` — historical baseline at `4fdca2d`;
+- `after-contact-sheet.png` — accepted 1920×1080 revision;
+- `after-1536x864-contact-sheet.png`;
+- `after-1366x768-contact-sheet.png`;
+- `reveal-sheets/reveal-01-12.png` … `reveal-49-56.png`.
 
-The montage was checked for density, neighboring layout repetition, color balance and continuity. Code, lanes, comparisons, DAG, provenance path, narrowing pipeline and hero statements provide visual rhythm. Final reveal inspection confirmed reasoning appears in order without changing the underlying layout.
+## Findings and repairs
+
+### Slide 18 — P0 — presenter/navigation state could fail on the new contact slide
+
+**Problem:** after slide 18 was added, the short-notes map still ended at slide 17. Navigation to slide 18 could reach `updateNotes()` with no note entry.
+
+**Why it mattered:** the final slide could render but navigation/presenter state was not reliable.
+
+**Fix:** slide 18 now owns a complete short-note record and the deck validator expects all 18 slides and `End → 18`.
+
+### Slide 18 — P0 — QR codes depended on an external image service
+
+**Problem:** all four QR images were loaded from `api.qrserver.com`. With browser networking disabled, the rendered QR areas became blank broken images.
+
+**Why it mattered:** the deck is intended to be usable locally/on a projector. The final slide's primary interaction must not fail because venue Wi-Fi or an external service is unavailable.
+
+**Fix:** the four QR codes are now embedded directly in `index.html` as PNG data URIs. The validator switches the browser offline, opens `file://...#slide-18`, asserts four loaded QR images with non-zero natural dimensions, and captures `offline-contact-slide.png`.
+
+The four embedded QRs were also decoded from their final PNG bytes and resolve to:
+- live deck: `https://misha1302.github.io/lang-dev-presentation-2026/`;
+- project: `https://github.com/Misha1302/Wist2`;
+- Telegram: `https://t.me/Micodiy`;
+- email: `mailto:razakov.mikhail@outlook.com`.
+
+### Slide 18 — P1 — contact grid looked like a five-card layout with one card removed
+
+**Problem:** after removing the GitHub-profile card, the grid still used the previous five-column geometry; secondary text was undersized and the QR cards did not feel intentionally recomposed.
+
+**Fix:** the contact slide uses four equal columns, larger secondary text, equal centered QR geometry, safe wrapping for the email card and deliberate footer spacing.
+
+### Slide 18 — P2 — duplicate slide count
+
+**Problem:** the contact slide had a local `18 / 18` marker in addition to the deck-wide navigation counter.
+
+**Fix:** the local duplicate was removed so navigation chrome has a single owner.
+
+No additional P0/P1 issue was found on slides 1–17 in the final rendered pass.
 
 ## Final automated browser run
 
+Command:
+
 ```bash
-python scripts/validate_deck.py --output qa/final
+python scripts/validate_deck.py --output qa-final-candidate
 ```
 
-| Check | Observed result |
+Observed result:
+
+| Check | Result |
 |---|---|
-| Full-slide captures | 34: 17 at 1600×900 and 17 at 1920×1080 |
-| Reveal captures | 53 states, including initial and completed states |
-| Geometry issue groups | 0 |
+| Slides | 18 |
+| Timing metadata | 1290 s |
+| Validator full-slide screenshots | 36: 18 at 1600×900 + 18 at 1920×1080 |
+| Required final visual screenshots | 54: 18 each at 1920×1080, 1536×864, 1366×768 |
+| Reveal captures | 56 |
+| Embedded font faces | 7 |
 | JavaScript errors | 0 |
-| Embedded fonts | Seven bundled WOFF2 faces; loading checked explicitly |
-| Meaningful text / panel bounds | Passed at both desktop sizes and every reveal state |
-| Slide IDs, counters, notes, step continuity | Passed |
-| Keyboard, arrows, dots, hashes, wheel debounce | Passed |
-| Notes/help visibility and reveal completion | Passed |
-| Touch swipe handler | Passed with synthetic touch events; not a physical-device test |
-| Direct local-file opening and navigation | Passed |
-| Uniform fitting / letterboxing | Passed at 1280×720, 1024×768 and 390×844 |
-| Printable slide count | 17 pages, checked with pdfinfo |
-| JavaScript syntax / whitespace | Node syntax check and git diff --check |
+| Geometry issue groups | 0 |
+| Keyboard/arrows/dots/hash navigation | passed |
+| Wheel/touch navigation | passed |
+| Local-file opening | passed |
+| Responsive fit / letterboxing | passed |
+| Offline contact slide | passed |
+| Embedded QR decode | 4 / 4 |
 
-Artifacts: `qa/final/validation.json`, `montage.png`, full-resolution slides, reveal contact sheets and `LangDev-2026.pdf`. They are ignored by Git; the validator and CI workflow are checked-in source. Fullscreen uses the browser API and was not validated as a real projector/OS session. Other browser engines were not tested in this final run.
+## Visual review notes
 
-## Narrative and audience review
+- No visible overflow, clipping or panel collisions remain at the three required 16:9 viewports.
+- Header, kicker, claims, sources and navigation chrome remain aligned across the deck.
+- Slides 6–8 remain the densest engineering slides, but code and route diagrams stay readable and preserve hierarchy.
+- Slides 11–14 preserve the intended proof/provenance progression; reveal steps expose evidence before conclusions without layout shifts.
+- Slide 15 is dense by design but remains legible at 1366×768 and does not cross safe margins.
+- Slide 18 now remains functional with networking disabled; QR cards keep equal visual mass and quiet zones.
+- Reveal states use opacity only, so neighboring geometry does not jump when staged content appears.
 
-Transitions were checked as consequences of preceding slides, not simply topic changes:
+## Intentional non-changes
 
-- A formula needs several stages → a feature owns several contributions → selecting them changes the language (1–4).
-- Selection leaves global choices unresolved → LanguagePlan resolves them → the program becomes concrete Bytecode/AIR/backend operations (4–7).
-- Representations differ while meaning must agree → binding parity makes that observable → future transformations need premises with several owners (7–9).
-- Producer-specific coupling → semantic obligation → visible proof → a new producer helps the unchanged consumer (10–12).
-- Evidence needs identity → provenance also defines when an answer becomes stale → compare that integration boundary with serious precedents (13–15).
-- Execution consumes resolved decisions → return to the original expression and two disappearance gates (16–17).
+- The deck was not redesigned: color system, typography hierarchy, technical semantics and narrative structure were preserved.
+- Presenter notes/help remain explicit on-demand overlays; they are not part of the audience-facing slide state and were not converted into a separate presenter-console redesign.
+- Source links remain clickable external evidence. They are optional follow-up links, not rendering dependencies.
 
-Audience questions are answered on the slide itself: UniversalToolchain versus Wist (1), feature composition (2–3), exact dialect selection (4), plan purpose and contents (5), representations and .NET execution (6–7), engineering regression and current result (8), current/proposed boundary (9), semantic query (10), derivation and unchanged consumer (11–12), contracts and provenance (13–14), responsible prior-art boundary (15), disappearing abstractions (16).
+## Evidence boundary
 
-## Adversarial technical review
-
-- **Compiler researcher:** no novelty, formal completeness or measured advantage is asserted. Slide 15 states an integration experiment against an interface/analysis-manager baseline.
-- **Compiler engineer:** the plan and exact 3→1 AIR rewrite are implemented mechanisms. The proposed layer must justify itself through unchanged-consumer integration and correct invalidation; more framework is not an automatic benefit.
-- **Language designer:** MLIR interfaces, LLVM analysis management, Silver/ableC and Soufflé provenance link to primary sources. The comparison describes boundaries without misleading capability checkmarks.
-- **.NET engineer:** AIR execution and CIL compilation are separate routes. DynamicMethod, typed delegate, argument-slot lowering and the .NET JIT are visible. CIL is not mislabeled as machine code.
-- **First-time attendee / speaker:** the pricing expression, actual module selection and trace recur. Every slide has a causal outline; notes are backup rather than the only source of meaning.
-- **SIMD safety:** the example fixes lane-wise arithmetic, types, valid bounds and non-trapping evaluation. Computation purity does not erase output writes; dependency facts account for iteration interactions. Legality differs from profitability. Missing, invalidated or conflicting evidence cannot grant permission.
-
-## Evidence boundaries
-
-Executed source-baseline checks: 10 interpreter-binding parity tests, 7 dialect-profile contract tests, 5 focused NativeCilOptimizer tests, shipped pricing returning 95 in both routes, and a successful public-facade shadowing probe returning 2 in both routes. Full source/status details are in `REBUILD_EVIDENCE.md`.
-
-The semantic proof layer and SIMD example remain proposals, not implemented functionality. No historical incorrect numeric result was recovered or invented. Bytecode/AIR fragments are explicitly unoptimized explanatory sketches; constant folding may change the production artifact. No performance numbers or advantage over prior art are claimed. A timed human rehearsal and projector check remain speaker-side checks, not completed browser evidence.
-
-## Cleanup
-
-Removed obsolete duplicate `langdev_presentation_dag_pseudocode.html`; Git history retains it. Replaced stale 24-slide/delegate documentation and CI contracts with checks for the actual production deck. Removed obsolete slide CSS/IDs/navigation references during the rebuild. Compiler source and architecture are unchanged. The rebuild was verified locally before the owner's follow-up publication request; publishing uses the existing GitHub Pages deployment from `main` at the repository root.
-
-The first publication's GitHub-hosted browser exposed a portability defect: local Inter was not installed on the runner, so fallback-font metrics wrapped titles and crowded slides 6, 13 and 15. The deployed source and controls were correct, but the independent geometry check appropriately failed. The repair embeds Inter and renamed Liberation Mono subsets directly in the HTML, including their original OFL licenses. Every CSS text stack now prefers these bundled families. No geometry assertion was removed or relaxed; font loading is now an additional assertion. This also removes dependence on the speaker's installed fonts.
+The proposed semantic proof layer and SIMD example remain explicitly proposals. The deck does not claim production SIMD, formal completeness, measured speedup or novelty. Existing compiler/runtime claims and evidence boundaries remain unchanged by this visual QA pass.
