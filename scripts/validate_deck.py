@@ -195,6 +195,15 @@ def validate(output: Path, browser_name: str = 'chromium'):
                 assert rect['x'] + rect['width'] <= size[0] + .1
                 page.screenshot(path=str(output / f'fit-{size[0]}x{size[1]}.png'))
             page.set_viewport_size({'width':1600, 'height':900})
+            page.context.set_offline(True)
+            page.goto((ROOT / 'index.html').as_uri() + '#slide-18')
+            assert page.evaluate('LANGDEV_DECK.active') == 18
+            assert page.locator('#slide-18 img.qr').count() == 4
+            assert page.locator('#slide-18 img.qr').evaluate_all(
+                "els => els.every(e => e.src.startsWith('data:image/png;base64,') && e.complete && e.naturalWidth > 0)"
+            )
+            page.screenshot(path=str(output / 'offline-contact-slide.png'))
+            page.context.set_offline(False)
             page.goto((ROOT / 'index.html').as_uri() + '#slide-8')
             assert page.evaluate('LANGDEV_DECK.active') == 8
             page.keyboard.press('ArrowRight'); assert page.evaluate('LANGDEV_DECK.active') == 9

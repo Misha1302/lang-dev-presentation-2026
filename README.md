@@ -1,6 +1,6 @@
 # LangDev 2026 — Open to extension. Concrete at execution.
 
-The production presentation is **index.html**: a self-contained, offline-capable 16:9 HTML deck with 17 slides and a **21:00 rehearsal allocation**, excluding audience Q&A. Open it directly in a browser; no installation, installed fonts, CDN or server is required. Inter and renamed Liberation Mono subsets are embedded as WOFF2 data URLs, with SIL OFL licenses included in the HTML. The live production entrypoint is https://misha1302.github.io/lang-dev-presentation-2026/.
+The production presentation is **index.html**: a self-contained, offline-capable 16:9 HTML deck with 18 slides and a **21:30 rehearsal allocation**, excluding audience Q&A. Open it directly in a browser; no installation, installed fonts, CDN or server is required. Inter and renamed Liberation Mono subsets are embedded as WOFF2 data URLs, with SIL OFL licenses included in the HTML. The live production entrypoint is https://misha1302.github.io/lang-dev-presentation-2026/.
 
 The accepted talk title is **“Build the Language, Then Make the Abstractions Disappear: Extensible Programming on .NET.”** The shorter on-slide thesis is **“Open to extension. Concrete at execution.”**
 
@@ -16,7 +16,7 @@ For last-mile rehearsal, use the deployed companion runbook: https://misha1302.g
 - `P`: presenter notes in ANCHOR / FLOW / TRANSITION form; `H`: help; `F`: fullscreen.
 - `Home` / `End`: first / last slide. Buttons and left-side dots also navigate.
 - Wheel/trackpad and touch swipe advance one step per gesture.
-- Canonical hashes: `#slide-1` … `#slide-17`; numeric `#1` … `#17` links also work.
+- Canonical hashes: `#slide-1` … `#slide-18`; numeric `#1` … `#18` links also work.
 
 The deck scales uniformly and letterboxes non-16:9 viewports. Browser printing produces one slide per page. All meaningful type is at least 16px in the 1600×900 design coordinates; code is 23–40px.
 
