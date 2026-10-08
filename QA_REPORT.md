@@ -1,116 +1,55 @@
-# LangDev 2026 — final production visual QA
+# LangDev 2026 — production narrative and browser QA
 
-Reviewed 2026-10-07. Production artifact: `index.html`. Final deck revision under visual QA: `ad114ab509e23386728d3e484401d9ae64cd4ee5`.
+Reviewed 2026-10-08 against baseline main `128d6f910d35f2aebedd95a3efd432be9a019ea9`.
+Production artifact: `index.html`, SHA-256 `ee97af4e975e71b2cb939a1f214428b58ff2ee7724f110941f21cac11afdd6cc`.
 
-## Verdict
+## Result and scope
 
-**PRESENTATION READY**
+Targeted repairs preserve 18 slides, 1290 seconds (21:30) and the six-minute proposed research outlook. No compiler source, dependency, visual framework or deployment workflow was changed. The complete causal diagnosis, first-use terminology map, alternative repairs and per-slide argument are in REBUILD_EVIDENCE.md, section “2026-10-08 narrative and cognitive investigation”.
 
-The production deck has **18 slides**, a **21:30 editorial rehearsal allocation** excluding audience Q&A, and a fixed 16:9 design surface. The visual language remains unchanged: dark technical background, cyan/violet/green semantic accents, code-first engineering diagrams and restrained card use.
+The suspected vocabulary gap was real at the first derivation, but a new glossary slide was unnecessary: the optimizer question and conservative fallback were already visible on slide 10. The repaired DAG teaches its roles in that same running example. Source-backed implementation claims, prior-art comparison and the return to the main thesis were retained.
 
-This report is based on rendered browser output, not source inspection alone.
+## Repairs
 
-## Required rendered QA completed
+- Slides 6–7: expand AIR locally and synchronize actual SAY cues with semantic binding and host binding-slot motivation.
+- Slide 9: avoid assuming listeners already understand premises; preserve explicit proposal boundary.
+- Slide 10: name the obligation as required legality and make type/lane/bounds/trap/tail assumptions explicit.
+- Slide 11: annotate producers and R1/R2, require all incoming premises, define evidence contextually, identify the arithmetic computation, and bound proof to derivation rather than provider correctness. Its existing title is shortened to make space; original graph topology and colors remain.
+- Slides 12–13: keep query/rules fixed, identify new valid facts as the change, use consistent property names and identify shared rule ownership. No unconditional truth from adding a module.
+- Slide 14: distinguish explicit negative evidence from missing proof, identify a provenance excerpt, and make loss of the answer conditional on no alternative valid proof.
+- Slide 18: remove browser-width media queries inside the uniformly scaled fixed stage. All four QRs now remain visible at 1024×768 and portrait widths.
+- README/runbook: synchronize actual SAY/NEXT interface, 18-slide handoff and timing. Detailed hidden notes remain available in source.
+- Validator: test visible notes rather than a hidden legacy clone, enforce unchanged timing, cover every projector size, all changed reveals at smaller sizes, all-slide non-16:9 geometry and all slides offline.
 
-After the final repairs, every slide was rendered again at all required viewports:
+## Executed final validation
 
-| Viewport | Slides rendered and visually inspected |
-|---|---:|
-| 1920×1080 | 18 / 18 |
-| 1536×864 | 18 / 18 |
-| 1366×768 | 18 / 18 |
-| **Required viewport × slide combinations** | **54** |
+Command: `python scripts/validate_deck.py --output qa/final`.
 
-Staged reveals were captured again at 1920×1080. There are **56 rendered reveal states** including initial states, every intermediate reveal and final states. Slide 17 has no staged reveal.
-
-The checked contact sheets are in the ignored local QA workspace under `qa-final-visual/`:
-- `before-contact-sheet.png` — historical baseline at `4fdca2d`;
-- `after-contact-sheet.png` — accepted 1920×1080 revision;
-- `after-1536x864-contact-sheet.png`;
-- `after-1366x768-contact-sheet.png`;
-- `reveal-sheets/reveal-01-12.png` … `reveal-49-56.png`.
-
-## Findings and repairs
-
-### Slide 18 — P0 — presenter/navigation state could fail on the new contact slide
-
-**Problem:** after slide 18 was added, the short-notes map still ended at slide 17. Navigation to slide 18 could reach `updateNotes()` with no note entry.
-
-**Why it mattered:** the final slide could render but navigation/presenter state was not reliable.
-
-**Fix:** slide 18 now owns a complete short-note record and the deck validator expects all 18 slides and `End → 18`.
-
-### Slide 18 — P0 — QR codes depended on an external image service
-
-**Problem:** all four QR images were loaded from `api.qrserver.com`. With browser networking disabled, the rendered QR areas became blank broken images.
-
-**Why it mattered:** the deck is intended to be usable locally/on a projector. The final slide's primary interaction must not fail because venue Wi-Fi or an external service is unavailable.
-
-**Fix:** the four QR codes are now embedded directly in `index.html` as PNG data URIs. The validator switches the browser offline, opens `file://...#slide-18`, asserts four loaded QR images with non-zero natural dimensions, and captures `offline-contact-slide.png`.
-
-The four embedded QRs were also decoded from their final PNG bytes and resolve to:
-- live deck: `https://misha1302.github.io/lang-dev-presentation-2026/`;
-- project: `https://github.com/Misha1302/Wist2`;
-- Telegram: `https://t.me/Micodiy`;
-- email: `mailto:razakov.mikhail@outlook.com`.
-
-### Slide 18 — P1 — contact grid looked like a five-card layout with one card removed
-
-**Problem:** after removing the GitHub-profile card, the grid still used the previous five-column geometry; secondary text was undersized and the QR cards did not feel intentionally recomposed.
-
-**Fix:** the contact slide uses four equal columns, larger secondary text, equal centered QR geometry, safe wrapping for the email card and deliberate footer spacing.
-
-### Slide 18 — P2 — duplicate slide count
-
-**Problem:** the contact slide had a local `18 / 18` marker in addition to the deck-wide navigation counter.
-
-**Fix:** the local duplicate was removed so navigation chrome has a single owner.
-
-No additional P0/P1 issue was found on slides 1–17 in the final rendered pass.
-
-## Final automated browser run
-
-Command:
-
-```bash
-python scripts/validate_deck.py --output qa-final-candidate
-```
-
-Observed result:
-
-| Check | Result |
+| Check | Observed result |
 |---|---|
-| Slides | 18 |
-| Timing metadata | 1290 s |
-| Validator full-slide screenshots | 36: 18 at 1600×900 + 18 at 1920×1080 |
-| Required final visual screenshots | 54: 18 each at 1920×1080, 1536×864, 1366×768 |
-| Reveal captures | 56 |
-| Embedded font faces | 7 |
-| JavaScript errors | 0 |
-| Geometry issue groups | 0 |
-| Keyboard/arrows/dots/hash navigation | passed |
-| Wheel/touch navigation | passed |
-| Local-file opening | passed |
-| Responsive fit / letterboxing | passed |
-| Offline contact slide | passed |
-| Embedded QR decode | 4 / 4 |
+| Slides / total timing / research timing | 18 / 1290 s / 360 s |
+| Default screenshots | 72: every slide at 1600×900, 1920×1080, 1536×864, 1366×768 |
+| Required projector combinations | 54 / 54 captured and visually reviewed |
+| Responsive screenshots | 72: all slides at 1280×720, 1024×768, 1280×900, 390×844 |
+| Logical reveal states / captures | 56 / 176 |
+| Reveal coverage | All states at 1600 and 1920; changed slides at 1536 and 1366 |
+| JavaScript errors / geometry groups | 0 / 0 |
+| Embedded fonts | Seven faces loaded, also explicitly loaded offline |
+| Navigation | Keyboard, buttons, dots, canonical/numeric hashes, wheel, touch passed |
+| Presenter/help | Visible SAY/tail and P dismissal on all 18; H dismissal passed |
+| Local/offline | All 18 slides opened offline; four embedded QR images loaded |
+| Printing | PDF generated |
 
-## Visual review notes
+An additional final browser capture under `qa/final-visual` covers 108 viewport/slide combinations and 26 research/adjacent reveal states, plus the actual slide 11 presenter overlay. It also observed zero geometry and JavaScript errors. Final source hashes are recorded in `qa/final/validation.json` for HTML, runbook and validator, so these results identify the release candidate rather than an earlier revision.
 
-- No visible overflow, clipping or panel collisions remain at the three required 16:9 viewports.
-- Header, kicker, claims, sources and navigation chrome remain aligned across the deck.
-- Slides 6–8 remain the densest engineering slides, but code and route diagrams stay readable and preserve hierarchy.
-- Slides 11–14 preserve the intended proof/provenance progression; reveal steps expose evidence before conclusions without layout shifts.
-- Slide 15 is dense by design but remains legible at 1366×768 and does not cross safe margins.
-- Slide 18 now remains functional with networking disabled; QR cards keep equal visual mass and quiet zones.
-- Reveal states use opacity only, so neighboring geometry does not jump when staged content appears.
+Final full-slide contact sheets at all three required projector sizes were visually reviewed. Titles, code, proof labels, contrast and layout remain coherent; no clipping or overlap was observed. Intermediate candidate and baseline research reveals were reviewed during the investigation. The user then explicitly requested skipping further checks: the remaining manual review of **every final changed reveal screenshot** and additional standalone adversarial pass were therefore not completed. Automated final reveal geometry did pass. This is a review limitation, not a claim of complete manual reveal QA or human usability testing.
 
-## Intentional non-changes
+No comprehension score or measured delivery-time claim is made. The allocation gives the first derivation 80 seconds by moving 15 seconds from repeated research narration, without changing total duration.
 
-- The deck was not redesigned: color system, typography hierarchy, technical semantics and narrative structure were preserved.
-- Presenter notes/help remain explicit on-demand overlays; they are not part of the audience-facing slide state and were not converted into a separate presenter-console redesign.
-- Source links remain clickable external evidence. They are optional follow-up links, not rendering dependencies.
+## Before/after and remaining boundaries
 
-## Evidence boundary
+The optimizer question now precedes contextual definitions; producers, required premises and derived conclusion are visible together. Evidence authority, fixed rules, negative evidence and alternative-proof invalidation are explicit. The non-16:9 contact clipping reproduced in baseline is absent in final automated geometry.
 
-The proposed semantic proof layer and SIMD example remain explicitly proposals. The deck does not claim production SIMD, formal completeness, measured speedup or novelty. Existing compiler/runtime claims and evidence boundaries remain unchanged by this visual QA pass.
+Slides 1–5, 8, 15–17 retain their audience-facing content. Slide 8 has only an updated transition cue. The research layer and SIMD remain proposed/illustrative; legality is bounded by fixed assumptions and separate from profitability. No speedup, formal completeness or shipped vectorizer is asserted. Compiler execution results in the older evidence record were not rerun; pinned source contracts were inspected read-only.
+
+CI/deployment conclusions must be taken from the runs for the published commit, not inferred from this local report.

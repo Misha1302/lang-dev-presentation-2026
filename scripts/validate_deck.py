@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import functools
+import hashlib
 import http.server
 import json
 from pathlib import Path
@@ -104,7 +105,9 @@ def validate(output: Path, browser_name: str = 'chromium'):
     server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), handler)
     worker = threading.Thread(target=server.serve_forever, daemon=True)
     worker.start()
-    errors, geometry, states, snapshots = [], [], [], []
+    errors, geometry, states, snapshots, reveal_captures = [], [], [], [], []
+    default_viewports = [(1600,900), (1920,1080), (1536,864), (1366,768)]
+    responsive_captures = 0
     try:
         with sync_playwright() as p:
             browser = getattr(p, browser_name).launch()
@@ -124,22 +127,37 @@ def validate(output: Path, browser_name: str = 'chromium'):
             metadata = page.locator('.slide').evaluate_all("ss => ss.map(s => ({id:s.id,seconds:+s.dataset.seconds,status:s.dataset.status,steps:[...s.querySelectorAll('[data-step]')].map(n=>+n.dataset.step)}))")
             assert [s['id'] for s in metadata] == [f'slide-{i}' for i in range(1, 19)]
             seconds = sum(s['seconds'] for s in metadata)
-            assert 1260 <= seconds <= 1320, seconds
+            assert seconds == 1290, seconds
+            assert sum(s['seconds'] for s in metadata[8:15]) == 360
             assert all(s['status'] == 'proposed' for s in metadata[9:14])
             for s in metadata:
                 assert s['steps'] == [] or sorted(set(s['steps'])) == list(range(1, max(s['steps']) + 1)), s
                 notes = page.locator(f"#{s['id']} .notes").text_content()
                 assert all(key in notes for key in ['ANCHOR:', 'FLOW:', 'TRANSITION:']), s['id']
             assert page.locator('[data-source]:not([href])').count() == 0
-            for width, height in [(1600,900), (1920,1080)]:
+            for i in range(1,19):
+                page.evaluate('LANGDEV_DECK.go', i)
+                page.keyboard.press('p')
+                visible_notes = page.locator('#notesPanel').inner_text()
+                assert 'SAY' in visible_notes and ('NEXT' in visible_notes or 'END' in visible_notes), i
+                assert page.locator('#notesPanel .speaker-line').count() >= 2, i
+                assert 'ANCHOR:' not in visible_notes, 'Legacy notes must stay hidden'
+                page.keyboard.press('p')
+                assert not page.locator('#notesPanel').is_visible()
+            for width, height in default_viewports:
                 page.set_viewport_size({'width':width, 'height':height})
+                viewport_snapshots = []
                 for i in range(1,19):
                     page.evaluate('(n) => { LANGDEV_DECK.setReveal(false); LANGDEV_DECK.go(n); }', i)
                     path = output / f'{width}-slide-{i:02}.png'
                     page.screenshot(path=str(path))
+                    viewport_snapshots.append(path)
                     if width == 1600: snapshots.append(path)
                     failures = page.evaluate(GEOMETRY)
                     if failures: geometry.append({'slide':i, 'width':width, 'problems':failures})
+                montage(viewport_snapshots, output / f'montage-{width}.png')
+                for first in range(0,18,4):
+                    montage(viewport_snapshots[first:first+4], output / f'contact-{width}-{first+1:02}.png', columns=2, width=800)
             page.set_viewport_size({'width':1600, 'height':900})
             for i, slide in enumerate(metadata, 1):
                 page.evaluate('(n) => { LANGDEV_DECK.go(n); LANGDEV_DECK.setReveal(true); }', i)
@@ -148,8 +166,24 @@ def validate(output: Path, browser_name: str = 'chromium'):
                     path = output / f'reveal-{i:02}-{step}.png'
                     page.screenshot(path=str(path))
                     states.append(path)
+                    reveal_captures.append(path)
                     failures = page.evaluate(GEOMETRY)
                     if failures: geometry.append({'slide':i, 'step':step, 'problems':failures})
+            changed_slides = {6,7,9,10,11,12,13,14,18}
+            for width, height in default_viewports[1:]:
+                page.set_viewport_size({'width':width, 'height':height})
+                for i, slide in enumerate(metadata, 1):
+                    if width != 1920 and i not in changed_slides:
+                        continue
+                    page.evaluate('(n) => { LANGDEV_DECK.go(n); LANGDEV_DECK.setReveal(true); }', i)
+                    for step in range(max(slide['steps'], default=0) + 1):
+                        page.evaluate('(s) => LANGDEV_DECK.setStep(s)', step)
+                        path = output / f'reveal-{width}-{i:02}-{step}.png'
+                        page.screenshot(path=str(path))
+                        reveal_captures.append(path)
+                        failures = page.evaluate(GEOMETRY)
+                        if failures: geometry.append({'slide':i, 'width':width, 'step':step, 'problems':failures})
+            page.set_viewport_size({'width':1600, 'height':900})
             page.evaluate('() => {LANGDEV_DECK.setReveal(false); LANGDEV_DECK.go(1)}')
             for key in ['ArrowRight', 'ArrowDown', 'PageDown', 'Space', 'j']:
                 before = page.evaluate('LANGDEV_DECK.active')
@@ -170,11 +204,13 @@ def validate(output: Path, browser_name: str = 'chromium'):
             page.keyboard.press('Space'); assert page.evaluate('LANGDEV_DECK.active') == 2
             page.keyboard.press('a'); assert page.locator('.slide.active [data-step]:not(.shown)').count() == 0
             page.keyboard.press('p'); assert page.locator('#notesPanel').is_visible()
-            assert 'ANCHOR:' in page.locator('#notesPanel').text_content()
+            assert 'SAY' in page.locator('#notesPanel').inner_text()
             assert page.locator('#notesPanel').bounding_box()['y'] < 120
             page.screenshot(path=str(output / 'presenter-notes-top.png'))
-            page.keyboard.press('p'); page.keyboard.press('h'); assert page.locator('#helpOverlay').is_visible()
-            page.keyboard.press('h'); page.keyboard.press('r')
+            page.keyboard.press('p'); assert not page.locator('#notesPanel').is_visible()
+            page.keyboard.press('h'); assert page.locator('#helpOverlay').is_visible()
+            page.keyboard.press('h'); assert not page.locator('#helpOverlay').is_visible()
+            page.keyboard.press('r')
             page.evaluate("location.hash = '#slide-12'"); page.wait_for_function('LANGDEV_DECK.active === 12')
             page.evaluate("location.hash = '#6'"); page.wait_for_function('LANGDEV_DECK.active === 6')
             page.locator('.dot').nth(3).click(); assert page.evaluate('LANGDEV_DECK.active') == 4
@@ -187,7 +223,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
               target.dispatchEvent(new TouchEvent('touchend',{bubbles:true,changedTouches:[touch(400)]}));
             }""")
             assert page.evaluate('LANGDEV_DECK.active') == 6
-            for size in [(1280,720), (1024,768), (390,844)]:
+            for size in [(1280,720), (1024,768), (1280,900), (390,844)]:
                 page.set_viewport_size({'width':size[0], 'height':size[1]})
                 page.evaluate('LANGDEV_DECK.go(11)')
                 page.wait_for_function("() => {const r=document.querySelector('#stage').getBoundingClientRect();return r.left>=-.1 && r.top>=-.1 && r.right<=innerWidth+.1 && r.bottom<=innerHeight+.1}")
@@ -196,8 +232,24 @@ def validate(output: Path, browser_name: str = 'chromium'):
                 assert rect['x'] >= -.1 and rect['y'] >= -.1
                 assert rect['x'] + rect['width'] <= size[0] + .1
                 page.screenshot(path=str(output / f'fit-{size[0]}x{size[1]}.png'))
+                for i in range(1,19):
+                    page.evaluate('LANGDEV_DECK.go', i)
+                    page.screenshot(path=str(output / f'fit-{size[0]}x{size[1]}-slide-{i:02}.png'))
+                    responsive_captures += 1
+                    failures = page.evaluate(GEOMETRY)
+                    if failures: geometry.append({'slide':i, 'size':size, 'problems':failures})
             page.set_viewport_size({'width':1600, 'height':900})
             page.context.set_offline(True)
+            for i in range(1,19):
+                page.goto((ROOT / 'index.html').as_uri() + f'#slide-{i}')
+                assert page.evaluate('LANGDEV_DECK.active') == i
+                assert page.evaluate("""async () => {
+                  const specs = [400,500,600,700,800].map(w => `${w} 26px DeckSans`)
+                    .concat([400,700].map(w => `${w} 26px DeckMono`));
+                  const loaded = await Promise.all(specs.map(s => document.fonts.load(s)));
+                  await document.fonts.ready;
+                  return loaded.every(faces => faces.length === 1 && faces[0].status === 'loaded');
+                }""")
             page.goto((ROOT / 'index.html').as_uri() + '#slide-18')
             assert page.evaluate('LANGDEV_DECK.active') == 18
             assert page.locator('#slide-18 img.qr').count() == 4
@@ -220,7 +272,9 @@ def validate(output: Path, browser_name: str = 'chromium'):
     montage([path for path in states if path.name.startswith(('reveal-11-', 'reveal-12-'))], output / 'proof-reveals.png', columns=3, width=640)
     for first in range(0,len(states),12):
         montage(states[first:first+12], output / f'reveal-contact-{first//12+1}.png', columns=3, width=600)
-    report = {'browser':browser_name,'slides':len(metadata),'timing_seconds':seconds,'full_slide_screenshots':len(snapshots)*2,'reveal_states':len(states),'embedded_font_faces':len(embedded_fonts),'javascript_errors':errors,'geometry_issues':geometry,'navigation':'passed','touch_handler':'passed','local_file':'passed','responsive_fit':'passed'}
+    source_hashes = {name:hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+                     for name in ['index.html','speaker-runbook.html','scripts/validate_deck.py']}
+    report = {'browser':browser_name,'source_sha256':source_hashes,'slides':len(metadata),'timing_seconds':seconds,'research_seconds':360,'full_slide_screenshots':len(snapshots)*len(default_viewports),'responsive_screenshots':responsive_captures,'reveal_states':len(states),'reveal_screenshots':len(reveal_captures),'embedded_font_faces':len(embedded_fonts),'javascript_errors':errors,'geometry_issues':geometry,'navigation':'passed','touch_handler':'passed','presenter_notes':'visible SAY/tail and dismissal passed on all slides','local_file':'passed','offline_slides':18,'responsive_fit':'passed'}
     (output / 'validation.json').write_text(json.dumps(report,indent=2))
     print(json.dumps({key:value for key,value in report.items() if key != 'geometry_issues'},indent=2))
     print(f'Geometry issue groups: {len(geometry)}')

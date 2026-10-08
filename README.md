@@ -13,7 +13,7 @@ For last-mile rehearsal, use the deployed companion runbook: https://misha1302.g
 - `→`, `↓`, `PageDown`, `Space`, `J`: next slide, or next reasoning step in reveal mode.
 - `←`, `↑`, `PageUp`, `Shift+Space`, `K`: previous slide.
 - `R`: toggle staged reveals; `A`: reveal the complete current slide.
-- `P`: presenter notes in ANCHOR / FLOW / TRANSITION form; `H`: help; `F`: fullscreen.
+- `P`: presenter notes in SAY / NEXT (or END) form; `H`: help; `F`: fullscreen.
 - `Home` / `End`: first / last slide. Buttons and left-side dots also navigate.
 - Wheel/trackpad and touch swipe advance one step per gesture.
 - Canonical hashes: `#slide-1` … `#slide-18`; numeric `#1` … `#18` links also work.
@@ -28,6 +28,6 @@ python -m playwright install chromium
 python scripts/validate_deck.py --output qa/final
 ```
 
-The validator exercises the actual production DOM, captures every slide at 1600×900 and 1920×1080, captures every reveal state, checks typography/geometry and navigation, tests direct local-file loading, and creates a PDF and contact sheets. Human screenshot inspection is still required; see QA_REPORT.md for the completed review.
+The validator exercises the actual production DOM, captures every slide at 1600×900, 1920×1080, 1536×864 and 1366×768, captures all reveal states at 1600×900 and 1920×1080 and changed reveals at the two smaller projector sizes, checks typography/geometry and navigation, tests all 18 slides offline from a local file and all-slide geometry at non-16:9 window sizes, and creates a PDF and contact sheets. Human screenshot inspection is still required; see QA_REPORT.md for the completed review.
 
 REBUILD_EVIDENCE.md records pinned compiler sources, implementation/proposal boundaries, the git-history investigation and each slide's causal narrative. Generated QA artifacts live in `qa/` and are ignored by Git. Compiler sources are unchanged.
