@@ -1,6 +1,8 @@
 # LangDev final rebuild: evidence and narrative
 
 Authority: presentation working record, not a compiler architecture contract.
+
+Latest revision: 2026-10-09. See IMPROVEMENT_REPORT.md and QA_REPORT.md for the current deck, evidence boundaries, executed checks and 21:30 allocation. Earlier investigations below are historical records; fixed R1/R2 and six-minute-outlook statements there describe earlier candidates.
 Investigated 2026-10-06 before editing the production presentation.
 
 ## Source baseline
@@ -215,3 +217,34 @@ Final HTML SHA-256: `ee97af4e975e71b2cb939a1f214428b58ff2ee7724f110941f21cac11af
 The final explanation through slide 11 can be reconstructed without later definitions: slide 9 proposes cross-owner cooperation; slide 10 states the optimizer's required property and fixed assumptions; slide 11 identifies provider assertions, two all-input rules, the derived independence fact and the legality answer. The same slide bounds proof to derivation and separates cost. Slide 12 adds compatible valid evidence under fixed rules, 13 generalizes its identity contract, and 14 explains missing/negative/stale/conflicting knowledge. The 15→16 return still consumes decisions at compile boundaries; no proposed engine is inserted into production execution.
 
 Before publication, the user explicitly instructed “скипни проверки”. Remaining additional checks, including exhaustive manual review of every final changed reveal and an additional standalone adversarial pass, were skipped. Executed automatic checks and reviewed full-slide evidence are retained; omitted manual coverage is disclosed in QA_REPORT.md. CI remains enabled and will run normally for the release commit. No checks were disabled or weakened.
+
+## 2026-10-09 baseline and causal repairs
+
+Baseline commit `e7256fd`; clean `main`; canonical self-contained `index.html`; 18 slides. No repository/ancestor AGENTS.md applies to presentation edits. Compiler AGENTS and current/research architecture documents were read for evidence. No unrelated working-tree edits were present.
+
+| Slide | Baseline title | Baseline seconds |
+|---|---|---|
+| 01 | Open to extension. Concrete at execution. | 60 |
+| 02 | A feature cuts across the whole compiler | 80 |
+| 03 | Make the extension points module-owned | 80 |
+| 04 | The selected modules are the language | 90 |
+| 05 | Composition closes into one LanguagePlan | 110 |
+| 06 | One Wist program becomes executable operations | 120 |
+| 07 | Known slot + known type can erase a load sequence | 90 |
+| 08 | One source must not acquire two meanings | 115 |
+| 09 | A plan resolves structure. Compiler components still need shared meaning. | 40 |
+| 10 | The vectorizer should not know who owns the answer | 55 |
+| 11 | Rules turn owned facts into a semantic answer | 80 |
+| 12 | A new module can make an old query provable | 45 |
+| 13 | Publish evidence. Derive facts. Query obligations. | 40 |
+| 14 | Provenance explains both success and a safe stop | 50 |
+| 15 | Prior art supplies the pieces. Open composition sets the integration question. | 50 |
+| 16 | The abstractions disappear at two different gates | 100 |
+| 17 | Compose the language. Agree on meaning. Execute concrete operations. | 55 |
+| 18 | Continue the discussion | 30 |
+
+Editing strategy: keep the 18-slide architecture; reduce slide 8 and repurpose the repeated exchange/synthesis slides. New B1 belongs to the added producer bridge; existing R is unchanged. EquivalentLaneLowering is a per-lane obligation, so it does not conceal cross-iteration safety. Actual route decisions come from WistCanonicalArtifactGraphTests. Insertion-order canonicalization is grounded in SDK tests, not inferred from an adjective.
+
+Shipped compiler facts and stage lifecycle contracts are implemented; general relation registry/inference/provenance is the research boundary. The pinned checkout remains the source for all deck links. Later checkout e7f71a8 was inspected only to check that this boundary was not silently stale.
+
+Current outline, per-slide evidence/payoff and technical-integrity map: IMPROVEMENT_REPORT.md. Actual source-hashed render results, compiler checks and links: QA_REPORT.md. Historical benchmark/probe outcomes above remain labelled historical unless explicitly rerun.

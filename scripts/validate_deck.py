@@ -95,6 +95,8 @@ def montage(paths: list[Path], output: Path, columns: int = 4, width: int = 480)
 
 def validate(output: Path, browser_name: str = 'chromium'):
     output.mkdir(parents=True, exist_ok=True)
+    source_files = ['index.html','speaker-runbook.html','scripts/validate_deck.py']
+    initial_hashes = {name:hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in source_files}
     html = (ROOT / 'index.html').read_text()
     script = html.split('<script>', 1)[1].split('</script>', 1)[0]
     with tempfile.TemporaryDirectory(prefix='langdev-js-') as temporary:
@@ -128,7 +130,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
             assert [s['id'] for s in metadata] == [f'slide-{i}' for i in range(1, 19)]
             seconds = sum(s['seconds'] for s in metadata)
             assert seconds == 1290, seconds
-            assert sum(s['seconds'] for s in metadata[8:15]) == 360
+            assert sum(s['seconds'] for s in metadata[8:15]) == 415
             assert all(s['status'] == 'proposed' for s in metadata[9:14])
             for s in metadata:
                 assert s['steps'] == [] or sorted(set(s['steps'])) == list(range(1, max(s['steps']) + 1)), s
@@ -149,6 +151,8 @@ def validate(output: Path, browser_name: str = 'chromium'):
                 viewport_snapshots = []
                 for i in range(1,19):
                     page.evaluate('(n) => { LANGDEV_DECK.setReveal(false); LANGDEV_DECK.go(n); }', i)
+                    assert page.locator('#count').inner_text() == f'{i:02} / 18'
+                    assert abs(page.evaluate("parseFloat(document.querySelector('#progress').style.width)") - i/18*100) < .001
                     path = output / f'{width}-slide-{i:02}.png'
                     page.screenshot(path=str(path))
                     viewport_snapshots.append(path)
@@ -169,7 +173,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
                     reveal_captures.append(path)
                     failures = page.evaluate(GEOMETRY)
                     if failures: geometry.append({'slide':i, 'step':step, 'problems':failures})
-            changed_slides = {6,7,9,10,11,12,13,14,18}
+            changed_slides = set(range(1,19))
             for width, height in default_viewports[1:]:
                 page.set_viewport_size({'width':width, 'height':height})
                 for i, slide in enumerate(metadata, 1):
@@ -273,8 +277,9 @@ def validate(output: Path, browser_name: str = 'chromium'):
     for first in range(0,len(states),12):
         montage(states[first:first+12], output / f'reveal-contact-{first//12+1}.png', columns=3, width=600)
     source_hashes = {name:hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
-                     for name in ['index.html','speaker-runbook.html','scripts/validate_deck.py']}
-    report = {'browser':browser_name,'source_sha256':source_hashes,'slides':len(metadata),'timing_seconds':seconds,'research_seconds':360,'full_slide_screenshots':len(snapshots)*len(default_viewports),'responsive_screenshots':responsive_captures,'reveal_states':len(states),'reveal_screenshots':len(reveal_captures),'embedded_font_faces':len(embedded_fonts),'javascript_errors':errors,'geometry_issues':geometry,'navigation':'passed','touch_handler':'passed','presenter_notes':'visible SAY/tail and dismissal passed on all slides','local_file':'passed','offline_slides':18,'responsive_fit':'passed'}
+                     for name in source_files}
+    assert source_hashes == initial_hashes, 'Source changed during validation; rerun on stable files'
+    report = {'browser':browser_name,'source_sha256':source_hashes,'slides':len(metadata),'timing_seconds':seconds,'research_seconds':415,'full_slide_screenshots':len(snapshots)*len(default_viewports),'responsive_screenshots':responsive_captures,'reveal_states':len(states),'reveal_screenshots':len(reveal_captures),'embedded_font_faces':len(embedded_fonts),'javascript_errors':errors,'geometry_issues':geometry,'navigation':'passed','touch_handler':'passed','presenter_notes':'visible SAY/tail and dismissal passed on all slides','local_file':'passed','offline_slides':18,'responsive_fit':'passed'}
     (output / 'validation.json').write_text(json.dumps(report,indent=2))
     print(json.dumps({key:value for key,value in report.items() if key != 'geometry_issues'},indent=2))
     print(f'Geometry issue groups: {len(geometry)}')
