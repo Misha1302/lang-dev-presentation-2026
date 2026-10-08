@@ -1,12 +1,12 @@
 # LangDev 2026 — Open to extension. Concrete at execution.
 
-The production presentation is **index.html**: a self-contained, offline-capable 16:9 HTML deck with 18 slides and a **21:30 rehearsal allocation**, excluding audience Q&A. Open it directly in a browser; no installation, installed fonts, CDN or server is required. Inter and renamed Liberation Mono subsets are embedded as WOFF2 data URLs, with SIL OFL licenses included in the HTML. The live production entrypoint is https://misha1302.github.io/lang-dev-presentation-2026/.
+The production presentation is **index.html**: a self-contained, offline-capable 16:9 HTML deck with 19 slides and a **21:45 rehearsal allocation**, excluding audience Q&A. Open it directly in a browser; no installation, installed fonts, CDN or server is required. Inter and renamed Liberation Mono subsets are embedded as WOFF2 data URLs, with SIL OFL licenses included in the HTML. The live production entrypoint is https://misha1302.github.io/lang-dev-presentation-2026/.
 
 The accepted talk title is **“Build the Language, Then Make the Abstractions Disappear: Extensible Programming on .NET.”** The shorter on-slide thesis is **“Open to extension. Concrete at execution.”**
 
-The narrative follows real Wist source through modular composition, one immutable LanguagePlan, Bytecode/AIR and interpreter/CIL execution. A tested binding example demonstrates semantic preservation. A separate producer-coupling example motivates the **6:55 proposed research outlook**, with a bounded SIMD derivation and additive bridge rule. No production SIMD, formal completeness, measured speedup or novelty claim is made.
+The narrative follows real Wist source through modular composition, one immutable LanguagePlan, Bytecode/AIR and interpreter/CIL execution. A tested binding example demonstrates semantic preservation. A separate producer-coupling example motivates the **8:00 proposed research outlook**, with a bounded SIMD derivation, an additive bridge rule, and range-check evidence reused across control flow. No production SIMD, formal completeness, measured speedup or novelty claim is made.
 
-For last-mile rehearsal, use the deployed companion runbook: https://misha1302.github.io/lang-dev-presentation-2026/speaker-runbook.html. It includes compact anchors, technical caveats and transitions for all 18 slides. IMPROVEMENT_REPORT.md records the final argument, technical boundaries and 21:30 allocation.
+For last-mile rehearsal, use the deployed companion runbook: https://misha1302.github.io/lang-dev-presentation-2026/speaker-runbook.html. It includes compact anchors, technical caveats and transitions for all 19 slides. IMPROVEMENT_REPORT.md records the final argument, technical boundaries and 21:45 allocation.
 
 ## Navigation
 
@@ -16,7 +16,7 @@ For last-mile rehearsal, use the deployed companion runbook: https://misha1302.g
 - `P`: presenter notes in SAY / NEXT (or END) form; `H`: help; `F`: fullscreen.
 - `Home` / `End`: first / last slide. Buttons and left-side dots also navigate.
 - Wheel/trackpad and touch swipe advance one step per gesture.
-- Canonical hashes: `#slide-1` … `#slide-18`; numeric `#1` … `#18` links also work.
+- Canonical hashes: `#slide-1` … `#slide-19`; numeric `#1` … `#19` links also work.
 
 The deck scales uniformly and letterboxes non-16:9 viewports. Browser printing produces one slide per page. All meaningful type is at least 16px in the 1600×900 design coordinates; code is 23–40px.
 
@@ -28,6 +28,6 @@ python -m playwright install chromium
 python scripts/validate_deck.py --output qa/final
 ```
 
-The validator exercises the actual production DOM, captures every slide at 1600×900, 1920×1080, 1536×864 and 1366×768, captures all reveal states at 1600×900 and every requested projector size, checks typography/geometry and navigation, tests all 18 slides offline from a local file and all-slide geometry at non-16:9 window sizes, and creates a PDF and contact sheets. Human screenshot inspection is still required; see QA_REPORT.md for the completed review.
+The validator exercises the actual production DOM, captures every slide at 1600×900, 1920×1080, 1536×864 and 1366×768, captures all reveal states at 1600×900 and every requested projector size, checks typography/geometry and navigation, tests all 19 slides offline from a local file and all-slide geometry at non-16:9 window sizes, and creates a PDF and contact sheets. Human screenshot inspection is still required; see QA_REPORT.md for the completed review.
 
 REBUILD_EVIDENCE.md records pinned compiler sources, implementation/proposal boundaries, the git-history investigation and each slide's causal narrative. Generated QA artifacts live in `qa/` and are ignored by Git. Compiler sources are unchanged.

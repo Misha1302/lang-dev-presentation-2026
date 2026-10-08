@@ -1,6 +1,6 @@
 # LangDev 2026 presentation improvement — 2026-10-09
 
-Canonical artifact: `index.html`. Baseline: clean `main`, commit `e7256fd`, **18 slides**. No 16-slide draft was edited. Self-contained HTML, embedded fonts/QRs, fixed 1600×900 stage, navigation and reveal architecture are retained. Implementation and local QA were completed before publication; compiler sources were not edited. `contact-slide.html`, unrelated assets and deployment workflows remain untouched.
+Canonical artifact: `index.html`. Current deck: **19 slides**. Original narrative baseline: `e7256fd`; range-check follow-up baseline: clean `main` at `3c43420`. No 16-slide draft was edited. Self-contained HTML, embedded fonts/QRs, fixed 1600×900 stage, navigation and reveal architecture are retained. Implementation and local QA were completed before publication; compiler sources were not edited. `contact-slide.html`, unrelated assets and deployment workflows remain untouched.
 
 ## Material changes
 
@@ -16,11 +16,13 @@ Canonical artifact: `index.html`. Baseline: clean `main`, commit `e7256fd`, **18
 | 12 | Adds facts without displaying bridge; only 45 seconds | Show new B1 concretely; same before/after query; allocate 75 seconds | New producer supplies evidence + bridge; existing consumer and existing R stay unchanged |
 | 13 | Another publish/derive/query diagram | Replace with scoped evidence record and incompatible revisions/targets | Distinct requirement: evidence must describe the right subject and context |
 | 14 | Provenance uses stale predicate/rule vocabulary | Align trace with B1, R and target T | Explanation and invalidation refer to the same derivation as slides 11–12 |
-| 16 | Title payoff is another pipeline | Show construction→plan and generic load→concrete `ldarg` comparisons | Exactly identifies removed decisions/representation and remaining host/plan/JIT machinery |
-| 17 | Generic synthesis path and weak status visibility | Name independent modules, one plan, concrete .NET operations; split working/research link captions | Returns to the opening problem and preserves status boundary |
+| 15 | Local rewrite alone does not demonstrate global semantic optimization | Add existing guard → scoped range invariant → two dominated in-bounds uses | One fact justifies transformations across control flow; guard and exception behavior stay unchanged |
+| 16 | Prior-art comparison contains a removed topic | Remove its row and speaker references; retain MLIR, LLVM and extensible grammars | Focus the comparative baseline on mechanisms the speaker will discuss |
+| 17 | Title payoff is another pipeline | Show construction→plan and generic load→concrete `ldarg` comparisons | Exactly identifies removed decisions/representation and remaining host/plan/JIT machinery |
+| 18 | Generic synthesis path and weak status visibility | Name independent modules, one plan, concrete .NET operations; split working/research link captions | Returns to the opening problem and preserves status boundary |
 | All notes | Some caveats exist only in hidden notes; changed narrative/timing needs synchronization | Update actual P cues, detailed notes and runbook | Speaker can reconstruct explanation without a memorized script |
 
-Slides 2–4, 6, 15 and 18 retain their successful argument and visual design. No slide was added or removed: repurposing 9/13/16 removes repeated claims without losing evidence. Reveal steps remain contiguous; the strengthened validator captures every reveal at all requested projector sizes and checks every counter/progress value.
+Slides 2–4, 6 and 19 retain their successful argument and visual design. The range-check follow-up adds one proposed example at slide 15 and removes the relational-language prior-art row from slide 16. Earlier repurposing removed repeated claims without losing evidence. Reveal steps remain contiguous; the strengthened validator captures every reveal at all requested projector sizes and checks every counter/progress value.
 
 Shadowing alternatives considered: removing it would lose an observable preservation contract following the exact rewrite; retaining the original diagram would overallocate time; **a short engineering example** preserves that evidence with a clear limit. It is not the justification for the research layer.
 
@@ -42,13 +44,21 @@ The SIMD illustration uses invariant `scale`, ordinary nonvolatile uint32 arrays
 
 Additive extension is relational derivation through a newly registered bridge, not selecting a replacement vectorizer. Installation establishes no fact by itself: compatible evidence, provider authority and checked scope/revision remain required. The old legality rule and consumer query are unchanged; the new module adds B1 rather than editing R.
 
-Prior-art claims were verified from [MLIR interfaces](https://mlir.llvm.org/docs/Interfaces/), [LLVM analysis management](https://llvm.org/docs/NewPassManager.html), [ableC](https://melt.cs.umn.edu/ableC/) and [Soufflé provenance](https://souffle-lang.github.io/provenance). These systems already support substantial decoupling, analysis lifecycle, modular semantics or inference. The experiment compares integration work and invalidation correctness against interfaces + analysis management, including adapters/external models; no novelty or superiority claim is made.
+Prior-art claims were verified from [MLIR interfaces](https://mlir.llvm.org/docs/Interfaces/), [LLVM analysis management](https://llvm.org/docs/NewPassManager.html), [ableC](https://melt.cs.umn.edu/ableC/). These systems already support substantial decoupling, analysis lifecycle, modular semantics. The experiment compares integration work and invalidation correctness against interfaces + analysis management, including adapters/external models; no novelty or superiority claim is made.
 
 Remaining research risks: provider correctness/authority, bridge-rule review, inference termination, contradiction policy, revision/target identity and complete invalidation. None is solved by checking a proof DAG alone. No measured speedup, universal zero overhead or near-C# performance claim is made.
 
+## Range-check follow-up
+
+New slide 15 demonstrates a **proposed global semantic optimization**: an existing successful `range_check(i,0,min(len(a),len(b)))` establishes a half-open interval for fixed SSA values. A consumer derives two in-bounds obligations and removes redundant checks in successive dominated blocks, retaining the original guard. The normal successful continuation must dominate every use; caught-failure paths and unguarded incoming paths cannot inherit the assertion. New SSA values require their own evidence, while the old immutable value's fact remains valid. This is a path-scoped invariant, not a loop-induction invariant.
+
+The pinned source has conservative SSA SCCP across control flow and structural dominance verification (`docs/architecture/ir-routing-foundation.md`, SCCP pass/tests). General interval analysis and bounds-check elimination were not found and remain explicitly proposed. The existing research note discusses value-range fact invalidation, not a shipped range engine. No compiler implementation was changed.
+
+The removed comparison row and its speaker references are absent from the current deck, runbook and current outline; earlier investigations in REBUILD_EVIDENCE.md remain historical records. The original timing was shortened on the program pipeline, prior-art comparison and synthesis slides to make space for a 75-second example without exceeding the 21–22 minute target.
+
 ## Final talk outline
 
-**21:30 allocation**, not a measured delivery: implemented story / synthesis 14:05, proposed research outlook 6:55, contacts 0:30 within the 25-minute slot. Rehearse slides 10–12 together, especially lane equivalence vs independence and the new B1 vs unchanged R. Also rehearse the 8→9 reset and the 15→16 return to implemented code.
+**21:45 allocation**, not a measured delivery: implemented story / synthesis 13:15, proposed research outlook 8:00, contacts 0:30 within the 25-minute slot. Rehearse slides 10–12 together, especially lane equivalence vs independence and the new B1 vs unchanged R. Also rehearse the 8→9 reset and the 16→17 return to implemented code.
 
 | Slide | Title | Narrative role | Speaker anchor | Allocation |
 |---|---|---|---|---|
@@ -57,7 +67,7 @@ Remaining research risks: provider correctness/authority, bridge-rule review, in
 | 03 | Make the extension points module-owned | Ownership moves from central edits to selected modules | Each module owns its contributions. A dialect only selects which modules form the language. | 1:20 |
 | 04 | The selected modules are the language | A real selection defines the allowed language surface | These selected modules literally define the language surface: arithmetic is present; loops and interop are not. | 1:30 |
 | 05 | Composition closes into one LanguagePlan | Global composition choices close into a resolved plan | Features, contribution order, runtime provider and typed routes become one immutable plan. | 1:50 |
-| 06 | One Wist program becomes executable operations | That plan compiles an authentic Wist expression | The same expression becomes more concrete: AST → semantic binding → module Bytecode → Abstract IR → interpreter or CIL. | 2:00 |
+| 06 | One Wist program becomes executable operations | That plan compiles an authentic Wist expression | The same expression becomes more concrete: AST → semantic binding → module Bytecode → Abstract IR → interpreter or CIL. | 1:40 |
 | 07 | Known slot + known type can erase a load sequence | One exact supported rewrite removes representation work | A host input has a binding slot and type. With the exact pattern and backend support, three AIR operations become one typed intrinsic. | 1:30 |
 | 08 | One source must not acquire two meanings | Correctness guard: preserve binder-owned meaning | Local price reads host fee = 1; both backends return 2 in the freshly rerun pinned-source probe. | 1:00 |
 | 09 | Who owns the answer an optimizer needs? | Separate research problem: consumer–producer coupling | Vectorizer calls BuiltinDependencyAnalysis.Check: its dependency names an implementation. | 1:05 |
@@ -66,10 +76,11 @@ Remaining research risks: provider correctness/authority, bridge-rule review, in
 | 12 | New knowledge completes an existing decision | New evidence and bridge enable an unchanged consumer | Before, independence is unknown: scalar execution. The final query and R already exist. | 1:15 |
 | 13 | An answer belongs to a subject and a context | Subject and context bound reusable evidence | Evidence names its relation, subject, revision, scope, producer and assumptions. | 0:40 |
 | 14 | Provenance explains both success and a safe stop | Invalidation explains why a previously proved answer stops | Provenance records facts, producers and rules. This trace shows only the dependency branch. | 0:50 |
-| 15 | Prior art supplies the pieces. Open composition sets the integration question. | Evaluate the hypothesis against strong existing mechanisms | MLIR, LLVM, extensible grammars and Datalog already provide important pieces. | 0:50 |
-| 16 | What disappears — and what the backend receives | Title payoff: fixed composition and concrete backend input | Planning fixes Features, Contributions, RuntimeProvider and Routes; runtime materializes that selected graph. | 1:40 |
-| 17 | Compose the language. Agree on meaning. Execute concrete operations. | Return to the opening division of responsibilities | Independent modules form one language plan; tested lowering produces concrete .NET operations. | 0:55 |
-| 18 | Continue the discussion | Contact handoff and Q&A frame | The live deck, project, Telegram and email are all here for follow-up. | 0:30 |
+| 15 | One range check establishes a reusable invariant | Global optimization reuses a path-scoped range invariant | An existing range check establishes 0 ≤ i < n on its successful continuation. i, a and b are fixed SSA values. | 1:15 |
+| 16 | Prior art supplies the pieces. Open composition sets the integration question. | Evaluate the hypothesis against strong existing mechanisms | MLIR, LLVM and extensible grammars already provide important pieces. | 0:40 |
+| 17 | What disappears — and what the backend receives | Title payoff: fixed composition and concrete backend input | Planning fixes Features, Contributions, RuntimeProvider and Routes; runtime materializes that selected graph. | 1:10 |
+| 18 | Compose the language. Agree on meaning. Execute concrete operations. | Return to the opening division of responsibilities | Independent modules form one language plan; tested lowering produces concrete .NET operations. | 0:55 |
+| 19 | Continue the discussion | Contact handoff and Q&A frame | The live deck, project, Telegram and email are all here for follow-up. | 0:30 |
 
 ## Causal review of every slide
 
@@ -90,11 +101,12 @@ Evidence supports each slide's claim. Its payoff creates the next slide's questi
 | 11 | Illustrative DAG with distinct premises and provider/rule provenance | Install the missing provider and bridge, leaving R and the consumer unchanged. |
 | 12 | Conceptual before/after: new B1, old R and query unchanged | Which loop revision and target does that evidence describe? |
 | 13 | Proposed scoped evidence record | Change the memory accesses and this proof path must expire. |
-| 14 | Proposed dependency-branch trace and r7→r8 invalidation | These ideas already have strong precedents. |
-| 15 | Primary MLIR/LLVM/ableC/Soufflé references | Whatever mechanism wins, execution should consume resolved decisions. |
-| 16 | Selected-plan runtime and actual external-load CIL emitter | Return to the opening problem: independent contributions, exact decisions, concrete execution. |
-| 17 | Implementation/research links visibly separated | Leave the links visible for questions. |
-| 18 | Embedded offline QR assets and actual hrefs | Thank you. Questions? |
+| 14 | Proposed dependency-branch trace and r7→r8 invalidation | Can one semantic invariant remove repeated checks across control flow? |
+| 15 | Conceptual guard→range→two in-bounds obligations; implemented SSA foundation, proposed range elimination | Compare the integration mechanism with existing approaches. |
+| 16 | Primary MLIR/LLVM/ableC references | Whatever mechanism wins, execution should consume resolved decisions. |
+| 17 | Selected-plan runtime and actual external-load CIL emitter | Return to the opening problem: independent contributions, exact decisions, concrete execution. |
+| 18 | Implementation/research links visibly separated | Leave the links visible for questions. |
+| 19 | Embedded offline QR assets and actual hrefs | Thank you. Questions? |
 
 ## Adversarial review
 

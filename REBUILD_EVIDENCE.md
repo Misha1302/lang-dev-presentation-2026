@@ -2,7 +2,7 @@
 
 Authority: presentation working record, not a compiler architecture contract.
 
-Latest revision: 2026-10-09. See IMPROVEMENT_REPORT.md and QA_REPORT.md for the current deck, evidence boundaries, executed checks and 21:30 allocation. Earlier investigations below are historical records; fixed R1/R2 and six-minute-outlook statements there describe earlier candidates.
+Latest revision: 2026-10-09. See IMPROVEMENT_REPORT.md and QA_REPORT.md for the current deck, evidence boundaries, executed checks and 21:45 allocation. Earlier investigations below are historical records; fixed R1/R2 and six-minute-outlook statements there describe earlier candidates.
 Investigated 2026-10-06 before editing the production presentation.
 
 ## Source baseline
@@ -248,3 +248,11 @@ Editing strategy: keep the 18-slide architecture; reduce slide 8 and repurpose t
 Shipped compiler facts and stage lifecycle contracts are implemented; general relation registry/inference/provenance is the research boundary. The pinned checkout remains the source for all deck links. Later checkout e7f71a8 was inspected only to check that this boundary was not silently stale.
 
 Current outline, per-slide evidence/payoff and technical-integrity map: IMPROVEMENT_REPORT.md. Actual source-hashed render results, compiler checks and links: QA_REPORT.md. Historical benchmark/probe outcomes above remain labelled historical unless explicitly rerun.
+
+## Range-check follow-up — 2026-10-09
+
+User requested removing the relational-language comparison and adding global semantic optimization through a variable-range invariant. Baseline `3c43420` was clean. New proposed slide 15 sits after validity/invalidation and before prior art; final deck has 19 slides and a 1305-second allocation. The example keeps an existing successful guard at its original position and propagates its half-open range fact through dominated uses of the same SSA identities. New values/unguarded incoming paths require evidence; this is not a loop-induction proof.
+
+No general interval/range analyzer or bounds-check elimination was found in pinned or later compiler sources. Working SSA SCCP and dominance verification are the implemented foundation. Detailed notes bound exception paths, fixed array lengths and merges. The current audience-facing comparison and notes no longer contain the removed row. Older comparisons above are historical evidence records, not current slide content.
+
+The initial range candidate failed the existing caption-to-claim spacing check. Reducing the body gap fixed the layout without shrinking text or weakening validation. Final QA identifies the stable validated hashes and release artifacts.

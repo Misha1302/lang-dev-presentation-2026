@@ -1,54 +1,51 @@
-# LangDev 2026 — final QA, 2026-10-09
+# LangDev 2026 — range-check follow-up QA, 2026-10-09
 
-Canonical deck: `index.html`, 18 slides, 1290 seconds (**21:30**). Baseline: clean `main` at `e7256fd`. Current change/technical-integrity/outline report: IMPROVEMENT_REPORT.md. Historical QA remains in Git history and REBUILD_EVIDENCE.md; this report describes the current stable candidate.
+Current artifact: `index.html`, **19 slides / 1305 seconds (21:45)**. Follow-up baseline: clean `main` at `3c43420`. The requested prior-art row and its speaker references were removed. Proposed global semantic optimization is demonstrated on slide 15 through an existing guard, a path-scoped SSA range invariant and two dominated in-bounds uses.
 
-Final executed command:
+Executed final command:
 
 ```bash
-python scripts/validate_deck.py --output qa/verified-2026-10-09
+python scripts/validate_deck.py --output qa/range-final
 ```
 
-## Browser and visual results
-
-Chromium, Playwright 1.57.0. The final run asserts that HTML, runbook and validator hashes stay unchanged during capture; those hashes also match the final files after the run. Earlier candidate captures informed repairs but are not the final evidence.
-
-| Check | Actual result |
+| Check | Observed result |
 |---|---|
-| Slides / timing / research outlook | 18 / 1290 s / 415 s |
-| Every fully shown slide at 1920×1080 | 18 captured; inspected; zero geometry issues |
-| Every fully shown slide at 1536×864 | 18 captured; inspected; zero geometry issues |
-| Every fully shown slide at 1366×768 | 18 captured; inspected; zero geometry issues |
-| Additional design viewport 1600×900 | 18 captured; zero geometry issues |
-| All logical reveal states | 55 states × 4 sizes = 220 captures; zero geometry issues |
+| Slides / total / research | 19 / 1305 s / 480 s |
+| Full slides at 1920×1080 | 19 captured and visually reviewed; no geometry errors |
+| Full slides at 1536×864 | 19 captured and visually reviewed; no geometry errors |
+| Full slides at 1366×768 | 19 captured and visually reviewed; no geometry errors |
+| Full slides at 1600×900 | 19 captured; no geometry errors |
+| All intermediate/final reveals | 58 logical states × 4 sizes = 232 captures; no geometry errors |
 | JavaScript errors | 0 |
-| Previous/next and keyboard | Arrows, PageUp/Down, Space/Shift+Space, J/K, Home/End passed |
-| Buttons, dots, hashes | Passed; all 18 slides reachable |
-| Counter / progress | Explicitly checked on every slide at all four design/projector sizes |
-| R / A reveals | Passed; contiguous steps; final content visible |
-| Presenter notes / help | Actual visible SAY/NEXT/END cues and P dismissal checked on every slide; H dismissal passed |
-| Wheel / touch | Passed |
-| Embedded fonts / QR images | Seven font faces and all four images load offline |
-| Local file / offline | All 18 slides opened offline |
-| Non-16:9 and smaller windows | All slides checked at 1280×720, 1024×768, 1280×900 and 390×844; 72 captures; zero geometry issues |
-| Print | PDF generated; `pdfinfo` confirms 18 pages |
-| Notes consistency | All runbook SAY cues match actual P cues; detailed ANCHOR/FLOW/TRANSITION notes retained |
-| Diff whitespace | `git diff --check` passed |
+| Navigation / counter / progress | All 19 reachable; keyboard, buttons, dots, hashes, wheel and touch passed; every counter/progress value checked |
+| P / H / R / A | Presenter/help visibility/dismissal and reveal navigation passed; complete content reachable |
+| Local file / offline | All 19 opened; seven embedded fonts and four QR images loaded |
+| Smaller/non-16:9 windows | All slides checked at 1280×720, 1024×768, 1280×900, 390×844; 76 captures; no geometry errors |
+| Runbook | All 19 actual P cues synchronized; timing and transitions updated |
+| Print | PDF generated; 19 pages confirmed |
+| Links | 26 unique external links returned HTTP 200; all 29 pinned source references exist locally |
+| Diff | `git diff --check` passed |
 
-Visual inspection covered all **54 requested full-slide combinations**, including fully revealed states. Parent reviewed all five 1920 contact sheets and individual 1366 proof/extension slides. Independent designer/audience review covered all ten 1536/1366 contact sheets and all **21 research reveal states at 1920** (slides 9–15). Parent also inspected the proof/extension reveal montage. No clipping, collisions, unreadable node labels, detached revealed arrows or premature proof-success state was observed. Automated geometry covers every intermediate reveal at every size; additional manual inspection of all intermediate states at the smaller sizes was not performed.
+The initial range candidate failed the caption-to-claim spacing check on slide 15. Reduced body spacing repaired it without smaller fonts or weaker validation. The final stable run passed all existing checks. The validator now uses exact 19-slide/1305-second/480-second contracts and checks the contact slide at its new number 19.
 
-These are rendered technical/designer reviews, not measured human comprehension or projector-room usability tests. No delivery duration was measured. Rehearse the 8→9 reset, 10–12 derivation/bridge sequence and 15→16 return to implemented code.
+Parent inspected all five final 1920 contact sheets and the new range slide at 1366. Independent technical review verified both code/notes and the 1366 range rendering. Additional audience/designer review covered the final smaller-size sheets and the new reveals. No clipping, collisions, disconnected revealed arrows or unreadable important labels were observed. Automated coverage includes every intermediate state at all sizes; manual inspection does not claim every intermediate state at every size.
 
-Source hashes:
+Range correctness boundaries: successful normal guard continuation dominates each use; half-open range; same immutable SSA identities and ordinary fixed-length non-null arrays. Keep the existing guard at its original position and preserve exception behavior. A caught-failure path cannot inherit success evidence; a new value or unguarded incoming path requires its own evidence. This is a path-scoped invariant, not a loop-induction proof. General range analysis/elimination is proposed; implemented SSA SCCP and dominance verification are the foundation. No new compiler implementation or speedup claim is made.
+
+Source hashes of the stable final run:
 
 | File | SHA-256 |
 |---|---|
-| index.html | `faf1a10bc8443e403079b5b0f473b3716f282354e357a9f3b1542718bec760a9` |
-| speaker-runbook.html | `340dc709499472739739a599240cfa3a72978d3e91823d69c4de4aa8f8f08a70` |
-| scripts/validate_deck.py | `500350a4692ed7fee7c0dcfaa9dcf2d2ce6a4a49e936c1b6fc0a97cea24c1539` |
+| index.html | `e1476ccb1e6453dae5e999ff686a1c79d9b0e9818ceee03a789754c9e09ac517` |
+| speaker-runbook.html | `caca735e5ce3443644ad70dbdac192d9496785358e55a40c926130b326a3beae` |
+| scripts/validate_deck.py | `66c6b240a59c3302aa3098ee2d8fa1349285863d1a98feb3bc33684d3f4c9c7b` |
 
-Artifacts (ignored by Git): `qa/verified-2026-10-09/validation.json`, screenshots, contact sheets, reveal captures and `LangDev-2026.pdf`.
+Artifacts: `qa/range-final/validation.json`, all screenshots/contact sheets/reveals and `LangDev-2026.pdf`; link results: `qa/link-check-2026-10-09.json`. Artifacts are ignored by Git. No delivery-time or human-comprehension measurement was made. Rehearse the new 14→15→16 sequence and 16→17 return to implemented execution.
 
-## Fresh compiler validation
+## Previous pinned-source compiler validation
+
+The following 28-test/probe evidence was executed during the preceding narrative revision against the same unchanged pinned compiler source. It was not rerun for this presentation-only follow-up.
+
 
 Source: clean pinned `../Wist2` at `1d46f17c8dc28f434fa58bdf92f9f8278fa5aaee`; SDK 10.0.111. Existing binary timestamps had uncertain provenance, so these commands **built the projects**, reusing available restored dependencies. No compiler source was edited. Commands ran from `../Wist2/UniversalToolchain`:
 
@@ -77,10 +74,7 @@ It uses full-default-native, `let price = fee` / `price + fee`, and host `price=
 
 The pinned compiler checkout remained Git-clean after tests and probe. The broader compiler suite was not run because focused contracts cover the claims affected by this presentation edit.
 
-## Links, integrity and remaining limits
 
-All **26 unique external hyperlinks** returned HTTP 200 in the network check, including pinned compiler/research links, primary prior-art pages and contact destinations. Result: `qa/link-check-2026-10-09.json`. All **27 data-source references** resolve to existing files in the pinned checkout. Fonts and QR assets are embedded; no external runtime asset is required.
+## Publication
 
-Independent compiler/PL review repaired overlapping dependency premises, hidden lane-equivalence assumptions, rule ownership and the parity/proposal causal conflation. Audience/designer review repaired producer naming and the unchanged top-level query. Final reviewed candidate has no unresolved technical contradiction under its explicit bounds.
-
-Remaining limits are intentional: SIMD and general relation inference/provenance are proposed and illustrative; provider authority, bridge soundness and complete invalidation need research implementation/evaluation. Existing compiler facts/lifecycle contracts are implemented. No performance benchmark, production SIMD engine, universal zero-cost result or human delivery/comprehension claim is asserted. This report records local validation before publication. Release status must be checked against the subsequent GitHub CI/deployment runs and live artifact.
+This report describes local validation before publication. Release status must be checked against the subsequent PR/main CI, GitHub Pages deployment and live HTML/runbook hashes.

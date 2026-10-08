@@ -16,6 +16,9 @@ from playwright.sync_api import sync_playwright
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
+SLIDE_COUNT = 19
+TOTAL_SECONDS = 1305
+RESEARCH_SECONDS = 480
 
 
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
@@ -125,19 +128,19 @@ def validate(output: Path, browser_name: str = 'chromium'):
                 ready:faces.every(f => f.status === 'loaded')}));
             }""")
             assert all(f['count'] == 1 and f['ready'] for f in embedded_fonts), embedded_fonts
-            assert page.locator('.slide').count() == 18
+            assert page.locator('.slide').count() == SLIDE_COUNT
             metadata = page.locator('.slide').evaluate_all("ss => ss.map(s => ({id:s.id,seconds:+s.dataset.seconds,status:s.dataset.status,steps:[...s.querySelectorAll('[data-step]')].map(n=>+n.dataset.step)}))")
-            assert [s['id'] for s in metadata] == [f'slide-{i}' for i in range(1, 19)]
+            assert [s['id'] for s in metadata] == [f'slide-{i}' for i in range(1, SLIDE_COUNT + 1)]
             seconds = sum(s['seconds'] for s in metadata)
-            assert seconds == 1290, seconds
-            assert sum(s['seconds'] for s in metadata[8:15]) == 415
-            assert all(s['status'] == 'proposed' for s in metadata[9:14])
+            assert seconds == TOTAL_SECONDS, seconds
+            assert sum(s['seconds'] for s in metadata[8:16]) == RESEARCH_SECONDS
+            assert all(s['status'] == 'proposed' for s in metadata[9:15])
             for s in metadata:
                 assert s['steps'] == [] or sorted(set(s['steps'])) == list(range(1, max(s['steps']) + 1)), s
                 notes = page.locator(f"#{s['id']} .notes").text_content()
                 assert all(key in notes for key in ['ANCHOR:', 'FLOW:', 'TRANSITION:']), s['id']
             assert page.locator('[data-source]:not([href])').count() == 0
-            for i in range(1,19):
+            for i in range(1, SLIDE_COUNT + 1):
                 page.evaluate('LANGDEV_DECK.go', i)
                 page.keyboard.press('p')
                 visible_notes = page.locator('#notesPanel').inner_text()
@@ -149,10 +152,10 @@ def validate(output: Path, browser_name: str = 'chromium'):
             for width, height in default_viewports:
                 page.set_viewport_size({'width':width, 'height':height})
                 viewport_snapshots = []
-                for i in range(1,19):
+                for i in range(1, SLIDE_COUNT + 1):
                     page.evaluate('(n) => { LANGDEV_DECK.setReveal(false); LANGDEV_DECK.go(n); }', i)
-                    assert page.locator('#count').inner_text() == f'{i:02} / 18'
-                    assert abs(page.evaluate("parseFloat(document.querySelector('#progress').style.width)") - i/18*100) < .001
+                    assert page.locator('#count').inner_text() == f'{i:02} / {SLIDE_COUNT}'
+                    assert abs(page.evaluate("parseFloat(document.querySelector('#progress').style.width)") - i/SLIDE_COUNT*100) < .001
                     path = output / f'{width}-slide-{i:02}.png'
                     page.screenshot(path=str(path))
                     viewport_snapshots.append(path)
@@ -160,7 +163,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
                     failures = page.evaluate(GEOMETRY)
                     if failures: geometry.append({'slide':i, 'width':width, 'problems':failures})
                 montage(viewport_snapshots, output / f'montage-{width}.png')
-                for first in range(0,18,4):
+                for first in range(0, SLIDE_COUNT, 4):
                     montage(viewport_snapshots[first:first+4], output / f'contact-{width}-{first+1:02}.png', columns=2, width=800)
             page.set_viewport_size({'width':1600, 'height':900})
             for i, slide in enumerate(metadata, 1):
@@ -173,7 +176,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
                     reveal_captures.append(path)
                     failures = page.evaluate(GEOMETRY)
                     if failures: geometry.append({'slide':i, 'step':step, 'problems':failures})
-            changed_slides = set(range(1,19))
+            changed_slides = set(range(1, SLIDE_COUNT + 1))
             for width, height in default_viewports[1:]:
                 page.set_viewport_size({'width':width, 'height':height})
                 for i, slide in enumerate(metadata, 1):
@@ -197,7 +200,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
                 before = page.evaluate('LANGDEV_DECK.active')
                 page.keyboard.press(key)
                 assert page.evaluate('LANGDEV_DECK.active') == before - 1, key
-            page.keyboard.press('End'); assert page.evaluate('LANGDEV_DECK.active') == 18
+            page.keyboard.press('End'); assert page.evaluate('LANGDEV_DECK.active') == SLIDE_COUNT
             page.keyboard.press('Home'); assert page.evaluate('LANGDEV_DECK.active') == 1
             page.locator('#next').click(); assert page.evaluate('LANGDEV_DECK.active') == 2
             page.locator('#prev').click(); assert page.evaluate('LANGDEV_DECK.active') == 1
@@ -236,7 +239,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
                 assert rect['x'] >= -.1 and rect['y'] >= -.1
                 assert rect['x'] + rect['width'] <= size[0] + .1
                 page.screenshot(path=str(output / f'fit-{size[0]}x{size[1]}.png'))
-                for i in range(1,19):
+                for i in range(1, SLIDE_COUNT + 1):
                     page.evaluate('LANGDEV_DECK.go', i)
                     page.screenshot(path=str(output / f'fit-{size[0]}x{size[1]}-slide-{i:02}.png'))
                     responsive_captures += 1
@@ -244,7 +247,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
                     if failures: geometry.append({'slide':i, 'size':size, 'problems':failures})
             page.set_viewport_size({'width':1600, 'height':900})
             page.context.set_offline(True)
-            for i in range(1,19):
+            for i in range(1, SLIDE_COUNT + 1):
                 page.goto((ROOT / 'index.html').as_uri() + f'#slide-{i}')
                 assert page.evaluate('LANGDEV_DECK.active') == i
                 assert page.evaluate("""async () => {
@@ -254,10 +257,10 @@ def validate(output: Path, browser_name: str = 'chromium'):
                   await document.fonts.ready;
                   return loaded.every(faces => faces.length === 1 && faces[0].status === 'loaded');
                 }""")
-            page.goto((ROOT / 'index.html').as_uri() + '#slide-18')
-            assert page.evaluate('LANGDEV_DECK.active') == 18
-            assert page.locator('#slide-18 img.qr').count() == 4
-            assert page.locator('#slide-18 img.qr').evaluate_all(
+            page.goto((ROOT / 'index.html').as_uri() + f'#slide-{SLIDE_COUNT}')
+            assert page.evaluate('LANGDEV_DECK.active') == SLIDE_COUNT
+            assert page.locator(f'#slide-{SLIDE_COUNT} img.qr').count() == 4
+            assert page.locator(f'#slide-{SLIDE_COUNT} img.qr').evaluate_all(
                 "els => els.every(e => e.src.startsWith('data:image/png;base64,') && e.complete && e.naturalWidth > 0)"
             )
             page.screenshot(path=str(output / 'offline-contact-slide.png'))
@@ -279,7 +282,7 @@ def validate(output: Path, browser_name: str = 'chromium'):
     source_hashes = {name:hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
                      for name in source_files}
     assert source_hashes == initial_hashes, 'Source changed during validation; rerun on stable files'
-    report = {'browser':browser_name,'source_sha256':source_hashes,'slides':len(metadata),'timing_seconds':seconds,'research_seconds':415,'full_slide_screenshots':len(snapshots)*len(default_viewports),'responsive_screenshots':responsive_captures,'reveal_states':len(states),'reveal_screenshots':len(reveal_captures),'embedded_font_faces':len(embedded_fonts),'javascript_errors':errors,'geometry_issues':geometry,'navigation':'passed','touch_handler':'passed','presenter_notes':'visible SAY/tail and dismissal passed on all slides','local_file':'passed','offline_slides':18,'responsive_fit':'passed'}
+    report = {'browser':browser_name,'source_sha256':source_hashes,'slides':len(metadata),'timing_seconds':seconds,'research_seconds':RESEARCH_SECONDS,'full_slide_screenshots':len(snapshots)*len(default_viewports),'responsive_screenshots':responsive_captures,'reveal_states':len(states),'reveal_screenshots':len(reveal_captures),'embedded_font_faces':len(embedded_fonts),'javascript_errors':errors,'geometry_issues':geometry,'navigation':'passed','touch_handler':'passed','presenter_notes':'visible SAY/tail and dismissal passed on all slides','local_file':'passed','offline_slides':SLIDE_COUNT,'responsive_fit':'passed'}
     (output / 'validation.json').write_text(json.dumps(report,indent=2))
     print(json.dumps({key:value for key,value in report.items() if key != 'geometry_issues'},indent=2))
     print(f'Geometry issue groups: {len(geometry)}')
